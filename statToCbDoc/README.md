@@ -52,4 +52,10 @@ go run . -c ~/credentials -s ./settings.json -f /Users/gopa.padmanabhan/scratch/
 Output will be in ./outputs with file name with extension as json, like:
 grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
 
+## run with specific credentials,settings and/or for all stat files in a folder
+go run . -c ~/credentials -s ./settings.json -i /Users/gopa.padmanabhan/scratch/data/MET/
+
+Output will be in ./outputs with file name with extension as json, like:
+grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
+
 
