@@ -1,1 +1,4 @@
 MET data files from Hera in ~/scratch/data/MET/
+
+See document: 
+https://docs.google.com/document/d/1oo975nGynCyjnesw5WmBoGAEbrN8y-bokjpmXY4gow8/edit#heading=h.gi09vodnirzs
