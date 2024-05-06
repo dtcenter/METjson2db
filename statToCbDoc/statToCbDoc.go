@@ -15,6 +15,10 @@ import (
 type StrArray []string
 
 type ConfigJSON struct {
+	FieldMap []struct {
+		MET_name  string `json:"MET_name"`
+		MATS_name string `json:"MATS_name"`
+	} `json:"fieldMap"`
 	Metadata []struct {
 		Name       string   `json:"name"`
 		App        string   `json:"app"`
@@ -62,26 +66,31 @@ func main() {
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
-	}
-	if len(inputFolder) > 0 {
+		statToJSON(inputFile)
+	} else if len(inputFolder) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolder:" + inputFolder)
+	} else {
+		log.Fatal("Must specify either an input file (-f) or an input folder (-i)!")
+		os.Exit(1)
 	}
 
-	/*
-		conf := ConfigJSON{}
+	conf := ConfigJSON{}
+	conf, err := parseConfig(settingsFilePath)
+	if err != nil {
+		log.Fatal("Unable to parse config")
+		return
+	}
+	fmt.Println("FieldMap length:", len(conf.FieldMap))
 
-		conf, err := parseConfig(settingsFilePath)
-		if err != nil {
-			log.Fatal("Unable to parse config")
-			return
-		}
-	*/
+	if len(inputFile) > 0 {
+		statToJSON(inputFile)
+	}
 
 	// credentials := getCredentials(credentialsFilePath)
 
 	// conn := getDbConnection(credentials)
 
-	log.Println(fmt.Sprintf("\tstatToCbDoc finished in %v", time.Since(start)))
+	log.Printf("\tstatToCbDoc finished in %v", time.Since(start))
 }
 
 func parseConfig(file string) (ConfigJSON, error) {
@@ -90,7 +99,7 @@ func parseConfig(file string) (ConfigJSON, error) {
 	conf := ConfigJSON{}
 	configFile, err := os.Open(file)
 	if err != nil {
-		log.Print("opening config file", err.Error())
+		log.Fatal("opening config file", err.Error())
 		configFile.Close()
 		return conf, err
 	}

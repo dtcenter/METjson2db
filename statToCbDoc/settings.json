@@ -1,4 +1,110 @@
 {
+    "lineTypeToFieldsMap": [
+        {
+            "lineType" : "SL1L2",
+            "fields" :[
+
+            ]
+        }
+    ],
+    "fieldMap" : [
+        {
+            "MET_name": "VERSION",
+            "MATS_name": "VERSION"
+        },
+        {
+            "MET_name": "MODEL",
+            "MATS_name": "MODEL"
+        },
+        {
+            "MET_name": "DESC",
+            "MATS_name": "DESC"
+        },
+        {
+            "MET_name": "FCST_LEAD",
+            "MATS_name": "FCST_LEAD"
+        },
+        {
+            "MET_name": "FCST_VALID_BEG",
+            "MATS_name": "FCST_VALID_BEG"
+        },
+        {
+            "MET_name": "FCST_VALID_END",
+            "MATS_name": "FCST_VALID_END"
+        },
+        {
+            "MET_name": "OBS_LEAD",
+            "MATS_name": "OBS_LEAD"
+        },
+        {
+            "MET_name": "OBS_VALID_BEG",
+            "MATS_name": "OBS_VALID_BEG"
+        },
+        {
+            "MET_name": "OBS_VALID_END",
+            "MATS_name": "OBS_VALID_END"
+        },
+        {
+            "MET_name": "FCST_VAR",
+            "MATS_name": "FCST_VAR"
+        },
+        {
+            "MET_name": "FCST_UNITS",
+            "MATS_name": "FCST_UNITS"
+        },
+        {
+            "MET_name": "FCST_LEV",
+            "MATS_name": "FCST_LEV"
+        },
+        {
+            "MET_name": "OBS_VAR",
+            "MATS_name": "OBS_VAR"
+        },
+        {
+            "MET_name": "OBS_UNITS",
+            "MATS_name": "OBS_UNITS"
+        },
+        {
+            "MET_name": "OBS_LEV",
+            "MATS_name": "OBS_LEV"
+        },
+        {
+            "MET_name": "OBTYPE",
+            "MATS_name": "OBTYPE"
+        },
+        {
+            "MET_name": "VX_MASK",
+            "MATS_name": "VX_MASK"
+        },
+        {
+            "MET_name": "INTERP_MTHD",
+            "MATS_name": "INTERP_MTHD"
+        },
+        {
+            "MET_name": "INTERP_PNTS",
+            "MATS_name": "INTERP_PNTS"
+        },
+        {
+            "MET_name": "FCST_THRESH",
+            "MATS_name": "FCST_THRESH"
+        },
+        {
+            "MET_name": "OBS_THRESH",
+            "MATS_name": "OBS_THRESH"
+        },
+        {
+            "MET_name": "COV_THRESH",
+            "MATS_name": "COV_THRESH"
+        },
+        {
+            "MET_name": "ALPHA",
+            "MATS_name": "ALPHA"
+        },
+        {
+            "MET_name": "LINE_TYPE",
+            "MATS_name": "LINE_TYPE"
+        }
+    ],
     "metadata": [
         {
             "name": "ceiling",
