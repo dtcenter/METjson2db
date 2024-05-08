@@ -1,13 +1,83 @@
 {
-    "lineTypeToFieldsMap": [
+    "commonColumns": [
+        "VERSION",
+        "MODEL",
+        "DESC",
+        "FCST_LEAD",
+        "FCST_VALID_BEG",
+        "FCST_VALID_END",
+        "OBS_LEAD",
+        "OBS_VALID_BEG",
+        "OBS_VALID_END",
+        "FCST_VAR",
+        "FCST_UNITS",
+        "FCST_LEV",
+        "OBS_VAR",
+        "OBS_UNITS",
+        "OBS_LEV",
+        "OBTYPE",
+        "VX_MASK",
+        "INTERP_MTHD",
+        "INTERP_PNTS",
+        "FCST_THRESH",
+        "OBS_THRESH",
+        "COV_THRESH",
+        "ALPHA",
+        "LINE_TYPE"
+    ],
+    "lineTypeColumns": [
         {
-            "lineType" : "SL1L2",
-            "fields" :[
-
+            "lineType": "SL1L2",
+            "fields": [
+                "FBAR",
+                "OBAR",
+                "FOBAR",
+                "FFBAR",
+                "OOBAR",
+                "MAE"
+            ]
+        },
+        {
+            "lineType": "SAL1L2",
+            "fields": [
+                "FABAR",
+                "OABAR",
+                "FOABAR",
+                "FFABAR",
+                "OOABAR",
+                "MAE"
+            ]
+        },
+        {
+            "lineType": "VL1L2",
+            "fields": [
+                "UFBAR",
+                "VFBAR",
+                "UOBAR",
+                "VOBAR",
+                "UVFOBAR",
+                "UVFFBAR",
+                "UVOOBAR",
+                "F_SPEED_BAR",
+                "O_SPEED_BAR"
+            ]
+        },
+        {
+            "lineType": "VAL1L2",
+            "fields": [
+                "UFABAR",
+                "VFABAR",
+                "UOABAR",
+                "VOABAR",
+                "UVFOABAR",
+                "UVFFABAR",
+                "UVOOABAR",
+                "FA_SPEED_BAR",
+                "OA_SPEED_BAR"
             ]
         }
     ],
-    "fieldMap" : [
+    "fieldMap": [
         {
             "MET_name": "VERSION",
             "MATS_name": "VERSION"
