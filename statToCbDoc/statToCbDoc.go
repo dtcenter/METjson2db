@@ -13,13 +13,21 @@ import (
 )
 
 type StrArray []string
+type LineTypeColumn struct {
+	LineType string   `json:"lineType"`
+	Fields   StrArray `json:"fields"`
+}
+
+type FieldMapElement struct {
+	MET_name  string `json:"MET_name"`
+	MATS_name string `json:"MATS_name"`
+}
 
 type ConfigJSON struct {
-	FieldMap []struct {
-		MET_name  string `json:"MET_name"`
-		MATS_name string `json:"MATS_name"`
-	} `json:"fieldMap"`
-	Metadata []struct {
+	CommonColumns   StrArray          `json:"commonColumns"`
+	LineTypeColumns []LineTypeColumn  `json:"lineTypeColumns"`
+	FieldMap        []FieldMapElement `json:"fieldMap"`
+	Metadata        []struct {
 		Name       string   `json:"name"`
 		App        string   `json:"app"`
 		SubDocType string   `json:"subDocType"`
@@ -36,6 +44,8 @@ type Credentials struct {
 	Cb_collection string `yaml:"cb_collection"`
 }
 
+var builders map[string]IStatToCbBuilder
+
 // init runs before main() is evaluated
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -48,6 +58,8 @@ func main() {
 
 	start := time.Now()
 	log.Print("meta-update:main()")
+
+	builders = make(map[string]IStatToCbBuilder)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -66,7 +78,7 @@ func main() {
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
-		statToJSON(inputFile)
+		statFileToCbDoc(inputFile)
 	} else if len(inputFolder) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolder:" + inputFolder)
 	} else {
@@ -80,10 +92,12 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
+	fmt.Println("CommonColumns length:", len(conf.CommonColumns))
+	fmt.Println("LineTypeColumns length:", len(conf.LineTypeColumns))
 	fmt.Println("FieldMap length:", len(conf.FieldMap))
 
 	if len(inputFile) > 0 {
-		statToJSON(inputFile)
+		statFileToCbDoc(inputFile)
 	}
 
 	// credentials := getCredentials(credentialsFilePath)

@@ -1,0 +1,58 @@
+{
+    "correctedTime": "",
+    "units": {
+        "Ceiling": "ft",
+        "DewPoint": "deg F",
+        "Surface Pressure": "mb",
+        "Temperature": "deg F",
+        "Visibility": "miles",
+        "RH": "percent",
+        "WD": "degrees",
+        "WS": "mph"
+    },
+    "dataSourceId": "NCO",
+    "docType": "model",
+    "model": "HRRR_OPS",
+    "fcstValidISO": "2021-10-15T00:00:00",
+    "fcstValidEpoch": 1634256000,
+    "fcstLen": 1,
+    "id": "DD:V01:METAR:HRRR_OPS:1634256000:1",
+    "subset": "METAR",
+    "type": "DD",
+    "version": "V01",
+    "data": {
+        "K7N0": {
+            "Ceiling": 36126.82826367188,
+            "DewPoint": 72.31716509789142,
+            "Surface Pressure": 1012.1122900290944,
+            "Temperature": 80.21846704425003,
+            "Visibility": 12.61383520241788,
+            "RH": 74.14111932567334,
+            "WD": 153.00166330657893,
+            "WS": 6.092675949183476,
+            "name": "K7N0"
+        },
+        "KNBG": {
+            "Ceiling": 2917.879370178223,
+            "DewPoint": 70.2441651700095,
+            "Surface Pressure": 1012.4733640154753,
+            "Temperature": 81.43716371948129,
+            "Visibility": 14.788634375248549,
+            "RH": 68.20055522900975,
+            "WD": 142.8673657829442,
+            "WS": 6.309249112026992,
+            "name": "KNBG"
+        },
+        "CTXR": {
+            "Ceiling": 958.4045513000489,
+            "DewPoint": 61.219504909622835,
+            "Surface Pressure": 982.1426557319573,
+            "Temperature": 62.42344225241622,
+            "Visibility": 6.02730056470214,
+            "RH": 94.87533472292955,
+            "WD": 172.70456471340475,
+            "WS": 8.043266650832663,
+            "name": "CTXR"
+        }
+    }
+}
