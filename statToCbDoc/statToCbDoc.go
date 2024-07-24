@@ -23,6 +23,22 @@ type FieldMapElement struct {
 	MATS_name string `json:"MATS_name"`
 }
 
+type LoadSpec struct {
+	Email        string `json:"email"`
+	InitializeDb bool   `json:"initialize_db"`
+	Organization string `json:"organization"`
+	Verbose      bool   `json:"verbose"`
+	InsertSize   int64  `json:"insert_size"`
+	FolderTmpl   string `json:"folder_tmpl"`
+	LoadVal      struct {
+		Field []struct {
+			Val  StrArray `json:"val"`
+			Name string   `json:"_name"`
+		} `json:"field"`
+	} `json:"load_val"`
+	LoadNote string `json:"load_note"`
+}
+
 type ConfigJSON struct {
 	CommonColumns   StrArray          `json:"commonColumns"`
 	LineTypeColumns []LineTypeColumn  `json:"lineTypeColumns"`
@@ -66,7 +82,10 @@ func main() {
 	flag.StringVar(&credentialsFilePath, "c", home+"/credentials", "path to credentials file")
 
 	var settingsFilePath string
-	flag.StringVar(&settingsFilePath, "s", "./settings.json", "path to settings.json file")
+	flag.StringVar(&settingsFilePath, "s", "./settings.json", "path to settings.json")
+
+	var loadSpecFilePath string
+	flag.StringVar(&loadSpecFilePath, "s", "./load_spec.json", "path to load_spec.json")
 
 	var inputFile string
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
@@ -96,6 +115,15 @@ func main() {
 	fmt.Println("LineTypeColumns length:", len(conf.LineTypeColumns))
 	fmt.Println("FieldMap length:", len(conf.FieldMap))
 
+	loadSpec, err := parseLoadSpec(loadSpecFilePath)
+	if err != nil {
+		log.Fatal("Unable to parse config")
+		return
+	}
+	fmt.Println("CommonColumns length:", len(loadSpec.CommonColumns))
+	fmt.Println("LineTypeColumns length:", len(conf.LineTypeColumns))
+	fmt.Println("FieldMap length:", len(conf.FieldMap))
+
 	if len(inputFile) > 0 {
 		statFileToCbDoc(inputFile)
 	}
@@ -105,6 +133,27 @@ func main() {
 	// conn := getDbConnection(credentials)
 
 	log.Printf("\tstatToCbDoc finished in %v", time.Since(start))
+}
+
+func parseLoadSpec(file string) (LoadSpec, error) {
+	log.Println("parseLoadSpec(" + file + ")")
+
+	ls := LoadSpec{}
+	configFile, err := os.Open(file)
+	if err != nil {
+		log.Fatal("opening load_spec file", err.Error())
+		configFile.Close()
+		return ls, err
+	}
+	defer configFile.Close()
+
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&ls); err != nil {
+		log.Fatalln("parsing load_spec file", err.Error())
+		return ls, err
+	}
+
+	return ls, nil
 }
 
 func parseConfig(file string) (ConfigJSON, error) {

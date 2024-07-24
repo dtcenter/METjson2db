@@ -1,0 +1,30 @@
+{
+    "email": "molly.b.smith@noaa.gov",
+    "initialize_db": false,
+    "organization": "gsd",
+    "verbose": true,
+    "insert_size": "1",
+    "folder_tmpl": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
+    "load_val": {
+        "field": [
+            {
+                "val": [
+                    "GFS",
+                    "ECMWF",
+                    "FV3_GSL_L127",
+                    "FV3_GSL_L127_dev1",
+                    "FV3_GSL_C384",
+                    "FV3_GSL_Chem"
+                ],
+                "_name": "model"
+            },
+            {
+                "val": [
+                    "grid_stat"
+                ],
+                "_name": "data_type"
+            }
+        ]
+    },
+    "load_note": "GSL Global Grid-to-Grid Verification"
+}
