@@ -6,26 +6,23 @@ type StatToCbBuilder_SL1L2 struct {
 	floor      int
 }
 
-func newNormalBuilder() *NormalBuilder {
-	return &NormalBuilder{}
+// getHouse implements IStatToCbBuilder.
+func (b *StatToCbBuilder_SL1L2) getHouse() {
+	panic("unimplemented")
 }
 
-func (b *NormalBuilder) setWindowType() {
+func newStatToCbBuilder_SL1L2() IStatToCbBuilder {
+	return &StatToCbBuilder_SL1L2{}
+}
+
+func (b *StatToCbBuilder_SL1L2) setWindowType() {
 	b.windowType = "Wooden Window"
 }
 
-func (b *NormalBuilder) setDoorType() {
+func (b *StatToCbBuilder_SL1L2) setDoorType() {
 	b.doorType = "Wooden Door"
 }
 
-func (b *NormalBuilder) setNumFloor() {
+func (b *StatToCbBuilder_SL1L2) setNumFloor() {
 	b.floor = 2
-}
-
-func (b *NormalBuilder) getHouse() House {
-	return House{
-		doorType:   b.doorType,
-		windowType: b.windowType,
-		floor:      b.floor,
-	}
 }

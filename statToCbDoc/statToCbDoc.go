@@ -85,7 +85,7 @@ func main() {
 	flag.StringVar(&settingsFilePath, "s", "./settings.json", "path to settings.json")
 
 	var loadSpecFilePath string
-	flag.StringVar(&loadSpecFilePath, "s", "./load_spec.json", "path to load_spec.json")
+	flag.StringVar(&loadSpecFilePath, "l", "./load_spec.json", "path to load_spec.json")
 
 	var inputFile string
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
@@ -120,9 +120,8 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
-	fmt.Println("CommonColumns length:", len(loadSpec.CommonColumns))
-	fmt.Println("LineTypeColumns length:", len(conf.LineTypeColumns))
-	fmt.Println("FieldMap length:", len(conf.FieldMap))
+	fmt.Println("folder_tmpl:", len(loadSpec.FolderTmpl))
+	fmt.Println("LoadVal.Field[0].Val length:", len(loadSpec.LoadVal.Field[0].Val))
 
 	if len(inputFile) > 0 {
 		statFileToCbDoc(inputFile)
