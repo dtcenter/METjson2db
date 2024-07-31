@@ -1,17 +1,19 @@
 {
-    "commonColumns": [
+    "maxLinesToLoad": 150000,
+    "writeJSONsToFile": true,
+    "headerColumns": [
         "VERSION",
         "MODEL",
         "DESC",
+        "FCST_VAR",
+        "FCST_UNITS",
+        "FCST_LEV",
         "FCST_LEAD",
         "FCST_VALID_BEG",
         "FCST_VALID_END",
         "OBS_LEAD",
         "OBS_VALID_BEG",
         "OBS_VALID_END",
-        "FCST_VAR",
-        "FCST_UNITS",
-        "FCST_LEV",
         "OBS_VAR",
         "OBS_UNITS",
         "OBS_LEV",
@@ -20,37 +22,172 @@
         "INTERP_MTHD",
         "INTERP_PNTS",
         "FCST_THRESH",
-        "OBS_THRESH",
-        "COV_THRESH",
-        "ALPHA",
-        "LINE_TYPE"
+        "OBS_THRESH"
+    ],
+    "commonColumns": [
+        {
+            "name": "VERSION",
+            "type": "string"
+        },
+        {
+            "name": "MODEL",
+            "type": "string"
+        },
+        {
+            "name": "DESC",
+            "type": "string"
+        },
+        {
+            "name": "FCST_LEAD",
+            "type": "string"
+        },
+        {
+            "name": "FCST_VALID_BEG",
+            "type": "string"
+        },
+        {
+            "name": "FCST_VALID_END",
+            "type": "string"
+        },
+        {
+            "name": "OBS_LEAD",
+            "type": "string"
+        },
+        {
+            "name": "OBS_VALID_BEG",
+            "type": "string"
+        },
+        {
+            "name": "OBS_VALID_END",
+            "type": "string"
+        },
+        {
+            "name": "FCST_VAR",
+            "type": "string"
+        },
+        {
+            "name": "FCST_UNITS",
+            "type": "string"
+        },
+        {
+            "name": "FCST_LEV",
+            "type": "string"
+        },
+        {
+            "name": "OBS_VAR",
+            "type": "string"
+        },
+        {
+            "name": "OBS_UNITS",
+            "type": "string"
+        },
+        {
+            "name": "OBS_LEV",
+            "type": "string"
+        },
+        {
+            "name": "OBTYPE",
+            "type": "string"
+        },
+        {
+            "name": "OBTYPE",
+            "type": "string"
+        },
+        {
+            "name": "VX_MASK",
+            "type": "string"
+        },
+        {
+            "name": "INTERP_MTHD",
+            "type": "string"
+        },
+        {
+            "name": "INTERP_PNTS",
+            "type": "number"
+        },
+        {
+            "name": "FCST_THRESH",
+            "type": "string"
+        },
+        {
+            "name": "OBS_THRESH",
+            "type": "string"
+        },
+        {
+            "name": "COV_THRESH",
+            "type": "string"
+        },
+        {
+            "name": "ALPHA",
+            "type": "string"
+        },
+        {
+            "name": "LINE_TYPE",
+            "type": "string"
+        }
     ],
     "lineTypeColumns": [
         {
             "lineType": "SL1L2",
-            "fields": [
-                "FBAR",
-                "OBAR",
-                "FOBAR",
-                "FFBAR",
-                "OOBAR",
-                "MAE"
+            "columns": [
+                {
+                    "name": "FBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FOBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FFBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OOBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "MAE",
+                    "type": "number"
+                }
             ]
         },
         {
             "lineType": "SAL1L2",
-            "fields": [
-                "FABAR",
-                "OABAR",
-                "FOABAR",
-                "FFABAR",
-                "OOABAR",
-                "MAE"
+            "columns": [
+                {
+                    "name": "FABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FOABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FFABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OOABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "MAE",
+                    "type": "number"
+                }
             ]
         },
         {
             "lineType": "VL1L2",
-            "fields": [
+            "columns": [
                 "UFBAR",
                 "VFBAR",
                 "UOBAR",
@@ -60,11 +197,41 @@
                 "UVOOBAR",
                 "F_SPEED_BAR",
                 "O_SPEED_BAR"
+            ],
+            "columns": [
+                {
+                    "name": "UFBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FOBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FFBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OOBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "MAE",
+                    "type": "number"
+                }
             ]
         },
         {
             "lineType": "VAL1L2",
-            "fields": [
+            "columns": [
                 "UFABAR",
                 "VFABAR",
                 "UOABAR",
@@ -78,4 +245,3 @@
         }
     ]
 }
-
