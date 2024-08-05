@@ -37,12 +37,20 @@ func statFileToCbDoc(filepath string) (bool, error) {
 		fmt.Println(lineCount, ":", fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
-		_, ok := builders[lineType]
-		if false == ok {
-			builders[lineType] = getBuilder(lineType)
+
+		/*
+			_, ok := builders[lineType]
+			if false == ok {
+				builders[lineType] = getBuilder(lineType, fields)
+			}
+			builder, ok := builders[lineType]
+		*/
+		builder := getBuilder(lineType, fields)
+		if nil != builder {
+			builder.processFields()
+		} else {
+			fmt.Println("Unknown line tye:", lineType)
 		}
-		builder, ok := builders[lineType]
-		builder.processFields(fields)
 
 	}
 	fmt.Println("lineCount:", lineCount)

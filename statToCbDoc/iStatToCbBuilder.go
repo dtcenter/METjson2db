@@ -1,13 +1,12 @@
 package main
 
 type IStatToCbBuilder interface {
-	processFields(fields) bool
-	setFileName()
+	processFields() bool
 }
 
-func getBuilder(lineType string, fields: [] string) IStatToCbBuilder {
+func getBuilder(lineType string, fields []string) IStatToCbBuilder {
 	if lineType == "SL1L2" {
-		return newStatToCbBuilder_SL1L2()
+		return newStatToCbBuilder_SL1L2(fields)
 	}
 
 	/*

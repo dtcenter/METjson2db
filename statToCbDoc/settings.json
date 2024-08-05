@@ -9,20 +9,22 @@
         "FCST_UNITS",
         "FCST_LEV",
         "FCST_LEAD",
-        "FCST_VALID_BEG",
-        "FCST_VALID_END",
-        "OBS_LEAD",
-        "OBS_VALID_BEG",
-        "OBS_VALID_END",
+        "FCST_THRESH",
         "OBS_VAR",
         "OBS_UNITS",
         "OBS_LEV",
+        "OBS_LEAD",
         "OBTYPE",
-        "VX_MASK",
+        "OBS_THRESH",
         "INTERP_MTHD",
-        "INTERP_PNTS",
-        "FCST_THRESH",
-        "OBS_THRESH"
+        "INTERP_PNTS"
+    ],
+    "sectionKeyColumns":[
+        "FCST_VALID_BEG",
+        "FCST_VALID_END",
+        "OBS_VALID_BEG",
+        "OBS_VALID_END",
+        "VX_MASK"
     ],
     "commonColumns": [
         {
@@ -130,6 +132,10 @@
         {
             "lineType": "SL1L2",
             "columns": [
+                {
+                    "name": "TOTAL",
+                    "type": "string"
+                },
                 {
                     "name": "FBAR",
                     "type": "number"

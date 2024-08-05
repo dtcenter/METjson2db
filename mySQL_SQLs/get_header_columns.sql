@@ -1,0 +1,1 @@
+SHOW COLUMNS FROM mv_gsl_global_g2g_rt.stat_header;

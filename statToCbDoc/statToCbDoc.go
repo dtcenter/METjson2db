@@ -62,7 +62,7 @@ type Credentials struct {
 	Cb_collection string `yaml:"cb_collection"`
 }
 
-var builders map[string]IStatToCbBuilder
+// var builders map[string]IStatToCbBuilder
 
 // init runs before main() is evaluated
 func init() {
@@ -77,7 +77,7 @@ func main() {
 	start := time.Now()
 	log.Print("meta-update:main()")
 
-	builders = make(map[string]IStatToCbBuilder)
+	// builders = make(map[string]IStatToCbBuilder)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string

@@ -1,7 +1,9 @@
 package main
 
+import "fmt"
+
 type StatToCbBuilder_SL1L2 struct {
-	fileName string
+	lineType string
 	fields   []string
 }
 
@@ -12,14 +14,11 @@ func (b *StatToCbBuilder_SL1L2) getHouse() {
 }
 */
 
-func newStatToCbBuilder_SL1L2() IStatToCbBuilder {
-	return &StatToCbBuilder_SL1L2{}
-}
-
-func (b *StatToCbBuilder_SL1L2) setFileName() {
-	b.fileName = ""
+func newStatToCbBuilder_SL1L2(fields []string) IStatToCbBuilder {
+	return &StatToCbBuilder_SL1L2{lineType: "SL1L2", fields: fields}
 }
 
 func (b *StatToCbBuilder_SL1L2) processFields() bool {
+	fmt.Println(string(b.lineType), ":processFields(", len(b.fields), ")")
 	return true
 }
