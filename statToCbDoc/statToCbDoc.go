@@ -13,14 +13,12 @@ import (
 )
 
 type StrArray []string
-type LineTypeColumn struct {
-	LineType string   `json:"lineType"`
-	Fields   StrArray `json:"fields"`
-}
 
-type FieldMapElement struct {
-	MET_name  string `json:"MET_name"`
-	MATS_name string `json:"MATS_name"`
+type Metadata []struct {
+	Name       string   `json:"name"`
+	App        string   `json:"app"`
+	SubDocType string   `json:"subDocType"`
+	DocType    StrArray `json:"docType"`
 }
 
 type LoadSpec struct {
@@ -39,16 +37,20 @@ type LoadSpec struct {
 	LoadNote string `json:"load_note"`
 }
 
+type Column struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
 type ConfigJSON struct {
-	CommonColumns   StrArray          `json:"commonColumns"`
-	LineTypeColumns []LineTypeColumn  `json:"lineTypeColumns"`
-	FieldMap        []FieldMapElement `json:"fieldMap"`
-	Metadata        []struct {
-		Name       string   `json:"name"`
-		App        string   `json:"app"`
-		SubDocType string   `json:"subDocType"`
-		DocType    StrArray `json:"docType"`
-	} `json:"metadata"`
+	MaxLinesToLoad   int64    `json:"maxLinesToLoad"`
+	WriteJSONsToFile bool     `json:"writeJSONsToFile"`
+	HeaderColumns    []string `json:"headerColumns"`
+	CommonColumns    []Column `json:"commonColumns"`
+	LineTypeColumns  []struct {
+		LineType string   `json:"lineType"`
+		Columns  []Column `json:"columns"`
+	}
 }
 
 type Credentials struct {
@@ -111,9 +113,11 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
+	fmt.Println("maxLinesToLoad:", conf.MaxLinesToLoad)
+	fmt.Println("writeJSONsToFile:", conf.WriteJSONsToFile)
+	fmt.Println("HeaderColumns length:", len(conf.HeaderColumns))
 	fmt.Println("CommonColumns length:", len(conf.CommonColumns))
 	fmt.Println("LineTypeColumns length:", len(conf.LineTypeColumns))
-	fmt.Println("FieldMap length:", len(conf.FieldMap))
 
 	loadSpec, err := parseLoadSpec(loadSpecFilePath)
 	if err != nil {

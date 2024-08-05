@@ -188,43 +188,40 @@
         {
             "lineType": "VL1L2",
             "columns": [
-                "UFBAR",
-                "VFBAR",
-                "UOBAR",
-                "VOBAR",
-                "UVFOBAR",
-                "UVFFBAR",
-                "UVOOBAR",
-                "F_SPEED_BAR",
-                "O_SPEED_BAR"
-            ],
-            "columns": [
                 {
                     "name": "UFBAR",
                     "type": "number"
                 },
                 {
-                    "name": "FBAR",
+                    "name": "VFBAR",
                     "type": "number"
                 },
                 {
-                    "name": "OBAR",
+                    "name": "UOBAR",
                     "type": "number"
                 },
                 {
-                    "name": "FOBAR",
+                    "name": "VOBAR",
                     "type": "number"
                 },
                 {
-                    "name": "FFBAR",
+                    "name": "UVFOBAR",
                     "type": "number"
                 },
                 {
-                    "name": "OOBAR",
+                    "name": "UVFFBAR",
                     "type": "number"
                 },
                 {
-                    "name": "MAE",
+                    "name": "UVOOBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "F_SPEED_BAR",
+                    "type": "number"
+                },
+                {
+                    "name": "O_SPEED_BAR",
                     "type": "number"
                 }
             ]
@@ -232,15 +229,42 @@
         {
             "lineType": "VAL1L2",
             "columns": [
-                "UFABAR",
-                "VFABAR",
-                "UOABAR",
-                "VOABAR",
-                "UVFOABAR",
-                "UVFFABAR",
-                "UVOOABAR",
-                "FA_SPEED_BAR",
-                "OA_SPEED_BAR"
+                {
+                    "name": "UFABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "VFABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "UOABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "VOABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "UVFOABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "UVFFBAR",
+                    "type": "number"
+                },
+                {
+                    "name": "UVOOABAR",
+                    "type": "number"
+                },
+                {
+                    "name": "FA_SPEED_BAR",
+                    "type": "number"
+                },
+                {
+                    "name": "OA_SPEED_BAR",
+                    "type": "number"
+                }
             ]
         }
     ]

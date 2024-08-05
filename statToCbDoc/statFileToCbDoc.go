@@ -35,13 +35,14 @@ func statFileToCbDoc(filepath string) (bool, error) {
 		lineCount += 1
 		fields := strings.Fields(lineStr)
 		fmt.Println(lineCount, ":", fields, len(fields))
-		_ = fields // remove declared but not used errors
+		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
 		_, ok := builders[lineType]
 		if false == ok {
 			builders[lineType] = getBuilder(lineType)
 		}
-		// builder, ok := builders[lineType]
+		builder, ok := builders[lineType]
+		builder.processFields(fields)
 
 	}
 	fmt.Println("lineCount:", lineCount)
