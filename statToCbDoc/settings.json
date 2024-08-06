@@ -5,26 +5,37 @@
         "VERSION",
         "MODEL",
         "DESC",
-        "FCST_VAR",
-        "FCST_UNITS",
-        "FCST_LEV",
-        "FCST_LEAD",
-        "FCST_THRESH",
-        "OBS_VAR",
-        "OBS_UNITS",
-        "OBS_LEV",
-        "OBS_LEAD",
-        "OBTYPE",
-        "OBS_THRESH",
-        "INTERP_MTHD",
-        "INTERP_PNTS"
-    ],
-    "sectionKeyColumns":[
+        "LINE_TYPE",
         "FCST_VALID_BEG",
         "FCST_VALID_END",
         "OBS_VALID_BEG",
         "OBS_VALID_END",
+        "FCST_VAR",
+        "FCST_UNITS",
+        "FCST_LEV",
+        "FCST_THRESH",
+        "OBS_VAR",
+        "OBS_UNITS",
+        "OBS_LEV",
+        "OBTYPE",
+        "OBS_THRESH",
+        "INTERP_MTHD",
+        "INTERP_PNTS",
         "VX_MASK"
+    ],
+    "idColumns": [
+        "VERSION",
+        "MODEL",
+        "LINE_TYPE",
+        "OBS_VAR",
+        "VX_MASK",
+        "FCST_VALID_BEG",
+        "FCST_VALID_END",
+        "OBS_VALID_BEG",
+        "OBS_VALID_END"
+    ],
+    "dataKeyColumns": [
+        "FCST_LEAD"
     ],
     "commonColumns": [
         {
