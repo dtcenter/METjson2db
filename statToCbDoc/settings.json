@@ -29,10 +29,9 @@
         "LINE_TYPE",
         "OBS_VAR",
         "VX_MASK",
-        "FCST_VALID_BEG",
-        "FCST_VALID_END",
-        "OBS_VALID_BEG",
-        "OBS_VALID_END"
+        "FCST_LEV",
+        "OBS_LEV",
+        "FCST_VALID_BEG"
     ],
     "dataKeyColumns": [
         "FCST_LEAD"
@@ -56,11 +55,11 @@
         },
         {
             "name": "FCST_VALID_BEG",
-            "type": "string"
+            "type": "number"
         },
         {
             "name": "FCST_VALID_END",
-            "type": "string"
+            "type": "number"
         },
         {
             "name": "OBS_LEAD",
@@ -68,11 +67,11 @@
         },
         {
             "name": "OBS_VALID_BEG",
-            "type": "string"
+            "type": "number"
         },
         {
             "name": "OBS_VALID_END",
-            "type": "string"
+            "type": "number"
         },
         {
             "name": "FCST_VAR",
