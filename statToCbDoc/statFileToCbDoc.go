@@ -13,16 +13,14 @@ func init() {
 	log.Println("statToJSON:init()")
 }
 
-func statFileToCbDoc(filepath string) (bool, error) {
+func statFileToCbDoc(filepath string) error {
 	log.Println("statFileToCbDoc(" + filepath + ")")
-
-	rv := false
 
 	inputFile, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal("error opening file\n", err.Error())
 		inputFile.Close()
-		return rv, err
+		return err
 	}
 	defer inputFile.Close()
 
@@ -55,5 +53,5 @@ func statFileToCbDoc(filepath string) (bool, error) {
 	}
 	fmt.Println("lineCount:", lineCount)
 
-	return rv, err
+	return nil
 }

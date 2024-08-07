@@ -127,8 +127,10 @@ func main() {
 	fmt.Println("folder_tmpl:", len(loadSpec.FolderTmpl))
 	fmt.Println("LoadVal.Field[0].Val length:", len(loadSpec.LoadVal.Field[0].Val))
 
+	var files []string
 	if len(inputFile) > 0 {
-		statFileToCbDoc(inputFile)
+		files = append(files, inputFile)
+		startProcessing(files)
 	}
 
 	// credentials := getCredentials(credentialsFilePath)

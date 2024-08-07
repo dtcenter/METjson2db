@@ -1,5 +1,6 @@
 {
     "maxLinesToLoad": 150000,
+    "overWriteData" : false,
     "writeJSONsToFile": true,
     "headerColumns": [
         "VERSION",
