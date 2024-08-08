@@ -137,6 +137,9 @@ func main() {
 
 	// conn := getDbConnection(credentials)
 
+	testDoc := createTestcbDocument()
+	fmt.Println("testDoc:", testDoc.toJSONString())
+
 	log.Printf("\tstatToCbDoc finished in %v", time.Since(start))
 }
 

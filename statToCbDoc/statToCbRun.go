@@ -6,22 +6,22 @@ import (
 	// "github.com/couchbase/gocb/v2"
 )
 
-type StatToCbRun struct {
-	fileStatus map[string]string // filename:status
-	documents  map[string]string // id:doc
-}
-
 var statToCbRun = StatToCbRun{}
+
+type StatToCbRun struct {
+	fileStatus map[string]string         // filename:status
+	documents  map[string]CbDataDocument // id:doc
+}
 
 // init runs before main() is evaluated
 func init() {
 	log.Println("StatToCbRun:init()")
 	statToCbRun.fileStatus = make(map[string]string)
-	statToCbRun.documents = make(map[string]string)
+	statToCbRun.documents = make(map[string]CbDataDocument)
 }
 
 func startProcessing(files []string) bool {
-	log.Println("StatToCbRun:startProcessing(" + string(len(files)) + ")")
+	log.Println("StatToCbRun:startProcessing(" + fmt.Sprint(len(files)) + ")")
 
 	for i := 0; i < len(files); i++ {
 		statToCbRun.fileStatus[files[i]] = "processing"
