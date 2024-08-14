@@ -140,6 +140,12 @@ func main() {
 	testDoc := createTestcbDocument()
 	fmt.Println("testDoc:", testDoc.toJSONString())
 
+	// cbDoc0, err := readCbDoc("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")
+	cbDoc0, err := readCbDocument("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")
+	if err == nil {
+		fmt.Println("Cb doc:", cbDoc0.toJSONString())
+	}
+
 	log.Printf("\tstatToCbDoc finished in %v", time.Since(start))
 }
 

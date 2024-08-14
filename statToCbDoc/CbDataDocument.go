@@ -10,13 +10,13 @@ type DataSection map[string]float64
 
 type CbDataDocument struct {
 	stringHeaderFields  map[string]string
-	numericHeaderFields map[string]int64
+	numericHeaderFields map[string]int
 	data                map[string]DataSection
 }
 
 func (doc *CbDataDocument) init() {
 	doc.stringHeaderFields = make(map[string]string)
-	doc.numericHeaderFields = make(map[string]int64)
+	doc.numericHeaderFields = make(map[string]int)
 	doc.data = make(map[string]DataSection)
 }
 
@@ -26,11 +26,11 @@ func (doc *CbDataDocument) toJSONString() string {
 
 	for shf, shv := range doc.stringHeaderFields {
 		fmt.Println(shf, shv)
-		sb.WriteString("\t\"" + shf + "\" = \"" + shv + "\",\n")
+		sb.WriteString("\t\"" + shf + "\": \"" + shv + "\",\n")
 	}
 	for nhf, nhv := range doc.numericHeaderFields {
 		fmt.Println(nhf, nhv)
-		sb.WriteString("\t" + nhf + " = " + fmt.Sprintf("%d", nhv) + ",\n")
+		sb.WriteString("\t" + nhf + ": " + fmt.Sprintf("%d", nhv) + ",\n")
 	}
 	for dkey, dsec := range doc.data {
 		fmt.Println(dkey, dsec)
