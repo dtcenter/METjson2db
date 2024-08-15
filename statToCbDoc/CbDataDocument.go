@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+
+	"golang.org/x/exp/maps"
 	// "github.com/couchbase/gocb/v2"
 )
 
@@ -24,25 +27,51 @@ func (doc *CbDataDocument) toJSONString() string {
 	var sb strings.Builder
 	sb.WriteString("{\n")
 
-	for shf, shv := range doc.stringHeaderFields {
-		fmt.Println(shf, shv)
+	shkeys := maps.Keys(doc.stringHeaderFields)
+	for i := 0; i < len(shkeys); i++ {
+		shf := shkeys[i]
+		shv := doc.stringHeaderFields[shf]
 		sb.WriteString("\t\"" + shf + "\": \"" + shv + "\",\n")
 	}
-	for nhf, nhv := range doc.numericHeaderFields {
+
+	nhkeys := maps.Keys(doc.numericHeaderFields)
+	for i := 0; i < len(nhkeys); i++ {
+		nhf := nhkeys[i]
+		nhv := doc.numericHeaderFields[nhf]
 		fmt.Println(nhf, nhv)
-		sb.WriteString("\t" + nhf + ": " + fmt.Sprintf("%d", nhv) + ",\n")
+		sb.WriteString("\t\"" + nhf + "\": " + fmt.Sprintf("%d", nhv) + ",\n")
 	}
-	for dkey, dsec := range doc.data {
+
+	ddkeys := maps.Keys(doc.data)
+	if len(ddkeys) == 0 {
+		sb.WriteString("}\n")
+		return sb.String()
+	}
+
+	sb.WriteString("\t\"data\": {\n")
+
+	for i := 0; i < len(ddkeys); i++ {
+		dkey := ddkeys[i]
+		dsec := doc.data[dkey]
 		fmt.Println(dkey, dsec)
-		sb.WriteString("\tdata: {\n")
 
-		for ddkey, ddoc := range dsec {
-			fmt.Println(ddkey, ddoc)
-			sb.WriteString("\t\t\"" + ddkey + "\" {\n")
+		sb.WriteString("\t\t\"" + dkey + "\": {\n")
+
+		valkeys := maps.Keys(dsec)
+		for i := 0; i < len(valkeys); i++ {
+			valkey := valkeys[i]
+			valval := dsec[valkey]
+			valvals := strconv.FormatFloat(valval, 'f', -1, 64)
+			// fmt.Println(ddkey, ddvals)
+
+			if i == len(valkeys)-1 {
+				sb.WriteString("\t\t\t\"" + valkey + "\": " + valvals + "\n")
+				sb.WriteString("\t\t}\n")
+			} else {
+				sb.WriteString("\t\t\t\"" + valkey + "\": " + valvals + ",\n")
+			}
 		}
-		sb.WriteString("\t}\n")
 	}
-
-	sb.WriteString("}\n")
+	sb.WriteString("\t}\n}\n")
 	return sb.String()
 }

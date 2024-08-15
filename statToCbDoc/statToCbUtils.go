@@ -16,13 +16,6 @@ func init() {
 	log.Println("StatToCbUtils:init()")
 }
 
-func createTestcbDocument() CbDataDocument {
-	doc := CbDataDocument{}
-	doc.init()
-	doc.stringHeaderFields["id"] = "V11.1.0:GFS:SL1L2:TMP:FULL:P1000:P1000:1706986800"
-	return doc
-}
-
 func readCbDocument(file string) (CbDataDocument, error) {
 	log.Println("CbDataDocument(" + file + ")")
 
@@ -64,23 +57,16 @@ func readCbDocument(file string) (CbDataDocument, error) {
 	dataKeys := maps.Keys(data)
 	fmt.Println("data keys:\n", dataKeys)
 	for i := 0; i < len(dataKeys); i++ {
-		key := dataKeys[i]
-		val := data[key]
-		if key != "data" {
-			switch t := val.(type) {
-			case []uint8:
-				// t is []uint8
-			case uint64:
-				fmt.Println(key, "\t", val, "\t", "unit64")
-			case float64:
-				fmt.Println(key, "\t", val, "\t", "float64")
-				doc.numericHeaderFields[key] = int(val.(float64))
-			case string:
-				fmt.Println(key, "\t", val, "\t", "string")
-				doc.stringHeaderFields[key] = val.(string)
-			default:
-				fmt.Println("unknown type:", key, "\t", reflect.TypeOf(val), "\t", t)
-			}
+		dataKey := dataKeys[i]
+		doc.data[dataKey] = make(map[string]float64)
+		dataVal := data[dataKey].(map[string]any)
+		valKeys := maps.Keys(dataVal)
+		fmt.Println("\tval keys:\n", valKeys)
+		for i := 0; i < len(valKeys); i++ {
+			key := valKeys[i]
+			val := dataVal[key].(float64)
+			doc.data[dataKey][key] = val
+			fmt.Println("\t", key, val)
 		}
 	}
 
