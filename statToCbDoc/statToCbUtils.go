@@ -39,14 +39,14 @@ func readCbDocument(file string) (CbDataDocument, error) {
 			switch t := val.(type) {
 			case []uint8:
 				// t is []uint8
+			case string:
+				fmt.Println(key, "\t", val, "\t", "string")
+				doc.headerFields[key] = makeStringCbDataValue(val.(string))
 			case uint64:
 				fmt.Println(key, "\t", val, "\t", "unit64")
 			case float64:
 				fmt.Println(key, "\t", val, "\t", "float64")
-				doc.numericHeaderFields[key] = int(val.(float64))
-			case string:
-				fmt.Println(key, "\t", val, "\t", "string")
-				doc.stringHeaderFields[key] = val.(string)
+				doc.headerFields[key] = makeFloatCbDataValue(val.(float64))
 			default:
 				fmt.Println("unknown type:", key, "\t", reflect.TypeOf(val), "\t", t)
 			}
@@ -58,14 +58,14 @@ func readCbDocument(file string) (CbDataDocument, error) {
 	fmt.Println("data keys:\n", dataKeys)
 	for i := 0; i < len(dataKeys); i++ {
 		dataKey := dataKeys[i]
-		doc.data[dataKey] = make(map[string]float64)
+		doc.data[dataKey] = make(map[string]CbDataValue)
 		dataVal := data[dataKey].(map[string]any)
 		valKeys := maps.Keys(dataVal)
 		fmt.Println("\tval keys:\n", valKeys)
 		for i := 0; i < len(valKeys); i++ {
 			key := valKeys[i]
 			val := dataVal[key].(float64)
-			doc.data[dataKey][key] = val
+			doc.data[dataKey][key] = makeFloatCbDataValue(val)
 			fmt.Println("\t", key, val)
 		}
 	}

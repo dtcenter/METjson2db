@@ -35,23 +35,44 @@ func statFileToCbDoc(filepath string) error {
 		fmt.Println(lineCount, ":", fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
+		statFieldsToCbDoc(lineType, fields)
 
+		// check if time to flush cbDocs to files and/or db
+		// if so also init cbDocs after that
 		/*
-			_, ok := builders[lineType]
-			if false == ok {
-				builders[lineType] = getBuilder(lineType, fields)
+			builder := getBuilder(lineType, cbLineTypeColDefs[lineType], fields)
+			if nil != builder {
+				builder.processFields()
+			} else {
+				fmt.Println("Unknown line tye:", lineType)
 			}
-			builder, ok := builders[lineType]
 		*/
-		builder := getBuilder(lineType, fields)
-		if nil != builder {
-			builder.processFields()
-		} else {
-			fmt.Println("Unknown line tye:", lineType)
-		}
-
 	}
 	fmt.Println("lineCount:", lineCount)
 
 	return nil
+}
+
+func statFieldsToCbDoc(lineType string, fields []string) {
+	log.Println("statFieldsToCbDoc(" + lineType + ")")
+
+	coldef := cbLineTypeColDefs[lineType]
+	fmt.Println("coldef:\n:", coldef)
+
+	id := ""
+	for i := 0; i < len(coldef); i++ {
+		if coldef[i].IsID {
+			id = id + ":" + fields[i]
+		}
+	}
+	doc, ok := cbDocs[id]
+	if !ok {
+		doc = CbDataDocument{}
+		doc.init()
+		cbDocs[id] = doc
+
+		// need to populate header fields
+	}
+
+	// now append data fields to doc
 }

@@ -4,6 +4,7 @@ import "fmt"
 
 type StatToCbBuilder_SL1L2 struct {
 	lineType string
+	coldef   ColDefArray
 	fields   []string
 }
 
@@ -14,8 +15,8 @@ func (b *StatToCbBuilder_SL1L2) getHouse() {
 }
 */
 
-func newStatToCbBuilder_SL1L2(fields []string) IStatToCbBuilder {
-	return &StatToCbBuilder_SL1L2{lineType: "SL1L2", fields: fields}
+func newStatToCbBuilder_SL1L2(coldef ColDefArray, fields []string) IStatToCbBuilder {
+	return &StatToCbBuilder_SL1L2{lineType: "SL1L2", coldef: coldef, fields: fields}
 }
 
 func (b *StatToCbBuilder_SL1L2) processFields() bool {

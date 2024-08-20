@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -45,6 +46,7 @@ type Column struct {
 type ConfigJSON struct {
 	MaxLinesToLoad   int64    `json:"maxLinesToLoad"`
 	WriteJSONsToFile bool     `json:"writeJSONsToFile"`
+	IdColumns        []string `json:"idColumns"`
 	HeaderColumns    []string `json:"headerColumns"`
 	CommonColumns    []Column `json:"commonColumns"`
 	LineTypeColumns  []struct {
@@ -64,6 +66,19 @@ type Credentials struct {
 
 // var builders map[string]IStatToCbBuilder
 
+// the map below holds template docs created from settings.json
+type ColDef struct {
+	Name     string
+	Idx      int // 0-based index into stat file
+	DataType int // 0-string, 1-int64, 2-float64
+	IsHeader bool
+	IsID     bool
+}
+type ColDefArray []ColDef
+
+var cbLineTypeColDefs map[string]ColDefArray
+var cbDocs map[string]CbDataDocument
+
 // init runs before main() is evaluated
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -78,6 +93,8 @@ func main() {
 	log.Print("meta-update:main()")
 
 	// builders = make(map[string]IStatToCbBuilder)
+	cbLineTypeColDefs = make(map[string]ColDefArray)
+	cbDocs = make(map[string]CbDataDocument)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -126,6 +143,8 @@ func main() {
 	}
 	fmt.Println("folder_tmpl:", len(loadSpec.FolderTmpl))
 	fmt.Println("LoadVal.Field[0].Val length:", len(loadSpec.LoadVal.Field[0].Val))
+
+	generateColDefsFromConfig(conf, cbLineTypeColDefs)
 
 	var files []string
 	if len(inputFile) > 0 {
@@ -198,4 +217,51 @@ func getCredentials(credentialsFilePath string) Credentials {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 	return creds
+}
+
+func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]ColDefArray) {
+	for i := 0; i < len(conf.LineTypeColumns); i++ {
+		lt := conf.LineTypeColumns[i].LineType
+		ltcols := conf.LineTypeColumns[i].Columns
+		doc := CbDataDocument{}
+		doc.init()
+
+		// first add common columns
+		ccols := conf.CommonColumns
+		cbLineTypeColDefs[lt] = make(ColDefArray, len(ccols)+len(ltcols))
+
+		for cci := 0; cci < len(ccols); cci++ {
+			ccol := ccols[cci]
+			coldef := ColDef{}
+			coldef.Name = ccol.Name
+			switch {
+			case ccol.Type == "string":
+				coldef.DataType = 0
+			case ccol.Type == "int":
+				coldef.DataType = 1
+			case ccol.Type == "float":
+				coldef.DataType = 2
+			}
+			coldef.IsID = slices.Contains(conf.IdColumns, coldef.Name)
+			coldef.IsHeader = slices.Contains(conf.HeaderColumns, coldef.Name)
+			cbLineTypeColDefs[lt][cci] = coldef
+		}
+
+		// now add line type specific columns
+		for ltci := 0; ltci < len(ltcols); ltci++ {
+			ltcol := ltcols[ltci]
+			coldef := ColDef{}
+			coldef.Name = ltcol.Name
+			switch {
+			case ltcol.Type == "string":
+				coldef.DataType = 0
+			case ltcol.Type == "int":
+				coldef.DataType = 1
+			case ltcol.Type == "float":
+				coldef.DataType = 2
+			}
+			cbLineTypeColDefs[lt][len(ccols)+ltci] = coldef
+		}
+		fmt.Println("ColDefs for:", lt, ":\n", cbLineTypeColDefs[lt])
+	}
 }

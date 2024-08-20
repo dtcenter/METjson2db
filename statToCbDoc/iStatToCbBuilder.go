@@ -4,9 +4,9 @@ type IStatToCbBuilder interface {
 	processFields() bool
 }
 
-func getBuilder(lineType string, fields []string) IStatToCbBuilder {
+func getBuilder(lineType string, coldef ColDefArray, fields []string) IStatToCbBuilder {
 	if lineType == "SL1L2" {
-		return newStatToCbBuilder_SL1L2(fields)
+		return newStatToCbBuilder_SL1L2(coldef, fields)
 	}
 
 	/*

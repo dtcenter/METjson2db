@@ -56,11 +56,11 @@
         },
         {
             "name": "FCST_VALID_BEG",
-            "type": "number"
+            "type": "int"
         },
         {
             "name": "FCST_VALID_END",
-            "type": "number"
+            "type": "int"
         },
         {
             "name": "OBS_LEAD",
@@ -68,11 +68,11 @@
         },
         {
             "name": "OBS_VALID_BEG",
-            "type": "number"
+            "type": "int"
         },
         {
             "name": "OBS_VALID_END",
-            "type": "number"
+            "type": "int"
         },
         {
             "name": "FCST_VAR",
@@ -116,7 +116,7 @@
         },
         {
             "name": "INTERP_PNTS",
-            "type": "number"
+            "type": "int"
         },
         {
             "name": "FCST_THRESH",
@@ -145,31 +145,31 @@
             "columns": [
                 {
                     "name": "TOTAL",
-                    "type": "string"
+                    "type": "int"
                 },
                 {
                     "name": "FBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "OBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "FOBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "FFBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "OOBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "MAE",
-                    "type": "number"
+                    "type": "float"
                 }
             ]
         },
@@ -177,28 +177,32 @@
             "lineType": "SAL1L2",
             "columns": [
                 {
+                    "name": "TOTAL",
+                    "type": "int"
+                },
+                {
                     "name": "FABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "OABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "FOABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "FFABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "OOABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "MAE",
-                    "type": "number"
+                    "type": "float"
                 }
             ]
         },
@@ -206,40 +210,44 @@
             "lineType": "VL1L2",
             "columns": [
                 {
+                    "name": "TOTAL",
+                    "type": "int"
+                },
+                {
                     "name": "UFBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "VFBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UOBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "VOBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UVFOBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UVFFBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UVOOBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "F_SPEED_BAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "O_SPEED_BAR",
-                    "type": "number"
+                    "type": "float"
                 }
             ]
         },
@@ -247,40 +255,44 @@
             "lineType": "VAL1L2",
             "columns": [
                 {
+                    "name": "TOTAL",
+                    "type": "int"
+                },
+                {
                     "name": "UFABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "VFABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UOABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "VOABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UVFOABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UVFFBAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "UVOOABAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "FA_SPEED_BAR",
-                    "type": "number"
+                    "type": "float"
                 },
                 {
                     "name": "OA_SPEED_BAR",
-                    "type": "number"
+                    "type": "float"
                 }
             ]
         }
