@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 	// "github.com/couchbase/gocb/v2"
 )
 
@@ -32,6 +33,7 @@ func startProcessing(files []string) bool {
 
 	// TODO: update/create db file document
 
+	start := time.Now()
 	for file, status := range statToCbRun.fileStatus {
 		fmt.Println(file, status)
 		err := statFileToCbDoc(file)
@@ -42,6 +44,7 @@ func startProcessing(files []string) bool {
 			statToCbRun.fileStatus[file] = "finished"
 		}
 	}
+	log.Printf(fmt.Sprintf("%d", len(files)) + " files processed in:" + fmt.Sprintf("%d", time.Since(start).Milliseconds()) + " ms")
 
 	// TODO: update/create db file document
 

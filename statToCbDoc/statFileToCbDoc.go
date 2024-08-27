@@ -119,5 +119,5 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		}
 	}
 
-	fmt.Println("Cb doc:\n", doc.toJSONString())
+	// fmt.Println("Cb doc:\n", doc.toJSONString())
 }
