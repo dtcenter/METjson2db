@@ -103,10 +103,6 @@
             "type": "string"
         },
         {
-            "name": "OBTYPE",
-            "type": "string"
-        },
-        {
             "name": "VX_MASK",
             "type": "string"
         },

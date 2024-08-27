@@ -98,11 +98,12 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 	}
 
 	// now append data fields to doc
+	dsec := DataSection{}
+	fmt.Println("data key:", fields[dataKeyIdx])
+	fmt.Println("fields:\n", fields)
+	doc.data[fields[dataKeyIdx]] = dsec
 	for i := 0; i < len(coldef); i++ {
 		if !coldef[i].IsHeader {
-			dsec := DataSection{}
-			fmt.Println("data key:", fields[dataKeyIdx])
-			doc.data[fields[dataKeyIdx]] = dsec
 			switch coldef[i].DataType {
 			case 0:
 				dsec[coldef[i].Name] = makeStringCbDataValue(fields[i])
