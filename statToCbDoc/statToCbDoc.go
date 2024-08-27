@@ -110,6 +110,8 @@ func main() {
 
 	var inputFile string
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
+	var inputFiles []string
+	inputFiles = append(inputFiles, inputFile)
 
 	var inputFolder string
 	flag.StringVar(&inputFolder, "i", "./input_files", "input stat files folder")
@@ -121,6 +123,17 @@ func main() {
 		statFileToCbDoc(inputFile)
 	} else if len(inputFolder) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolder:" + inputFolder)
+		// add all files in folder
+		files, err := os.ReadDir(inputFolder)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, file := range files {
+			if !file.IsDir() {
+				inputFiles = append(inputFiles, inputFolder+file.Name())
+			}
+		}
+
 	} else {
 		log.Fatal("Must specify either an input file (-f) or an input folder (-i)!")
 		os.Exit(1)
@@ -148,11 +161,8 @@ func main() {
 
 	generateColDefsFromConfig(conf, cbLineTypeColDefs)
 
-	var files []string
-	if len(inputFile) > 0 {
-		files = append(files, inputFile)
-		startProcessing(files)
-	}
+	fmt.Println("inputFiles:\n", inputFiles)
+	startProcessing(inputFiles)
 
 	// credentials := getCredentials(credentialsFilePath)
 

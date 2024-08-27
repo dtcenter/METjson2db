@@ -21,10 +21,13 @@ func init() {
 }
 
 func startProcessing(files []string) bool {
-	log.Println("StatToCbRun:startProcessing(" + fmt.Sprint(len(files)) + ")")
+	log.Println("startProcessing(" + fmt.Sprint(len(files)) + ")")
+	fmt.Println("files:\n", files)
 
 	for i := 0; i < len(files); i++ {
-		statToCbRun.fileStatus[files[i]] = "processing"
+		if len(files[i]) > 0 {
+			statToCbRun.fileStatus[files[i]] = "processing"
+		}
 	}
 
 	// TODO: update/create db file document
