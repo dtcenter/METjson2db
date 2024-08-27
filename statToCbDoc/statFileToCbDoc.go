@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -56,8 +57,12 @@ func statFileToCbDoc(filepath string) error {
 func statFieldsToCbDoc(lineType string, fields []string) {
 	log.Println("statFieldsToCbDoc(" + lineType + ")")
 
-	coldef := cbLineTypeColDefs[lineType]
-	fmt.Println("coldef:\n:", coldef)
+	coldef, ok := cbLineTypeColDefs[lineType]
+	if !ok {
+		fmt.Println("no coldef for lineType:", lineType)
+		return
+	}
+	fmt.Println("fields[]:", len(fields), ",coldef[]:", len(coldef))
 
 	id := ""
 	for i := 0; i < len(coldef); i++ {
@@ -70,9 +75,48 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		doc = CbDataDocument{}
 		doc.init()
 		cbDocs[id] = doc
+		doc.headerFields["id"] = makeStringCbDataValue(id)
 
 		// need to populate header fields
+		for i := 0; i < len(coldef); i++ {
+			if coldef[i].IsHeader {
+				switch coldef[i].DataType {
+				case 0:
+					doc.headerFields[coldef[i].Name] = makeStringCbDataValue(fields[i])
+				case 1:
+					intv, _ := strconv.Atoi(fields[i])
+					doc.headerFields[coldef[i].Name] = makeIntCbDataValue(int64(intv))
+				case 2:
+					floatv, _ := strconv.ParseFloat(fields[i], 64)
+					doc.headerFields[coldef[i].Name] = makeFloatCbDataValue(floatv)
+				case 3:
+					doc.headerFields[coldef[i].Name] = makeIntCbDataValue(statDateToEpoh(fields[i]))
+				}
+			}
+		}
+
 	}
 
 	// now append data fields to doc
+	for i := 0; i < len(coldef); i++ {
+		if !coldef[i].IsHeader {
+			dsec := DataSection{}
+			fmt.Println("data key:", fields[dataKeyIdx])
+			doc.data[fields[dataKeyIdx]] = dsec
+			switch coldef[i].DataType {
+			case 0:
+				dsec[coldef[i].Name] = makeStringCbDataValue(fields[i])
+			case 1:
+				intv, _ := strconv.Atoi(fields[i])
+				dsec[coldef[i].Name] = makeIntCbDataValue(int64(intv))
+			case 2:
+				floatv, _ := strconv.ParseFloat(fields[i], 64)
+				dsec[coldef[i].Name] = makeFloatCbDataValue(floatv)
+			case 3:
+				dsec[coldef[i].Name] = makeIntCbDataValue(statDateToEpoh(fields[i]))
+			}
+		}
+	}
+
+	fmt.Println("Cb doc:\n", doc.toJSONString())
 }

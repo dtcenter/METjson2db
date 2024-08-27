@@ -56,11 +56,11 @@
         },
         {
             "name": "FCST_VALID_BEG",
-            "type": "int"
+            "type": "epoch"
         },
         {
             "name": "FCST_VALID_END",
-            "type": "int"
+            "type": "epoch"
         },
         {
             "name": "OBS_LEAD",
@@ -68,11 +68,11 @@
         },
         {
             "name": "OBS_VALID_BEG",
-            "type": "int"
+            "type": "epoch"
         },
         {
             "name": "OBS_VALID_END",
-            "type": "int"
+            "type": "epoch"
         },
         {
             "name": "FCST_VAR",

@@ -48,6 +48,7 @@ type ConfigJSON struct {
 	WriteJSONsToFile bool     `json:"writeJSONsToFile"`
 	IdColumns        []string `json:"idColumns"`
 	HeaderColumns    []string `json:"headerColumns"`
+	DataKeyColumns   []string `jaon:"dataKeyColumns"`
 	CommonColumns    []Column `json:"commonColumns"`
 	LineTypeColumns  []struct {
 		LineType string   `json:"lineType"`
@@ -68,16 +69,17 @@ type Credentials struct {
 
 // the map below holds template docs created from settings.json
 type ColDef struct {
-	Name     string
-	Idx      int // 0-based index into stat file
-	DataType int // 0-string, 1-int64, 2-float64
-	IsHeader bool
-	IsID     bool
+	Name      string
+	DataType  int // 0-string, 1-int64, 2-float64, 3-epoch
+	IsHeader  bool
+	IsID      bool
+	IsDataKey bool
 }
 type ColDefArray []ColDef
 
 var cbLineTypeColDefs map[string]ColDefArray
 var cbDocs map[string]CbDataDocument
+var dataKeyIdx int
 
 // init runs before main() is evaluated
 func init() {
@@ -156,10 +158,12 @@ func main() {
 
 	// conn := getDbConnection(credentials)
 
-	cbDoc0, err := readCbDocument("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")
-	if err == nil {
-		fmt.Println("Cb doc:\n", cbDoc0.toJSONString())
-	}
+	/*
+		cbDoc0, err := readCbDocument("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")
+		if err == nil {
+			fmt.Println("Cb doc:\n", cbDoc0.toJSONString())
+		}
+	*/
 
 	log.Printf("\tstatToCbDoc finished in %v", time.Since(start))
 }
@@ -241,9 +245,15 @@ func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]Col
 				coldef.DataType = 1
 			case ccol.Type == "float":
 				coldef.DataType = 2
+			case ccol.Type == "epoch":
+				coldef.DataType = 3
 			}
 			coldef.IsID = slices.Contains(conf.IdColumns, coldef.Name)
 			coldef.IsHeader = slices.Contains(conf.HeaderColumns, coldef.Name)
+			coldef.IsDataKey = slices.Contains(conf.DataKeyColumns, coldef.Name)
+			if coldef.IsDataKey {
+				dataKeyIdx = cci
+			}
 			cbLineTypeColDefs[lt][cci] = coldef
 		}
 
@@ -259,9 +269,11 @@ func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]Col
 				coldef.DataType = 1
 			case ltcol.Type == "float":
 				coldef.DataType = 2
+			case ltcol.Type == "epoch":
+				coldef.DataType = 3
 			}
 			cbLineTypeColDefs[lt][len(ccols)+ltci] = coldef
 		}
-		fmt.Println("ColDefs for:", lt, ":\n", cbLineTypeColDefs[lt])
+		// fmt.Println("ColDefs for:", lt, ":\n", cbLineTypeColDefs[lt])
 	}
 }
