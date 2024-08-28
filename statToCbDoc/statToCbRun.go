@@ -23,7 +23,7 @@ func init() {
 
 func startProcessing(files []string) bool {
 	log.Println("startProcessing(" + fmt.Sprint(len(files)) + ")")
-	fmt.Println("files:\n", files)
+	log.Printf("files:\n%v", files)
 
 	for i := 0; i < len(files); i++ {
 		if len(files[i]) > 0 {
@@ -35,7 +35,7 @@ func startProcessing(files []string) bool {
 
 	start := time.Now()
 	for file, status := range statToCbRun.fileStatus {
-		fmt.Println(file, status)
+		log.Printf(file, status)
 		err := statFileToCbDoc(file)
 		if err != nil {
 			log.Println("Unable to process:" + file)

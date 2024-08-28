@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	//	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -33,23 +33,28 @@ func statFileToCbDoc(filepath string) error {
 		lineStr := fileScanner.Text()
 		lineCount += 1
 		fields := strings.Fields(lineStr)
-		fmt.Println(lineCount, ":", fields, len(fields))
+		log.Printf("%d:%v:%d", lineCount, fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
 		statFieldsToCbDoc(lineType, fields)
 
-		// check if time to flush cbDocs to files and/or db
+		/* check if time to flush cbDocs to files and/or db
+		See spec in readme, section:
+		# Output location, configuration and logic
+		*/
+		statToCbFlush()
+
 		// if so also init cbDocs after that
 		/*
 			builder := getBuilder(lineType, cbLineTypeColDefs[lineType], fields)
 			if nil != builder {
 				builder.processFields()
 			} else {
-				fmt.Println("Unknown line tye:", lineType)
+				log.Printf("Unknown line tye:", lineType)
 			}
 		*/
 	}
-	fmt.Println("lineCount:", lineCount)
+	log.Printf("lineCount:%d", lineCount)
 
 	return nil
 }
@@ -59,10 +64,10 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 
 	coldef, ok := cbLineTypeColDefs[lineType]
 	if !ok {
-		fmt.Println("no coldef for lineType:", lineType)
+		log.Printf("no coldef for lineType:%s", lineType)
 		return
 	}
-	fmt.Println("fields[]:", len(fields), ",coldef[]:", len(coldef))
+	log.Printf("fields[]:%d, coldef[]:%d", len(fields), len(coldef))
 
 	id := ""
 	for i := 0; i < len(coldef); i++ {
@@ -99,8 +104,8 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 
 	// now append data fields to doc
 	dsec := DataSection{}
-	fmt.Println("data key:", fields[dataKeyIdx])
-	// fmt.Println("fields:\n", fields)
+	log.Printf("data key:%s", fields[dataKeyIdx])
+	// log.Printf("fields:\n", fields)
 	doc.data[fields[dataKeyIdx]] = dsec
 	for i := 0; i < len(coldef); i++ {
 		if !coldef[i].IsHeader {
@@ -119,5 +124,5 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		}
 	}
 
-	// fmt.Println("Cb doc:\n", doc.toJSONString())
+	// log.Printf("Cb doc:\n", doc.toJSONString())
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"slices"
@@ -145,23 +144,23 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
-	fmt.Println("maxLinesToLoad:", conf.MaxLinesToLoad)
-	fmt.Println("writeJSONsToFile:", conf.WriteJSONsToFile)
-	fmt.Println("HeaderColumns length:", len(conf.HeaderColumns))
-	fmt.Println("CommonColumns length:", len(conf.CommonColumns))
-	fmt.Println("LineTypeColumns length:", len(conf.LineTypeColumns))
+	log.Printf("maxLinesToLoad:%d", conf.MaxLinesToLoad)
+	log.Printf("writeJSONsToFile:%t", conf.WriteJSONsToFile)
+	log.Printf("HeaderColumns length:%d", len(conf.HeaderColumns))
+	log.Printf("CommonColumns length:%d", len(conf.CommonColumns))
+	log.Printf("LineTypeColumns length:%d", len(conf.LineTypeColumns))
 
 	loadSpec, err := parseLoadSpec(loadSpecFilePath)
 	if err != nil {
 		log.Fatal("Unable to parse config")
 		return
 	}
-	fmt.Println("folder_tmpl:", len(loadSpec.FolderTmpl))
-	fmt.Println("LoadVal.Field[0].Val length:", len(loadSpec.LoadVal.Field[0].Val))
+	log.Printf("folder_tmpl:%d", len(loadSpec.FolderTmpl))
+	log.Printf("LoadVal.Field[0].Val length:%d", len(loadSpec.LoadVal.Field[0].Val))
 
 	generateColDefsFromConfig(conf, cbLineTypeColDefs)
 
-	fmt.Println("inputFiles:\n", inputFiles)
+	log.Printf("inputFiles:\n%v", inputFiles)
 	startProcessing(inputFiles)
 
 	// credentials := getCredentials(credentialsFilePath)
@@ -171,7 +170,7 @@ func main() {
 	/*
 		cbDoc0, err := readCbDocument("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")
 		if err == nil {
-			fmt.Println("Cb doc:\n", cbDoc0.toJSONString())
+			log.Printf("Cb doc:\n", cbDoc0.toJSONString())
 		}
 	*/
 
@@ -284,6 +283,6 @@ func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]Col
 			}
 			cbLineTypeColDefs[lt][len(ccols)+ltci] = coldef
 		}
-		// fmt.Println("ColDefs for:", lt, ":\n", cbLineTypeColDefs[lt])
+		// log.Printf("ColDefs for:", lt, ":\n", cbLineTypeColDefs[lt])
 	}
 }

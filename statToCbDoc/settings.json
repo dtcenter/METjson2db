@@ -1,5 +1,6 @@
 {
     "maxLinesToLoad": 150000,
+    "flushToDbDocSizeMB": 20,
     "overWriteData" : false,
     "writeJSONsToFile": true,
     "headerColumns": [

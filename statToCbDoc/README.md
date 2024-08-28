@@ -40,7 +40,25 @@ grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
 ## run with specific credentials,settings and/or for all stat files in a folder
 go run . -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 
-Output will be in ./outputs with file name with extension as json, like:
-grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
+# Output location, configuration and logic
+Output will be in ./outputs, one file for each doc-id.
+MET_cb_[docId].json.  It is important to note that if 
+a file with same doc-id extis prior to run, the data from
+current run will be merged with existing contents of that file.
 
+On the Db side, the merge/overwrite logic is as below:
+
+if settings.json (overWriteData == true)
+    no merge is performed, current run will overwrite docs with same ids
+if settings.json (overWriteData == false)
+    merge is performed, current run will merge docs with same ids
+
+A flush(merge) and/or Db merge is trigerred when a doc reaches
+settings.json setting: flushToDbDocSizeMB
+
+
+## log output to file
+By default, log is printed to stdout, but if you instead want to log to a file, add below at the end of above run commands:
+2> logfile (for overwriting)
+2>> logfile (for appending)
 
