@@ -75,8 +75,8 @@ func (doc *CbDataDocument) toJSONString() string {
 
 	sb.WriteString("\t\"data\": {\n")
 
-	for i := 0; i < len(ddkeys); i++ {
-		dkey := ddkeys[i]
+	for di := 0; di < len(ddkeys); di++ {
+		dkey := ddkeys[di]
 		dsec := doc.data[dkey]
 
 		sb.WriteString("\t\t\"" + dkey + "\": {\n")
@@ -99,12 +99,15 @@ func (doc *CbDataDocument) toJSONString() string {
 
 			if i == len(valkeys)-1 {
 				sb.WriteString("\t\t\t\"" + valkey + "\": " + valvals + "\n")
-				sb.WriteString("\t\t}\n")
+				sb.WriteString("\t\t}")
 			} else {
 				sb.WriteString("\t\t\t\"" + valkey + "\": " + valvals + ",\n")
 			}
 		}
+		if di < len(ddkeys)-1 {
+			sb.WriteString(",\n")
+		}
 	}
-	sb.WriteString("\t}\n}\n")
+	sb.WriteString("\n\t}\n}\n")
 	return sb.String()
 }

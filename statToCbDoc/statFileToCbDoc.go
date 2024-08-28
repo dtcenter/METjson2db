@@ -5,6 +5,7 @@ import (
 	//	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -87,7 +88,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 
 		// need to populate header fields
 		for i := 0; i < len(coldef); i++ {
-			if coldef[i].IsHeader {
+			if coldef[i].IsHeader && !slices.Contains(conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreValues, fields[i]) {
 				switch coldef[i].DataType {
 				case 0:
 					doc.headerFields[coldef[i].Name] = makeStringCbDataValue(fields[i])
@@ -111,7 +112,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 	// log.Printf("fields:\n", fields)
 	doc.data[fields[dataKeyIdx]] = dsec
 	for i := 0; i < len(coldef); i++ {
-		if !coldef[i].IsHeader {
+		if !coldef[i].IsHeader && !slices.Contains(conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreValues, fields[i]) {
 			switch coldef[i].DataType {
 			case 0:
 				dsec[coldef[i].Name] = makeStringCbDataValue(fields[i])

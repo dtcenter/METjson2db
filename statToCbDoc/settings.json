@@ -39,6 +39,12 @@
     "dataKeyColumns": [
         "FCST_LEAD"
     ],
+    "ignoreColumns":[
+        "OBS_LEAD"
+    ],
+    "ignoreValues":[
+        "NA"
+    ],
     "commonColumns": [
         {
             "name": "VERSION",

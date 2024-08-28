@@ -51,6 +51,8 @@ type ConfigJSON struct {
 	IdColumns                    []string `json:"idColumns"`
 	HeaderColumns                []string `json:"headerColumns"`
 	DataKeyColumns               []string `jaon:"dataKeyColumns"`
+	IgnoreColumns                []string `json:"ignoreColumns"`
+	IgnoreValues                 []string `json:"ignoreValues"`
 	CommonColumns                []Column `json:"commonColumns"`
 	LineTypeColumns              []struct {
 		LineType string   `json:"lineType"`
