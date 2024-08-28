@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type StatToCbBuilder_SL1L2 struct {
 	lineType string
 	coldef   ColDefArray
@@ -20,6 +18,6 @@ func newStatToCbBuilder_SL1L2(coldef ColDefArray, fields []string) IStatToCbBuil
 }
 
 func (b *StatToCbBuilder_SL1L2) processFields() bool {
-	fmt.Println(string(b.lineType), ":processFields(", len(b.fields), ")")
+	// fmt.Println(string(b.lineType), ":processFields(", len(b.fields), ")")
 	return true
 }

@@ -33,7 +33,7 @@ func statFileToCbDoc(filepath string) error {
 		lineStr := fileScanner.Text()
 		lineCount += 1
 		fields := strings.Fields(lineStr)
-		log.Printf("%d:%v:%d", lineCount, fields, len(fields))
+		// log.Printf("%d:%v:%d", lineCount, fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
 		statFieldsToCbDoc(lineType, fields)
@@ -42,7 +42,10 @@ func statFileToCbDoc(filepath string) error {
 		See spec in readme, section:
 		# Output location, configuration and logic
 		*/
-		statToCbFlush()
+		totalLinesProcessed = totalLinesProcessed + 1
+		if (totalLinesProcessed % 1000) == 0 {
+			statToCbFlush()
+		}
 
 		// if so also init cbDocs after that
 		/*
@@ -67,7 +70,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		log.Printf("no coldef for lineType:%s", lineType)
 		return
 	}
-	log.Printf("fields[]:%d, coldef[]:%d", len(fields), len(coldef))
+	// log.Printf("fields[]:%d, coldef[]:%d", len(fields), len(coldef))
 
 	id := ""
 	for i := 0; i < len(coldef); i++ {
@@ -104,7 +107,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 
 	// now append data fields to doc
 	dsec := DataSection{}
-	log.Printf("data key:%s", fields[dataKeyIdx])
+	// log.Printf("data key:%s", fields[dataKeyIdx])
 	// log.Printf("fields:\n", fields)
 	doc.data[fields[dataKeyIdx]] = dsec
 	for i := 0; i < len(coldef); i++ {

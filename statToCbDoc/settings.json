@@ -1,8 +1,9 @@
 {
     "maxLinesToLoad": 150000,
-    "flushToDbDocSizeMB": 20,
+    "flushToDbDataSectionMaxCount": 2,
     "overWriteData" : false,
     "writeJSONsToFile": true,
+    "outputFolder": "./output",
     "headerColumns": [
         "VERSION",
         "MODEL",

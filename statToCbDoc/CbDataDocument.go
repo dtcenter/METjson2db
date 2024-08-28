@@ -78,7 +78,6 @@ func (doc *CbDataDocument) toJSONString() string {
 	for i := 0; i < len(ddkeys); i++ {
 		dkey := ddkeys[i]
 		dsec := doc.data[dkey]
-		fmt.Println(dkey, dsec)
 
 		sb.WriteString("\t\t\"" + dkey + "\": {\n")
 

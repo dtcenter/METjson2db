@@ -41,7 +41,7 @@ grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
 go run . -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 
 # Output location, configuration and logic
-Output will be in ./outputs, one file for each doc-id.
+Output will be in settings.json[OutputFolder], defaults to "./outputs", one file for each doc-id.
 MET_cb_[docId].json.  It is important to note that if 
 a file with same doc-id extis prior to run, the data from
 current run will be merged with existing contents of that file.
@@ -53,8 +53,8 @@ if settings.json (overWriteData == true)
 if settings.json (overWriteData == false)
     merge is performed, current run will merge docs with same ids
 
-A flush(merge) and/or Db merge is trigerred when a doc reaches
-settings.json setting: flushToDbDocSizeMB
+A flush(merge) and/or Db merge is trigerred when a doc data section count reaches
+settings.json setting: flushToDbDataSectionMaxCount
 
 
 ## log output to file

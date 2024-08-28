@@ -70,8 +70,6 @@ func queryWithSQLFile(scope *gocb.Scope, file string) (jsonOut []string) {
 
 	// Convert []byte to string
 	text := string(fileContent)
-	fmt.Println(text)
-
 	return queryWithSQLStringSA(scope, text)
 }
 
@@ -195,7 +193,6 @@ func queryWithSQLFileJustPrint(scope *gocb.Scope, file string) {
 
 	// Convert []byte to string
 	text := string(fileContent)
-	fmt.Println(text)
 
 	queryResult, err := scope.Query(
 		fmt.Sprintf(text),
@@ -215,6 +212,5 @@ func printQueryResult(queryResult *gocb.QueryResult) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(result)
 	}
 }

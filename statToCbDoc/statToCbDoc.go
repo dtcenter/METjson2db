@@ -43,13 +43,16 @@ type Column struct {
 }
 
 type ConfigJSON struct {
-	MaxLinesToLoad   int64    `json:"maxLinesToLoad"`
-	WriteJSONsToFile bool     `json:"writeJSONsToFile"`
-	IdColumns        []string `json:"idColumns"`
-	HeaderColumns    []string `json:"headerColumns"`
-	DataKeyColumns   []string `jaon:"dataKeyColumns"`
-	CommonColumns    []Column `json:"commonColumns"`
-	LineTypeColumns  []struct {
+	MaxLinesToLoad               int64    `json:"maxLinesToLoad"`
+	FlushToDbDataSectionMaxCount int64    `json:"flushToDbDataSectionMaxCount"`
+	OverWriteData                bool     `json:"overWriteData"`
+	WriteJSONsToFile             bool     `json:"writeJSONsToFile"`
+	OutputFolder                 string   `json:"outputFolder"`
+	IdColumns                    []string `json:"idColumns"`
+	HeaderColumns                []string `json:"headerColumns"`
+	DataKeyColumns               []string `jaon:"dataKeyColumns"`
+	CommonColumns                []Column `json:"commonColumns"`
+	LineTypeColumns              []struct {
 		LineType string   `json:"lineType"`
 		Columns  []Column `json:"columns"`
 	}
@@ -76,7 +79,9 @@ type ColDef struct {
 }
 type ColDefArray []ColDef
 
+var conf = ConfigJSON{}
 var cbLineTypeColDefs map[string]ColDefArray
+var totalLinesProcessed = 0
 var cbDocs map[string]CbDataDocument
 var dataKeyIdx int
 
@@ -138,13 +143,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	conf := ConfigJSON{}
-	conf, err := parseConfig(settingsFilePath)
+	var err error
+	conf, err = parseConfig(settingsFilePath)
 	if err != nil {
 		log.Fatal("Unable to parse config")
 		return
 	}
 	log.Printf("maxLinesToLoad:%d", conf.MaxLinesToLoad)
+	log.Printf("flushToDbDataSectionMaxCount:%d", conf.FlushToDbDataSectionMaxCount)
+	log.Printf("overWriteData:%t", conf.OverWriteData)
 	log.Printf("writeJSONsToFile:%t", conf.WriteJSONsToFile)
 	log.Printf("HeaderColumns length:%d", len(conf.HeaderColumns))
 	log.Printf("CommonColumns length:%d", len(conf.CommonColumns))
