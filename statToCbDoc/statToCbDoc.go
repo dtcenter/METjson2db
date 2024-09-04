@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"sync"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -43,19 +44,23 @@ type Column struct {
 }
 
 type ConfigJSON struct {
-	MaxLinesToLoad               int64    `json:"maxLinesToLoad"`
-	FlushToDbDataSectionMaxCount int64    `json:"flushToDbDataSectionMaxCount"`
-	OverWriteData                bool     `json:"overWriteData"`
-	WriteJSONsToFile             bool     `json:"writeJSONsToFile"`
-	UploadToDb                   bool     `json:"uploadToDb"`
-	OutputFolder                 string   `json:"outputFolder"`
-	IdColumns                    []string `json:"idColumns"`
-	HeaderColumns                []string `json:"headerColumns"`
-	DataKeyColumns               []string `jaon:"dataKeyColumns"`
-	IgnoreColumns                []string `json:"ignoreColumns"`
-	IgnoreValues                 []string `json:"ignoreValues"`
-	CommonColumns                []Column `json:"commonColumns"`
-	LineTypeColumns              []struct {
+	MaxLinesToLoad                int64    `json:"maxLinesToLoad"`
+	FlushToDbDataSectionMaxCount  int64    `json:"flushToDbDataSectionMaxCount"`
+	OverWriteData                 bool     `json:"overWriteData"`
+	WriteJSONsToFile              bool     `json:"writeJSONsToFile"`
+	UploadToDb                    bool     `json:"uploadToDb"`
+	OutputFolder                  string   `json:"outputFolder"`
+	RunNonThreaded                bool     `json:"runNonThreaded"`
+	ThreadsWriteToDisk            int64    `json:"threadsWriteToDisk"`
+	ThreadsDbUpload               int64    `json:"threadsDbUpload"`
+	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
+	IdColumns                     []string `json:"idColumns"`
+	HeaderColumns                 []string `json:"headerColumns"`
+	DataKeyColumns                []string `jaon:"dataKeyColumns"`
+	IgnoreColumns                 []string `json:"ignoreColumns"`
+	IgnoreValues                  []string `json:"ignoreValues"`
+	CommonColumns                 []Column `json:"commonColumns"`
+	LineTypeColumns               []struct {
 		LineType string   `json:"lineType"`
 		Columns  []Column `json:"columns"`
 	}
@@ -88,6 +93,10 @@ var totalLinesProcessed = 0
 var cbDocs map[string]CbDataDocument
 var dataKeyIdx int
 var credentials = Credentials{}
+var asynFilesChannels []chan CbDataDocument
+var asynDbChannels []chan CbDataDocument
+var asyncWaitGroupFiles sync.WaitGroup
+var asyncWaitGroupDb sync.WaitGroup
 
 // init runs before main() is evaluated
 func init() {
@@ -175,7 +184,28 @@ func main() {
 	generateColDefsFromConfig(conf, cbLineTypeColDefs)
 
 	log.Printf("inputFiles:\n%v", inputFiles)
+
+	if !conf.RunNonThreaded {
+		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi = fi + 1 {
+			asynFilesChannels = append(asynFilesChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
+			go flushToFilesAsync(fi)
+			asyncWaitGroupFiles.Add(fi)
+		}
+
+		for di := 0; di < int(conf.ThreadsDbUpload); di = di + 1 {
+			asynDbChannels = append(asynDbChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
+			go flushToDbAsync(di)
+			asyncWaitGroupDb.Add(di)
+		}
+	}
+
 	startProcessing(inputFiles)
+
+	if !conf.RunNonThreaded {
+		log.Printf("Waiting for threads to finish ...")
+		asyncWaitGroupFiles.Wait()
+		asyncWaitGroupDb.Wait()
+	}
 
 	// conn := getDbConnection(credentials)
 	// log.Printf("Connected to Couchbase:%s", conn.vxDBTARGET)

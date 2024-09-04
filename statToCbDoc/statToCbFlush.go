@@ -21,15 +21,41 @@ func statToCbFlush(flushFinal bool) {
 		See spec in readme, section:
 		# Output location, configuration and logic
 	*/
-	conn := getDbConnection(credentials)
-	for id, doc := range cbDocs {
-		dataLen := int64(len(maps.Keys(doc.data)))
-		if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
-			if conf.WriteJSONsToFile {
-				flushToFiles(id)
+	if conf.RunNonThreaded {
+		conn := getDbConnection(credentials)
+		for id, doc := range cbDocs {
+			dataLen := int64(len(maps.Keys(doc.data)))
+			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
+				if conf.WriteJSONsToFile {
+					flushToFiles(id)
+				}
+				if conf.UploadToDb {
+					flushToDb(conn, id)
+				}
 			}
-			if conf.UploadToDb {
-				flushToDb(conn, id)
+		}
+	} else {
+		// distribute docs to channels, round-robin, for async processing
+		idxFiles := 0
+		idxDb := 0
+		// for id, doc
+		for _, doc := range cbDocs {
+			dataLen := int64(len(maps.Keys(doc.data)))
+			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
+				if conf.WriteJSONsToFile {
+					asynFilesChannels[idxFiles] <- doc
+					idxFiles = idxFiles + 1
+					if idxFiles >= int(conf.ThreadsWriteToDisk) {
+						idxFiles = 0
+					}
+				}
+				if conf.UploadToDb {
+					asynFilesChannels[idxDb] <- doc
+					idxDb = idxDb + 1
+					if idxDb >= int(conf.ThreadsDbUpload) {
+						idxDb = 0
+					}
+				}
 			}
 		}
 	}
@@ -43,9 +69,6 @@ func flushToFiles(id string) {
 
 	docStr := []byte(doc.toJSONString())
 	fileName := conf.OutputFolder + "/" + id + ".json"
-	/*
-		Read if file exists and merge
-	*/
 	err := os.WriteFile(fileName, docStr, 0644)
 	if err != nil {
 		log.Printf("Error writing output:%s", fileName)
@@ -59,15 +82,17 @@ func flushToDb(conn CbConnection, id string) {
 	log.Printf("data keys:%v", maps.Keys(doc.data))
 
 	/*
-		Read if file exists and merge if conf[overWriteData] == false
-		otherwise ovewrite doc
+		TODO:
+		1. Merge if conf[overWriteData] == false otherwise ovewrite doc
+		2. Make flushToDb threaded and async
 	*/
 
 	var anyJson map[string]interface{}
 	json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
+
+	// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 	_, err := conn.Collection.Upsert(doc.headerFields["ID"].StringVal, anyJson, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
