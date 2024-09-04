@@ -47,6 +47,7 @@ type ConfigJSON struct {
 	FlushToDbDataSectionMaxCount int64    `json:"flushToDbDataSectionMaxCount"`
 	OverWriteData                bool     `json:"overWriteData"`
 	WriteJSONsToFile             bool     `json:"writeJSONsToFile"`
+	UploadToDb                   bool     `json:"uploadToDb"`
 	OutputFolder                 string   `json:"outputFolder"`
 	IdColumns                    []string `json:"idColumns"`
 	HeaderColumns                []string `json:"headerColumns"`
@@ -86,6 +87,7 @@ var cbLineTypeColDefs map[string]ColDefArray
 var totalLinesProcessed = 0
 var cbDocs map[string]CbDataDocument
 var dataKeyIdx int
+var credentials = Credentials{}
 
 // init runs before main() is evaluated
 func init() {
@@ -126,7 +128,7 @@ func main() {
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
-		statFileToCbDoc(inputFile)
+		inputFiles = append(inputFiles, inputFile)
 	} else if len(inputFolder) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolder:" + inputFolder)
 		// add all files in folder
@@ -159,6 +161,9 @@ func main() {
 	log.Printf("CommonColumns length:%d", len(conf.CommonColumns))
 	log.Printf("LineTypeColumns length:%d", len(conf.LineTypeColumns))
 
+	credentials = getCredentials(credentialsFilePath)
+	log.Printf("DB:(%s.%s.%s)", credentials.Cb_bucket, credentials.Cb_scope, credentials.Cb_collection)
+
 	loadSpec, err := parseLoadSpec(loadSpecFilePath)
 	if err != nil {
 		log.Fatal("Unable to parse config")
@@ -172,9 +177,8 @@ func main() {
 	log.Printf("inputFiles:\n%v", inputFiles)
 	startProcessing(inputFiles)
 
-	// credentials := getCredentials(credentialsFilePath)
-
 	// conn := getDbConnection(credentials)
+	// log.Printf("Connected to Couchbase:%s", conn.vxDBTARGET)
 
 	/*
 		cbDoc0, err := readCbDocument("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")

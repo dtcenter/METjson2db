@@ -3,6 +3,7 @@
     "flushToDbDataSectionMaxCount": 2,
     "overWriteData" : false,
     "writeJSONsToFile": true,
+    "uploadToDb": true,
     "outputFolder": "./output",
     "headerColumns": [
         "VERSION",

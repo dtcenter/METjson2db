@@ -45,7 +45,7 @@ func statFileToCbDoc(filepath string) error {
 		*/
 		totalLinesProcessed = totalLinesProcessed + 1
 		if (totalLinesProcessed % 1000) == 0 {
-			statToCbFlush()
+			statToCbFlush(false)
 		}
 
 		// if so also init cbDocs after that
@@ -57,6 +57,7 @@ func statFileToCbDoc(filepath string) error {
 				log.Printf("Unknown line tye:", lineType)
 			}
 		*/
+		statToCbFlush(true)
 	}
 	log.Printf("lineCount:%d", lineCount)
 
@@ -64,7 +65,7 @@ func statFileToCbDoc(filepath string) error {
 }
 
 func statFieldsToCbDoc(lineType string, fields []string) {
-	log.Println("statFieldsToCbDoc(" + lineType + ")")
+	// log.Println("statFieldsToCbDoc(" + lineType + ")")
 
 	coldef, ok := cbLineTypeColDefs[lineType]
 	if !ok {
@@ -84,7 +85,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		doc = CbDataDocument{}
 		doc.init()
 		cbDocs[id] = doc
-		doc.headerFields["id"] = makeStringCbDataValue(id)
+		doc.headerFields["ID"] = makeStringCbDataValue(id)
 
 		// need to populate header fields
 		for i := 0; i < len(coldef); i++ {

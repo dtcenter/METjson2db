@@ -11,6 +11,7 @@ Make sure settings.json is in the same folder as the statToCbDoc executable
 # Couchbase credentials file
 NOTE: If no specific credentails file is given on the command-line, statToCbDoc
 will look for and use ~/credentials
+There is a sample credentials file at: METdatacb/statToCbDoc/credentials.template
 
 statToCbDoc picks up Couchbase conection information from this file, example below
 Please note that the cb_user and cb_password values should be replaced with actual values

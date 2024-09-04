@@ -23,7 +23,7 @@ func init() {
 }
 
 func getDbConnection(cred Credentials) (conn CbConnection) {
-	log.Println("getDbConnection()")
+	log.Printf("getDbConnection(%s.%s.%s)", cred.Cb_bucket, cred.Cb_scope, cred.Cb_collection)
 
 	conn = CbConnection{}
 	connectionString := cred.Cb_host
