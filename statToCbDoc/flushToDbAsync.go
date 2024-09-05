@@ -11,6 +11,16 @@ func init() {
 }
 
 func flushToDbAsync(threadIdx int) {
-	doc := <-asynFilesChannels[threadIdx]
-	log.Printf("flushToDbAsync(%s)", doc.headerFields["ID"].StringVal)
+	for {
+		doc, ok := <-asynDbChannels[threadIdx]
+		if len(doc.headerFields) == 0 {
+			log.Printf("\tflushToDbAsync(%d), end-marker received!", threadIdx)
+			break
+		}
+		if !ok {
+			log.Printf("\tflushToDbAsync(%d), no documents in channel!", threadIdx)
+			break
+		}
+		log.Printf("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+	}
 }

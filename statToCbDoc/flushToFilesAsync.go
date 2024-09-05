@@ -11,6 +11,16 @@ func init() {
 }
 
 func flushToFilesAsync(threadIdx int) {
-	doc := <-asynFilesChannels[threadIdx]
-	log.Printf("flushToFilesAsync(%s)", doc.headerFields["ID"].StringVal)
+	for {
+		doc, ok := <-asynFilesChannels[threadIdx]
+		if len(doc.headerFields) == 0 {
+			log.Printf("\tflushToFilesAsync(%d), end-marker received!", threadIdx)
+			break
+		}
+		if !ok {
+			log.Printf("\tflushToFilesAsync(%d), no documents in channel!", threadIdx)
+			break
+		}
+		log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+	}
 }

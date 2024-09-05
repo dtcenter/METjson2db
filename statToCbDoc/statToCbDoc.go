@@ -186,16 +186,24 @@ func main() {
 	log.Printf("inputFiles:\n%v", inputFiles)
 
 	if !conf.RunNonThreaded {
-		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi = fi + 1 {
+		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
+			fi := fi
 			asynFilesChannels = append(asynFilesChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
-			go flushToFilesAsync(fi)
-			asyncWaitGroupFiles.Add(fi)
+			asyncWaitGroupFiles.Add(1)
+			go func() {
+				defer asyncWaitGroupFiles.Done()
+				flushToFilesAsync(fi)
+			}()
 		}
 
-		for di := 0; di < int(conf.ThreadsDbUpload); di = di + 1 {
+		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
+			di := di
 			asynDbChannels = append(asynDbChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
-			go flushToDbAsync(di)
-			asyncWaitGroupDb.Add(di)
+			asyncWaitGroupDb.Add(1)
+			go func() {
+				defer asyncWaitGroupDb.Done()
+				flushToDbAsync(di)
+			}()
 		}
 	}
 
@@ -203,8 +211,23 @@ func main() {
 
 	if !conf.RunNonThreaded {
 		log.Printf("Waiting for threads to finish ...")
+
+		// insert end-marker doc to all channels
+		endMarkerDoc := CbDataDocument{}
+		endMarkerDoc.init()
+
+		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
+			asynFilesChannels[fi] <- endMarkerDoc
+		}
+
+		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
+			asynDbChannels[di] <- endMarkerDoc
+		}
+
 		asyncWaitGroupFiles.Wait()
+		log.Printf("asyncWaitGroupFiles finished!")
 		asyncWaitGroupDb.Wait()
+		log.Printf("asyncWaitGroupDb finished!")
 	}
 
 	// conn := getDbConnection(credentials)

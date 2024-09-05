@@ -5,7 +5,7 @@
     "writeJSONsToFile": true,
     "uploadToDb": true,
     "outputFolder": "./output",
-    "runNonThreaded": true,
+    "runNonThreaded": false,
     "threadsWriteToDisk": 8,
     "threadsDbUpload": 8,
     "channelBufferSizeNumberOfDocs": 1024,

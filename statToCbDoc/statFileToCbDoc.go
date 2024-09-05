@@ -57,8 +57,13 @@ func statFileToCbDoc(filepath string) error {
 				log.Printf("Unknown line tye:", lineType)
 			}
 		*/
-		statToCbFlush(true)
+
+		if totalLinesProcessed == 100 {
+			break
+		}
+
 	}
+	statToCbFlush(true)
 	log.Printf("lineCount:%d", lineCount)
 
 	return nil

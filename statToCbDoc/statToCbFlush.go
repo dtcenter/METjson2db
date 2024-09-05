@@ -15,7 +15,7 @@ func init() {
 }
 
 func statToCbFlush(flushFinal bool) {
-	log.Printf("statToCbFlush(FlushToDbDataSectionMaxCount:%d, outputFolder:%s)", conf.FlushToDbDataSectionMaxCount, conf.OutputFolder)
+	// log.Printf("statToCbFlush(FlushToDbDataSectionMaxCount:%d, outputFolder:%s)", conf.FlushToDbDataSectionMaxCount, conf.OutputFolder)
 
 	/*
 		See spec in readme, section:
@@ -44,14 +44,14 @@ func statToCbFlush(flushFinal bool) {
 			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
 				if conf.WriteJSONsToFile {
 					asynFilesChannels[idxFiles] <- doc
-					idxFiles = idxFiles + 1
+					idxFiles++
 					if idxFiles >= int(conf.ThreadsWriteToDisk) {
 						idxFiles = 0
 					}
 				}
 				if conf.UploadToDb {
-					asynFilesChannels[idxDb] <- doc
-					idxDb = idxDb + 1
+					asynDbChannels[idxDb] <- doc
+					idxDb++
 					if idxDb >= int(conf.ThreadsDbUpload) {
 						idxDb = 0
 					}
