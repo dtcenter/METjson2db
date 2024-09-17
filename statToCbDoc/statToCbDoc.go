@@ -202,7 +202,8 @@ func main() {
 			asyncWaitGroupDb.Add(1)
 			go func() {
 				defer asyncWaitGroupDb.Done()
-				flushToDbAsync(di)
+				conn := getDbConnection(credentials)
+				flushToDbAsync(di, conn)
 			}()
 		}
 	}
@@ -212,7 +213,7 @@ func main() {
 	if !conf.RunNonThreaded {
 		log.Printf("Waiting for threads to finish ...")
 
-		// insert end-marker doc to all channels
+		// send end-marker doc to all channels
 		endMarkerDoc := CbDataDocument{}
 		endMarkerDoc.init()
 

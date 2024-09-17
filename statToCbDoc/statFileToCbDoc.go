@@ -58,9 +58,11 @@ func statFileToCbDoc(filepath string) error {
 			}
 		*/
 
-		if totalLinesProcessed == 100 {
-			break
-		}
+		/*
+			if totalLinesProcessed == 100 {
+				break
+			}
+		*/
 
 	}
 	statToCbFlush(true)

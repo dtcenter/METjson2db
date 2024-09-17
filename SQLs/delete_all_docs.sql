@@ -1,0 +1,1 @@
+DELETE FROM metdata._default.MET;
