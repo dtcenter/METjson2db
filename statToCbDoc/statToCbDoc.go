@@ -45,6 +45,7 @@ type Column struct {
 
 type ConfigJSON struct {
 	MaxLinesToLoad                int64    `json:"maxLinesToLoad"`
+	MaxFilesInProcessChunk        int64    `json:"maxFilesInProcessChunk"`
 	FlushToDbDataSectionMaxCount  int64    `json:"flushToDbDataSectionMaxCount"`
 	OverWriteData                 bool     `json:"overWriteData"`
 	WriteJSONsToFile              bool     `json:"writeJSONsToFile"`
@@ -190,7 +191,7 @@ func main() {
 			}
 			for _, file := range files {
 				if !file.IsDir() {
-					inputFiles = append(inputFiles, inputFolder+file.Name())
+					inputFiles = append(inputFiles, folders[i]+"/"+file.Name())
 				}
 			}
 		}
@@ -207,6 +208,7 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
+	log.Printf("MaxFilesInProcessChunk:%d", conf.MaxFilesInProcessChunk)
 	log.Printf("maxLinesToLoad:%d", conf.MaxLinesToLoad)
 	log.Printf("flushToDbDataSectionMaxCount:%d", conf.FlushToDbDataSectionMaxCount)
 	log.Printf("overWriteData:%t", conf.OverWriteData)
@@ -216,6 +218,10 @@ func main() {
 	log.Printf("LineTypeColumns length:%d", len(conf.LineTypeColumns))
 
 	credentials = getCredentials(credentialsFilePath)
+	if len(loadSpec.TargetCollection) > 0 {
+		log.Printf("Using load_spec target collection:%s", loadSpec.TargetCollection)
+		credentials.Cb_collection = loadSpec.TargetCollection
+	}
 	log.Printf("DB:(%s.%s.%s)", credentials.Cb_bucket, credentials.Cb_scope, credentials.Cb_collection)
 
 	generateColDefsFromConfig(conf, cbLineTypeColDefs)
@@ -245,7 +251,7 @@ func main() {
 		}
 	}
 
-	// startProcessing(inputFiles)
+	startProcessing(inputFiles)
 
 	if !conf.RunNonThreaded {
 		log.Printf("Waiting for threads to finish ...")
@@ -278,7 +284,7 @@ func main() {
 		}
 	*/
 
-	log.Printf("\tstatToCbDoc finished in %v", time.Since(start))
+	log.Printf("\tstatToCbDoc, file count:%d finished in %v", len(inputFiles), time.Since(start))
 }
 
 func parseLoadSpec(file string) (LoadSpec, error) {

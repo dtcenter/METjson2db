@@ -1,13 +1,14 @@
 {
     "maxLinesToLoad": 150000,
+    "maxFilesInProcessChunk": 10,
     "flushToDbDataSectionMaxCount": 2,
     "overWriteData" : false,
     "writeJSONsToFile": true,
     "uploadToDb": true,
     "outputFolder": "./output",
-    "runNonThreaded": true,
-    "threadsWriteToDisk": 8,
-    "threadsDbUpload": 8,
+    "runNonThreaded": false,
+    "threadsWriteToDisk": 32,
+    "threadsDbUpload": 32,
     "channelBufferSizeNumberOfDocs": 1024,
     "headerColumns": [
         "VERSION",

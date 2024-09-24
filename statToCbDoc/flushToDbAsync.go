@@ -23,7 +23,7 @@ func flushToDbAsync(threadIdx int, conn CbConnection) {
 			log.Printf("\tflushToDbAsync(%d), no documents in channel!", threadIdx)
 			break
 		}
-		log.Printf("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+		//log.Printf("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 
 		var anyJson map[string]interface{}
 		json.Unmarshal([]byte(doc.toJSONString()), &anyJson)

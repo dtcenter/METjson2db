@@ -21,6 +21,6 @@ func flushToFilesAsync(threadIdx int) {
 			log.Printf("\tflushToFilesAsync(%d), no documents in channel!", threadIdx)
 			break
 		}
-		log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+		//log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 	}
 }
