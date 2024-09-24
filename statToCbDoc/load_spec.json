@@ -1,10 +1,9 @@
 {
     "email": "molly.b.smith@noaa.gov",
-    "initialize_db": false,
-    "organization": "gsd",
+    "target_collection": "MET_default",
     "verbose": true,
-    "insert_size": 1,
-    "folder_tmpl": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
+    "folder_tmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
+    "folder_tmpl": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
     "load_val": {
         "field": [
             {

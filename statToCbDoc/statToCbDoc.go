@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,13 +25,11 @@ type Metadata []struct {
 }
 
 type LoadSpec struct {
-	Email        string `json:"email"`
-	InitializeDb bool   `json:"initialize_db"`
-	Organization string `json:"organization"`
-	Verbose      bool   `json:"verbose"`
-	InsertSize   int64  `json:"insert_size"`
-	FolderTmpl   string `json:"folder_tmpl"`
-	LoadVal      struct {
+	Email            string `json:"email"`
+	TargetCollection string `json:"target_collection"`
+	Verbose          bool   `json:"verbose"`
+	FolderTmpl       string `json:"folder_tmpl"`
+	LoadVal          struct {
 		Field []struct {
 			Val  StrArray `json:"val"`
 			Name string   `json:"_name"`
@@ -85,6 +85,7 @@ type ColDef struct {
 	IsID      bool
 	IsDataKey bool
 }
+
 type ColDefArray []ColDef
 
 var conf = ConfigJSON{}
@@ -131,9 +132,18 @@ func main() {
 	inputFiles = append(inputFiles, inputFile)
 
 	var inputFolder string
-	flag.StringVar(&inputFolder, "i", "./input_files", "input stat files folder")
+	flag.StringVar(&inputFolder, "i", "", "input stat files folder")
 
 	flag.Parse()
+
+	loadSpec, err := parseLoadSpec(loadSpecFilePath)
+	if err != nil {
+		log.Fatal("Unable to parse config")
+		return
+	}
+	log.Printf("folder_tmpl:%d", len(loadSpec.FolderTmpl))
+	log.Printf("LoadVal.Field[0].Val length:%d", len(loadSpec.LoadVal.Field[0].Val))
+	fmt.Println("LoadSpec:\n" + jsonPrettyPrintStruct(loadSpec))
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
@@ -152,11 +162,46 @@ func main() {
 		}
 
 	} else {
-		log.Fatal("Must specify either an input file (-f) or an input folder (-i)!")
+		// process load_spec, not a robust logic yet, but will work correctly if the template has all field markers, i.e. {name}s
+		// and len(field[0].val) is the largest.
+
+		folders := []string{}
+
+		for vi := 0; vi < len(loadSpec.LoadVal.Field[0].Val); vi++ {
+			fname := "{" + loadSpec.LoadVal.Field[0].Name + "}"
+			folders = append(folders, strings.Replace(loadSpec.FolderTmpl, fname, loadSpec.LoadVal.Field[0].Val[vi], -1))
+		}
+
+		for fi := 1; fi < len(loadSpec.LoadVal.Field); fi++ {
+			fname := "{" + loadSpec.LoadVal.Field[fi].Name + "}"
+			for vi := 0; vi < len(loadSpec.LoadVal.Field[fi].Val); vi++ {
+				for i := 0; i < len(folders); i++ {
+					folders[i] = strings.Replace(folders[i], fname, loadSpec.LoadVal.Field[fi].Val[vi], -1)
+				}
+			}
+		}
+		fmt.Println(folders)
+
+		for i := 0; i < len(folders); i++ {
+			files, err := os.ReadDir(folders[i])
+			if err != nil {
+				log.Printf("Error opening folder:%s", folders[i])
+				log.Fatal(err)
+			}
+			for _, file := range files {
+				if !file.IsDir() {
+					inputFiles = append(inputFiles, inputFolder+file.Name())
+				}
+			}
+		}
+
+	}
+
+	if len(inputFiles) == 0 {
+		log.Fatal("Must specify either an input file (-f), input folder (-i) OR must have load_spec files!")
 		os.Exit(1)
 	}
 
-	var err error
 	conf, err = parseConfig(settingsFilePath)
 	if err != nil {
 		log.Fatal("Unable to parse config")
@@ -172,14 +217,6 @@ func main() {
 
 	credentials = getCredentials(credentialsFilePath)
 	log.Printf("DB:(%s.%s.%s)", credentials.Cb_bucket, credentials.Cb_scope, credentials.Cb_collection)
-
-	loadSpec, err := parseLoadSpec(loadSpecFilePath)
-	if err != nil {
-		log.Fatal("Unable to parse config")
-		return
-	}
-	log.Printf("folder_tmpl:%d", len(loadSpec.FolderTmpl))
-	log.Printf("LoadVal.Field[0].Val length:%d", len(loadSpec.LoadVal.Field[0].Val))
 
 	generateColDefsFromConfig(conf, cbLineTypeColDefs)
 
@@ -208,7 +245,7 @@ func main() {
 		}
 	}
 
-	startProcessing(inputFiles)
+	// startProcessing(inputFiles)
 
 	if !conf.RunNonThreaded {
 		log.Printf("Waiting for threads to finish ...")
