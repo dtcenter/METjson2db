@@ -13,8 +13,9 @@ func init() {
 
 func flushToDbAsync(threadIdx int, conn CbConnection) {
 	count := 0
+	errors := 0
 	for {
-		doc, ok := <-asynDbChannels[threadIdx]
+		doc, ok := <-asynFlushToDbChannels[threadIdx]
 		if len(doc.headerFields) == 0 {
 			log.Printf("\tflushToDbAsync(%d), end-marker received!", threadIdx)
 			break
@@ -35,5 +36,8 @@ func flushToDbAsync(threadIdx int, conn CbConnection) {
 		}
 		count++
 	}
-	log.Printf("flushToDbAsync(%d) doc count:%d", threadIdx, count)
+	log.Printf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
+	returnDoc := CbDataDocument{}
+	returnDoc.initReturn(int64(count), int64(errors))
+	asynFlushToDbChannels[threadIdx] <- returnDoc
 }

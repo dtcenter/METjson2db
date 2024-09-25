@@ -11,8 +11,10 @@ func init() {
 }
 
 func flushToFilesAsync(threadIdx int) {
+	count := 0
+	errors := 0
 	for {
-		doc, ok := <-asynFilesChannels[threadIdx]
+		doc, ok := <-asynFlushToFileChannels[threadIdx]
 		if len(doc.headerFields) == 0 {
 			log.Printf("\tflushToFilesAsync(%d), end-marker received!", threadIdx)
 			break
@@ -23,4 +25,8 @@ func flushToFilesAsync(threadIdx int) {
 		}
 		//log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 	}
+	log.Printf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
+	returnDoc := CbDataDocument{}
+	returnDoc.initReturn(int64(count), int64(errors))
+	asynFlushToFileChannels[threadIdx] <- returnDoc
 }

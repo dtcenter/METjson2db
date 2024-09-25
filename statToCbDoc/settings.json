@@ -7,6 +7,7 @@
     "uploadToDb": true,
     "outputFolder": "./output",
     "runNonThreaded": false,
+    "threadsFileProcessor": 8,
     "threadsWriteToDisk": 32,
     "threadsDbUpload": 32,
     "channelBufferSizeNumberOfDocs": 1024,

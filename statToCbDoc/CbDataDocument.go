@@ -49,6 +49,13 @@ func (doc *CbDataDocument) init() {
 	doc.data = make(map[string]DataSection)
 }
 
+func (doc *CbDataDocument) initReturn(count int64, errors int64) {
+	doc.headerFields = make(map[string]CbDataValue)
+	doc.data = make(map[string]DataSection)
+	doc.headerFields["count"] = makeIntCbDataValue(count)
+	doc.headerFields["errors"] = makeIntCbDataValue(errors)
+}
+
 func (doc *CbDataDocument) toJSONString() string {
 	var sb strings.Builder
 	sb.WriteString("{\n")

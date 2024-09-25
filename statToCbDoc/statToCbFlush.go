@@ -43,14 +43,14 @@ func statToCbFlush(flushFinal bool) {
 			dataLen := int64(len(maps.Keys(doc.data)))
 			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
 				if conf.WriteJSONsToFile {
-					asynFilesChannels[idxFiles] <- doc
+					asynFlushToFileChannels[idxFiles] <- doc
 					idxFiles++
 					if idxFiles >= int(conf.ThreadsWriteToDisk) {
 						idxFiles = 0
 					}
 				}
 				if conf.UploadToDb {
-					asynDbChannels[idxDb] <- doc
+					asynFlushToDbChannels[idxDb] <- doc
 					idxDb++
 					if idxDb >= int(conf.ThreadsDbUpload) {
 						idxDb = 0
