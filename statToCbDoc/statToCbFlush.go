@@ -15,7 +15,8 @@ func init() {
 }
 
 func statToCbFlush(flushFinal bool) {
-	log.Printf("statToCbFlush(docs:%d, FlushToDbDataSectionMaxCount:%d)", len(cbDocs), conf.FlushToDbDataSectionMaxCount)
+	log.Printf("statToCbFlush(docs:%d, totalLinesProcessed:%d, FlushToDbDataSectionMaxCount:%d)", len(cbDocs),
+		totalLinesProcessed, conf.FlushToDbDataSectionMaxCount)
 
 	/*
 		See spec in readme, section:
