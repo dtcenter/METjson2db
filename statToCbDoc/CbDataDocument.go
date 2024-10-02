@@ -22,6 +22,7 @@ type DataSection map[string]CbDataValue
 type CbDataDocument struct {
 	headerFields map[string]CbDataValue
 	data         map[string]DataSection
+	flushed      bool
 	mutex        *sync.RWMutex
 }
 
@@ -50,6 +51,7 @@ func (doc *CbDataDocument) init() {
 	doc.headerFields = make(map[string]CbDataValue)
 	doc.data = make(map[string]DataSection)
 	doc.mutex = &sync.RWMutex{}
+	doc.flushed = false
 }
 
 func (doc *CbDataDocument) initReturn(count int64, errors int64) {

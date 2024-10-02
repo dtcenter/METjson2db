@@ -121,6 +121,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 	}
 
 	doc.mutex.Lock()
+	doc.flushed = false
 	// now append data fields to doc
 	dsec := DataSection{}
 	// log.Printf("data key:%s", fields[dataKeyIdx])

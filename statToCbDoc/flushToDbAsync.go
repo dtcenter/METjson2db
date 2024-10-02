@@ -30,13 +30,19 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		var anyJson map[string]interface{}
 
 		doc.mutex.RLock()
-		json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
-		doc.mutex.RUnlock()
+		if !doc.flushed {
+			json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
+			doc.flushed = true
+			doc.mutex.RUnlock()
 
-		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-		_, err := conn.Collection.Upsert(doc.headerFields["ID"].StringVal, anyJson, nil)
-		if err != nil {
-			log.Println(err)
+			// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
+			_, err := conn.Collection.Upsert(doc.headerFields["ID"].StringVal, anyJson, nil)
+			if err != nil {
+				log.Println(err)
+				doc.mutex.RLock()
+				doc.flushed = false
+				doc.mutex.RUnlock()
+			}
 		}
 		count++
 	}

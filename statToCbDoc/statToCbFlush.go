@@ -40,8 +40,11 @@ func statToCbFlush(flushFinal bool) {
 		idxDb := 0
 		// for id, doc
 		for _, doc := range cbDocs {
+			doc.mutex.RLock()
 			dataLen := int64(len(maps.Keys(doc.data)))
-			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
+			flushed := doc.flushed
+			doc.mutex.RUnlock()
+			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount && !flushed) {
 				if conf.WriteJSONsToFile {
 					asynFlushToFileChannels[idxFiles] <- doc
 					idxFiles++
