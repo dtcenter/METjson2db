@@ -87,11 +87,17 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 			id = id + ":" + fields[i]
 		}
 	}
+
+	cbDocsMutex.RLock()
 	doc, ok := cbDocs[id]
+	cbDocsMutex.RUnlock()
+
 	if !ok {
 		doc = CbDataDocument{}
 		doc.init()
+		cbDocsMutex.Lock()
 		cbDocs[id] = doc
+		cbDocsMutex.Unlock()
 		doc.headerFields["ID"] = makeStringCbDataValue(id)
 
 		// need to populate header fields
@@ -114,6 +120,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 
 	}
 
+	doc.mutex.Lock()
 	// now append data fields to doc
 	dsec := DataSection{}
 	// log.Printf("data key:%s", fields[dataKeyIdx])
@@ -135,6 +142,7 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 			}
 		}
 	}
+	doc.mutex.Unlock()
 
 	// log.Printf("Cb doc:\n", doc.toJSONString())
 }

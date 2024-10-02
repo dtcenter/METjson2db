@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"golang.org/x/exp/maps"
 	// "github.com/couchbase/gocb/v2"
@@ -21,6 +22,7 @@ type DataSection map[string]CbDataValue
 type CbDataDocument struct {
 	headerFields map[string]CbDataValue
 	data         map[string]DataSection
+	mutex        *sync.RWMutex
 }
 
 func makeStringCbDataValue(val string) CbDataValue {
@@ -47,6 +49,7 @@ func makeFloatCbDataValue(val float64) CbDataValue {
 func (doc *CbDataDocument) init() {
 	doc.headerFields = make(map[string]CbDataValue)
 	doc.data = make(map[string]DataSection)
+	doc.mutex = &sync.RWMutex{}
 }
 
 func (doc *CbDataDocument) initReturn(count int64, errors int64) {
@@ -115,6 +118,7 @@ func (doc *CbDataDocument) toJSONString() string {
 			sb.WriteString(",\n")
 		}
 	}
+
 	sb.WriteString("\n\t}\n}\n")
 	return sb.String()
 }

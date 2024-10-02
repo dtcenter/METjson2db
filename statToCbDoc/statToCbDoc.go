@@ -95,6 +95,7 @@ var conf = ConfigJSON{}
 var cbLineTypeColDefs map[string]ColDefArray
 var totalLinesProcessed = 0
 var cbDocs map[string]CbDataDocument
+var cbDocsMutex *sync.RWMutex
 var dataKeyIdx int
 var credentials = Credentials{}
 var asynFileProcessorChannels []chan string
@@ -120,6 +121,7 @@ func main() {
 	// builders = make(map[string]IStatToCbBuilder)
 	cbLineTypeColDefs = make(map[string]ColDefArray)
 	cbDocs = make(map[string]CbDataDocument)
+	cbDocsMutex = &sync.RWMutex{}
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
