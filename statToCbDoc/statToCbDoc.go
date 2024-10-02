@@ -44,25 +44,26 @@ type Column struct {
 }
 
 type ConfigJSON struct {
-	MaxLinesToLoad                int64    `json:"maxLinesToLoad"`
-	MaxFilesInProcessChunk        int64    `json:"maxFilesInProcessChunk"`
-	FlushToDbDataSectionMaxCount  int64    `json:"flushToDbDataSectionMaxCount"`
-	OverWriteData                 bool     `json:"overWriteData"`
-	WriteJSONsToFile              bool     `json:"writeJSONsToFile"`
-	UploadToDb                    bool     `json:"uploadToDb"`
-	OutputFolder                  string   `json:"outputFolder"`
-	RunNonThreaded                bool     `json:"runNonThreaded"`
-	ThreadsFileProcessor          int64    `json:"threadsFileProcessor"`
-	ThreadsWriteToDisk            int64    `json:"threadsWriteToDisk"`
-	ThreadsDbUpload               int64    `json:"threadsDbUpload"`
-	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
-	IdColumns                     []string `json:"idColumns"`
-	HeaderColumns                 []string `json:"headerColumns"`
-	DataKeyColumns                []string `jaon:"dataKeyColumns"`
-	IgnoreColumns                 []string `json:"ignoreColumns"`
-	IgnoreValues                  []string `json:"ignoreValues"`
-	CommonColumns                 []Column `json:"commonColumns"`
-	LineTypeColumns               []struct {
+	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
+	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
+	FlushToDbDataSectionMaxCount   int64    `json:"flushToDbDataSectionMaxCount"`
+	OverWriteData                  bool     `json:"overWriteData"`
+	WriteJSONsToFile               bool     `json:"writeJSONsToFile"`
+	UploadToDb                     bool     `json:"uploadToDb"`
+	OutputFolder                   string   `json:"outputFolder"`
+	RunNonThreaded                 bool     `json:"runNonThreaded"`
+	ThreadsFileProcessor           int64    `json:"threadsFileProcessor"`
+	ThreadsWriteToDisk             int64    `json:"threadsWriteToDisk"`
+	ThreadsDbUpload                int64    `json:"threadsDbUpload"`
+	ChannelBufferSizeNumberOfDocs  int64    `json:"channelBufferSizeNumberOfDocs"`
+	ChannelBufferSizeNumberOfFiles int64    `json:"channelBufferSizeNumberOfFiles"`
+	IdColumns                      []string `json:"idColumns"`
+	HeaderColumns                  []string `json:"headerColumns"`
+	DataKeyColumns                 []string `jaon:"dataKeyColumns"`
+	IgnoreColumns                  []string `json:"ignoreColumns"`
+	IgnoreValues                   []string `json:"ignoreValues"`
+	CommonColumns                  []Column `json:"commonColumns"`
+	LineTypeColumns                []struct {
 		LineType string   `json:"lineType"`
 		Columns  []Column `json:"columns"`
 	}
@@ -96,10 +97,12 @@ var totalLinesProcessed = 0
 var cbDocs map[string]CbDataDocument
 var dataKeyIdx int
 var credentials = Credentials{}
+var asynFileProcessorChannels []chan string
 var asynFlushToFileChannels []chan CbDataDocument
 var asynFlushToDbChannels []chan CbDataDocument
-var asyncWaitGroupFiles sync.WaitGroup
-var asyncWaitGroupDb sync.WaitGroup
+var asyncWaitGroupFileProcessor sync.WaitGroup
+var asyncWaitGroupFlushToFiles sync.WaitGroup
+var asyncWaitGroupFlushToDb sync.WaitGroup
 
 // init runs before main() is evaluated
 func init() {
@@ -230,12 +233,22 @@ func main() {
 	log.Printf("inputFiles:\n%v", inputFiles)
 
 	if !conf.RunNonThreaded {
+		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
+			fi := fi
+			asynFileProcessorChannels = append(asynFileProcessorChannels, make(chan string, conf.ChannelBufferSizeNumberOfFiles))
+			asyncWaitGroupFileProcessor.Add(1)
+			go func() {
+				defer asyncWaitGroupFileProcessor.Done()
+				fileProcessorAsync(fi)
+			}()
+		}
+
 		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
 			fi := fi
 			asynFlushToFileChannels = append(asynFlushToFileChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
-			asyncWaitGroupFiles.Add(1)
+			asyncWaitGroupFlushToFiles.Add(1)
 			go func() {
-				defer asyncWaitGroupFiles.Done()
+				defer asyncWaitGroupFlushToFiles.Done()
 				flushToFilesAsync(fi)
 			}()
 		}
@@ -243,11 +256,11 @@ func main() {
 		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
 			di := di
 			asynFlushToDbChannels = append(asynFlushToDbChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
-			asyncWaitGroupDb.Add(1)
+			asyncWaitGroupFlushToDb.Add(1)
 			go func() {
-				defer asyncWaitGroupDb.Done()
-				conn := getDbConnection(credentials)
-				flushToDbAsync(di, conn)
+				defer asyncWaitGroupFlushToDb.Done()
+				// conn := getDbConnection(credentials)
+				flushToDbAsync(di)
 			}()
 		}
 	}
@@ -274,16 +287,22 @@ func main() {
 			asynFlushToDbChannels[di] <- endMarkerDoc
 		}
 
-		asyncWaitGroupFiles.Wait()
-		log.Printf("asyncWaitGroupFiles finished!")
-		asyncWaitGroupDb.Wait()
-		log.Printf("asyncWaitGroupDb finished!")
+		asyncWaitGroupFlushToFiles.Wait()
+		log.Printf("asyncWaitGroupFlushToFiles finished!")
+		asyncWaitGroupFlushToDb.Wait()
+		log.Printf("asyncWaitGroupFlushToDb finished!")
+
+		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
+			asynFileProcessorChannels[fi] <- "end"
+		}
+		asyncWaitGroupFileProcessor.Wait()
+		log.Printf("asyncWaitGroupFileProcessor finished!")
 
 		// get return info from threads
 		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
 			doc, ok := <-asynFlushToFileChannels[fi]
 			if ok && len(doc.headerFields) > 0 {
-				log.Printf("tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
+				log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
 				fileTotalCount += doc.headerFields["count"].IntVal
 				fileTotalErrors += doc.headerFields["errors"].IntVal
 			} else {
@@ -295,7 +314,7 @@ func main() {
 		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
 			doc, ok := <-asynFlushToDbChannels[di]
 			if ok && len(doc.headerFields) > 0 {
-				log.Printf("tflushToDbAsync[%d], count:%d, errors:%d", di, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
+				log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
 				dbTotalCount += doc.headerFields["count"].IntVal
 				dbTotalErrors += doc.headerFields["errors"].IntVal
 			} else {

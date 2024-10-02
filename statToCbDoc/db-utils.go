@@ -50,7 +50,7 @@ func getDbConnection(cred Credentials) (conn CbConnection) {
 	conn.Collection = conn.Bucket.Collection(collection)
 	conn.vxDBTARGET = cred.Cb_bucket + "." + cred.Cb_scope + "." + cred.Cb_collection
 
-	log.Println("vxDBTARGET:" + conn.vxDBTARGET)
+	// log.Println("vxDBTARGET:" + conn.vxDBTARGET)
 
 	err = conn.Bucket.WaitUntilReady(5*time.Second, nil)
 	if err != nil {

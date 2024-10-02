@@ -7,10 +7,12 @@
     "uploadToDb": true,
     "outputFolder": "./output",
     "runNonThreaded": false,
-    "threadsFileProcessor": 8,
+    "doc_threadsFileProcessor": "set to 1 to single thread file processor",
+    "threadsFileProcessor": 1,
     "threadsWriteToDisk": 32,
     "threadsDbUpload": 32,
     "channelBufferSizeNumberOfDocs": 1024,
+    "channelBufferSizeNumberOfFiles": 48,
     "headerColumns": [
         "VERSION",
         "MODEL",

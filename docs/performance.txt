@@ -1,8 +1,9 @@
 Sep 24, 2024
-Threads = 32
-2024/09/24 14:39:55 flushToDbAsync.go:38: flushToDbAsync(21) doc count:356488
-2024/09/24 14:39:55 statToCbDoc.go:274: asyncWaitGroupDb finished!
-2024/09/24 14:39:55 statToCbDoc.go:287: 	statToCbDoc finished in 2h57m22.984773583s
+============
+    Threads = 32
+    2024/09/24 14:39:55 flushToDbAsync.go:38: flushToDbAsync(21) doc count:356488
+    2024/09/24 14:39:55 statToCbDoc.go:274: asyncWaitGroupDb finished!
+    2024/09/24 14:39:55 statToCbDoc.go:287: 	statToCbDoc finished in 2h57m22.984773583s
 
-Files processed = 297
-Records processed = 356488 * 32 = 11,407,616
+    Files processed = 297
+    Records processed = 356488 * 32 = 11,407,616

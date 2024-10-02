@@ -34,16 +34,36 @@ func startProcessing(files []string) bool {
 	// TODO: update/create db file document
 
 	start := time.Now()
-	for file, status := range statToCbRun.fileStatus {
-		log.Printf(file, status)
-		err := statFileToCbDoc(file)
-		if err != nil {
-			log.Println("Unable to process:" + file)
-			statToCbRun.fileStatus[file] = "error"
-		} else {
-			statToCbRun.fileStatus[file] = "finished"
+
+	if conf.ThreadsFileProcessor <= 1 {
+		for file, status := range statToCbRun.fileStatus {
+			log.Printf(file, status)
+			err := statFileToCbDoc(file)
+			if err != nil {
+				log.Println("Unable to process:" + file)
+				statToCbRun.fileStatus[file] = "error"
+			} else {
+				statToCbRun.fileStatus[file] = "finished"
+			}
 		}
+	} else {
+		// distribute files to channels, round-robin, for async processing
+		idx := 0
+		for file, status := range statToCbRun.fileStatus {
+			log.Printf(file, status)
+			asynFileProcessorChannels[idx] <- file
+			idx++
+			if idx >= int(conf.ThreadsFileProcessor) {
+				idx = 0
+			}
+		}
+		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
+			asynFileProcessorChannels[fi] <- "end"
+		}
+		asyncWaitGroupFileProcessor.Wait()
+		log.Printf("asyncWaitGroupFileProcessor finished!")
 	}
+
 	log.Printf(fmt.Sprintf("%d", len(files)) + " files processed in:" + fmt.Sprintf("%d", time.Since(start).Milliseconds()) + " ms")
 
 	// TODO: update/create db file document
