@@ -21,6 +21,7 @@ func statToCbFlush(flushFinal bool) {
 		See spec in readme, section:
 		# Output location, configuration and logic
 	*/
+	flushCount := 0
 	if conf.RunNonThreaded {
 		conn := getDbConnection(credentials)
 		for id, doc := range cbDocs {
@@ -45,6 +46,7 @@ func statToCbFlush(flushFinal bool) {
 			flushed := doc.flushed
 			doc.mutex.RUnlock()
 			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount && !flushed) {
+				flushCount++
 				if conf.WriteJSONsToFile {
 					asynFlushToFileChannels[idxFiles] <- doc
 					idxFiles++
@@ -62,6 +64,7 @@ func statToCbFlush(flushFinal bool) {
 			}
 		}
 	}
+	log.Printf("\tflushCount:%d", flushCount)
 }
 
 func flushToFiles(id string) {
