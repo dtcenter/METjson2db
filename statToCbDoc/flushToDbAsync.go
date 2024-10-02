@@ -42,9 +42,10 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 				doc.mutex.RLock()
 				doc.flushed = false
 				doc.mutex.RUnlock()
+			} else {
+				count++
 			}
 		}
-		count++
 	}
 	log.Printf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
 	returnDoc := CbDataDocument{}
