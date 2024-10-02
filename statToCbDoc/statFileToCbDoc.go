@@ -143,7 +143,9 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 			}
 		}
 	}
-	doc.mutex.Unlock()
 
-	// log.Printf("Cb doc:\n", doc.toJSONString())
+	if id == ":V11.1.0:ECMWF:20240801_000000:P1000:TMP:P1000:PNA:SAL1L2" {
+		log.Printf("Cb doc:\n%s\n", doc.toJSONString())
+	}
+	doc.mutex.Unlock()
 }
