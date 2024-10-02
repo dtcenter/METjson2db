@@ -43,7 +43,7 @@ func statFileToCbDoc(filepath string) error {
 		See spec in readme, section:
 		# Output location, configuration and logic
 		*/
-		totalLinesProcessed = totalLinesProcessed + 1
+		totalLinesProcessed++
 		if (totalLinesProcessed % 1000) == 0 {
 			statToCbFlush(false)
 		}
