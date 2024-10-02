@@ -38,6 +38,7 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		_, err := conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {
 			log.Println(err)
+			log.Printf("******* Upsert error:ID:%s", id)
 			doc.flushed = false
 		} else {
 			count++
