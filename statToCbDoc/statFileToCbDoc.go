@@ -144,8 +144,13 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		}
 	}
 
-	if id == ":V11.1.0:ECMWF:20240801_000000:P1000:TMP:P1000:PNA:SAL1L2" {
-		log.Printf("Cb doc:\n%s\n", doc.toJSONString())
+	for i := 0; i < len(troubleShoot.DocIdTrack); i++ {
+		if id == troubleShoot.DocIdTrack[i].ID || troubleShoot.DocIdTrack[i].ID == "*" {
+			if slices.Contains(troubleShoot.DocIdTrack[i].Actions, "logJSON") {
+				log.Printf("Tracking doc:\n%s\n", doc.toJSONString())
+			}
+		}
 	}
+
 	doc.mutex.Unlock()
 }

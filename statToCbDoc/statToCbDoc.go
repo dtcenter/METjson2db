@@ -66,7 +66,14 @@ type ConfigJSON struct {
 	LineTypeColumns                []struct {
 		LineType string   `json:"lineType"`
 		Columns  []Column `json:"columns"`
-	}
+	} `json:"lineTypeColumns"`
+}
+
+type TroubleShoot struct {
+	DocIdTrack []struct {
+		ID      string   `json:"id"`
+		Actions []string `json:"actions"`
+	} `json:"docIdTrack"`
 }
 
 type Credentials struct {
@@ -92,6 +99,7 @@ type ColDef struct {
 type ColDefArray []ColDef
 
 var conf = ConfigJSON{}
+var troubleShoot = TroubleShoot{}
 var cbLineTypeColDefs map[string]ColDefArray
 var totalLinesProcessed = 0
 var cbDocs map[string]CbDataDocument
@@ -214,6 +222,13 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
+
+	troubleShoot, err = parseTroubleShoot("troubleshoot.json")
+	if err != nil {
+		log.Fatal("No troubleshoot.json found, skipping trouble shooting ...")
+		return
+	}
+
 	log.Printf("MaxFilesInProcessChunk:%d", conf.MaxFilesInProcessChunk)
 	log.Printf("maxLinesToLoad:%d", conf.MaxLinesToLoad)
 	log.Printf("flushToDbDataSectionMaxCount:%d", conf.FlushToDbDataSectionMaxCount)
@@ -379,6 +394,28 @@ func parseConfig(file string) (ConfigJSON, error) {
 	}
 
 	return conf, nil
+}
+
+func parseTroubleShoot(file string) (TroubleShoot, error) {
+
+	log.Println("parseTroubleShoot(" + file + ")")
+
+	ts := TroubleShoot{}
+	tsFile, err := os.Open(file)
+	if err != nil {
+		log.Printf("opening troubleshoot.json file:%s", err.Error())
+		tsFile.Close()
+		return ts, err
+	}
+	defer tsFile.Close()
+
+	jsonParser := json.NewDecoder(tsFile)
+	if err = jsonParser.Decode(&ts); err != nil {
+		log.Fatalln("parsing troubleshoot.json file", err.Error())
+		return ts, err
+	}
+
+	return ts, nil
 }
 
 func getCredentials(credentialsFilePath string) Credentials {
