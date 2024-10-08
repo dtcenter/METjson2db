@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"log"
-	// "github.com/couchbase/gocb/v2"
+	"slices"
+
+	"github.com/couchbase/gocb/v2"
 )
 
 // init runs before main() is evaluated
@@ -42,6 +44,31 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 			doc.flushed = false
 		} else {
 			count++
+
+			if troubleShoot.EnableTrackContextFlushToDb {
+				for i := 0; i < len(troubleShoot.IdTrack.IdList); i++ {
+					if id == troubleShoot.IdTrack.IdList[i] || troubleShoot.IdTrack.IdList[i] == "*" {
+						if slices.Contains(troubleShoot.IdTrack.Actions, "logJSON") {
+							log.Printf(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.toJSONString())
+						}
+						if slices.Contains(troubleShoot.IdTrack.Actions, "verifyWithDbRead") {
+							sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
+							log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
+							queryResult, err := conn.Scope.Query(sqlStr, &gocb.QueryOptions{Adhoc: true})
+							if err != nil {
+								log.Fatal(err)
+							} else {
+								printQueryResult(queryResult)
+							}
+							log.Printf("Tracking[verifyWithDbRead] doc:\n%s\n", doc.toJSONString())
+						}
+
+						if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
+							log.Printf(">>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
+						}
+					}
+				}
+			}
 		}
 		doc.mutex.Unlock()
 	}

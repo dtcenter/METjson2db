@@ -144,13 +144,5 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 		}
 	}
 
-	for i := 0; i < len(troubleShoot.DocIdTrack); i++ {
-		if id == troubleShoot.DocIdTrack[i].ID || troubleShoot.DocIdTrack[i].ID == "*" {
-			if slices.Contains(troubleShoot.DocIdTrack[i].Actions, "logJSON") {
-				log.Printf("Tracking doc:\n%s\n", doc.toJSONString())
-			}
-		}
-	}
-
 	doc.mutex.Unlock()
 }

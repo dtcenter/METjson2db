@@ -1,18 +1,28 @@
 {
-    "docIdTrack": [
-        {
-            "id": ":V11.1.0:FV3_GSL_C384:20240801_000000:P100:VGRD:P100:CONUS:SL1L2",
-            "actions": ["logJSON", "verifyWithDbRead", "checkForNonEmptyDoc"]
-        },
-        {
-            "id": ":V11.1.0:GFS:20240203_120000:P10:SPFH:P10:PNA:SL1L2",
-            "actions": ["logJSON", "verifyWithDbRead", "checkForNonEmptyDoc"]
-        }
-    ],
-    "docIdTrack_templates": [
-        {
-            "id": "*",
-            "actions": ["logJSON", "verifyWithDbRead", "checkForNonEmptyDoc"]
-        }
-    ]
+    "documentation_0": "set track options below to false in production",
+    "enableTrackContextFlushToFile": true,
+    "enableTrackContextFlushToDb": true,
+    "idTrack": {
+        "actions": [
+            "logJSON",
+            "verifyWithDbRead",
+            "checkForEmptyDoc"
+        ],
+        "idList": [
+            ":V11.1.0:FV3_GSL_C384:20240801_000000:P100:VGRD:P100:CONUS:SL1L2",
+            ":V11.1.0:GFS:20240203_120000:P10:SPFH:P10:PNA:SL1L2"
+        ]
+    },
+    "idTrack_documentation": {
+        "actions": [
+            "logJSON",
+            "verifyWithDbRead",
+            "checkForEmptyDoc"
+        ],
+        "idList": [
+            "*",
+            ":V11.1.0:FV3_GSL_C384:20240801_000000:P100:VGRD:P100:CONUS:SL1L2",
+            ":V11.1.0:GFS:20240203_120000:P10:SPFH:P10:PNA:SL1L2"
+        ]
+    }
 }

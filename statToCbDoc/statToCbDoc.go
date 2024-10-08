@@ -70,10 +70,12 @@ type ConfigJSON struct {
 }
 
 type TroubleShoot struct {
-	DocIdTrack []struct {
-		ID      string   `json:"id"`
+	EnableTrackContextFlushToFile bool `json:"enableTrackContextFlushToFile"`
+	EnableTrackContextFlushToDb   bool `json:"enableTrackContextFlushToDb"`
+	IdTrack                       struct {
+		IdList  []string `json:"idList"`
 		Actions []string `json:"actions"`
-	} `json:"docIdTrack"`
+	} `json:"idTrack"`
 }
 
 type Credentials struct {
