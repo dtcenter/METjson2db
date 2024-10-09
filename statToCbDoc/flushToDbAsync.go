@@ -58,9 +58,9 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							if err != nil {
 								log.Fatal(err)
 							} else {
+								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] doc:")
 								printQueryResult(queryResult)
 							}
-							log.Printf("Tracking[verifyWithDbRead] doc:\n%s\n", doc.toJSONString())
 						}
 
 						if slices.Contains(troubleShoot.IdTrack.Actions, "trackDataKeyCount") {
