@@ -51,7 +51,7 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 						}
 						if slices.Contains(troubleShoot.IdTrack.Actions, "verifyWithDbRead") {
 							sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
-							log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
+							// log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
 							// queryResult, err := conn.Scope.Query(sqlStr, &gocb.QueryOptions{Adhoc: true})
 							result := queryWithSQLStringMAP(conn.Scope, sqlStr)
 							m := result[0].(map[string]interface{})
@@ -59,7 +59,8 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							if err != nil {
 								log.Fatal(err)
 							} else {
-								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s", dbReadDoc["ID"])
+								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+									len(doc.headerFields), len(dbReadDoc), len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
 								// printQueryResult(queryResult)
 							}
 						}
