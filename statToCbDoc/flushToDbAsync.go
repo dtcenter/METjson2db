@@ -2,10 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"slices"
-
-	"github.com/couchbase/gocb/v2"
 )
 
 // init runs before main() is evaluated
@@ -54,12 +53,16 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 						if slices.Contains(troubleShoot.IdTrack.Actions, "verifyWithDbRead") {
 							sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
 							log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
-							queryResult, err := conn.Scope.Query(sqlStr, &gocb.QueryOptions{Adhoc: true})
+							// queryResult, err := conn.Scope.Query(sqlStr, &gocb.QueryOptions{Adhoc: true})
+							result := queryWithSQLStringMAP(conn.Scope, sqlStr)
+							m := result[0].(map[string]interface{})
 							if err != nil {
 								log.Fatal(err)
 							} else {
 								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] doc:")
-								printQueryResult(queryResult)
+								bs, _ := json.Marshal(m)
+								fmt.Println(string(bs))
+								// printQueryResult(queryResult)
 							}
 						}
 
