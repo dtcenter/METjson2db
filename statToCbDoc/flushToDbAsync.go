@@ -64,7 +64,7 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 						}
 
 						if slices.Contains(troubleShoot.IdTrack.Actions, "trackDataKeyCount") {
-							log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]", len(doc.headerFields), docDataKeyCountMap[id], len(doc.data))
+							log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]", len(doc.headerFields), docKeyCountMap[id].DataLen, len(doc.data))
 							docKeyCountMap[id] = DocKeyCounts{len(doc.headerFields), len(doc.data)}
 						}
 
