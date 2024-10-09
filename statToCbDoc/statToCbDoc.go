@@ -121,6 +121,7 @@ type DocKeyCounts struct {
 	DataLen   int
 }
 
+var docKeyCountMapMutex *sync.RWMutex
 var docKeyCountMap map[string]DocKeyCounts
 
 // init runs before main() is evaluated
@@ -140,6 +141,7 @@ func main() {
 	cbLineTypeColDefs = make(map[string]ColDefArray)
 	cbDocs = make(map[string]CbDataDocument)
 	cbDocsMutex = &sync.RWMutex{}
+	docKeyCountMapMutex = &sync.RWMutex{}
 	docKeyCountMap = make(map[string]DocKeyCounts)
 
 	home, _ := os.UserHomeDir()

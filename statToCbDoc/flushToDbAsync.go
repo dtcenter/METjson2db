@@ -48,6 +48,10 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		} else {
 			count++
 
+			docKeyCountMapMutex.Lock()
+			docKeyCountMap[id] = DocKeyCounts{len(doc.headerFields), len(doc.data)}
+			docKeyCountMapMutex.Unlock()
+
 			if troubleShoot.EnableTrackContextFlushToDb {
 				for i := 0; i < len(troubleShoot.IdTrack.IdList); i++ {
 					if id == troubleShoot.IdTrack.IdList[i] || troubleShoot.IdTrack.IdList[i] == "*" {
@@ -77,7 +81,6 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 
 						if slices.Contains(troubleShoot.IdTrack.Actions, "trackDataKeyCount") {
 							log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]", len(doc.headerFields), docKeyCountMap[id].DataLen, len(doc.data))
-							docKeyCountMap[id] = DocKeyCounts{len(doc.headerFields), len(doc.data)}
 						}
 
 						if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
