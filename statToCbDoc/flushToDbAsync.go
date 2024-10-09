@@ -63,6 +63,11 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							log.Printf("Tracking[verifyWithDbRead] doc:\n%s\n", doc.toJSONString())
 						}
 
+						if slices.Contains(troubleShoot.IdTrack.Actions, "trackDataKeyCount") {
+							log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]", len(doc.headerFields), tsDocDataKeyCountMap[id], len(doc.data))
+							tsDocDataKeyCountMap[id] = len(doc.data)
+						}
+
 						if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
 							log.Printf(">>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
 						}

@@ -115,6 +115,9 @@ var asyncWaitGroupFileProcessor sync.WaitGroup
 var asyncWaitGroupFlushToFiles sync.WaitGroup
 var asyncWaitGroupFlushToDb sync.WaitGroup
 
+// troubleshoot data structures
+var tsDocDataKeyCountMap map[string]int
+
 // init runs before main() is evaluated
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -132,6 +135,7 @@ func main() {
 	cbLineTypeColDefs = make(map[string]ColDefArray)
 	cbDocs = make(map[string]CbDataDocument)
 	cbDocsMutex = &sync.RWMutex{}
+	tsDocDataKeyCountMap = make(map[string]int)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
