@@ -160,6 +160,18 @@ func queryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 	return retValues
 }
 
+func getDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface{}) {
+	log.Println("getDocWithId(\n" + id + "\n)")
+
+	queryResult, err := col.Get("document-key", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var doc map[string]interface{}
+	err = queryResult.Content(&doc)
+	return doc
+}
+
 func queryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{}) {
 	log.Println("queryWithSQLStringMAP(\n" + text + "\n)")
 

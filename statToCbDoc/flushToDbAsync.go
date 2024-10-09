@@ -34,6 +34,11 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		doc.flushed = true
 		id := doc.headerFields["ID"].StringVal
 
+		/*
+			https://docs.couchbase.com/go-sdk/current/howtos/kv-operations.html
+			CAS - Compare and Swap (CAS)
+		*/
+
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 		_, err := conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {
@@ -50,11 +55,11 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							log.Printf(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.toJSONString())
 						}
 						if slices.Contains(troubleShoot.IdTrack.Actions, "verifyWithDbRead") {
-							sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
+							// sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
 							// log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
-							// queryResult, err := conn.Scope.Query(sqlStr, &gocb.QueryOptions{Adhoc: true})
-							result := queryWithSQLStringMAP(conn.Scope, sqlStr)
-							m := result[0].(map[string]interface{})
+							m := getDocWithId(conn.Collection, id)
+							// result := queryWithSQLStringMAP(conn.Scope, sqlStr)
+							// m := result[0].(map[string]interface{})
 							dbReadDoc := m["c"].(map[string]interface{})
 							if err != nil {
 								log.Fatal(err)
