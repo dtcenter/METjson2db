@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"slices"
 )
@@ -56,12 +55,11 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							// queryResult, err := conn.Scope.Query(sqlStr, &gocb.QueryOptions{Adhoc: true})
 							result := queryWithSQLStringMAP(conn.Scope, sqlStr)
 							m := result[0].(map[string]interface{})
+							dbReadDoc := m["c"].(map[string]interface{})
 							if err != nil {
 								log.Fatal(err)
 							} else {
-								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] doc:")
-								bs, _ := json.Marshal(m)
-								fmt.Println(string(bs))
+								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s", dbReadDoc["ID"])
 								// printQueryResult(queryResult)
 							}
 						}
