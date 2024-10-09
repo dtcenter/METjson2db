@@ -31,7 +31,6 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 
 		var anyJson map[string]interface{}
 
-		doc.mutex.Lock()
 		json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
 		doc.flushed = true
 		id := doc.headerFields["ID"].StringVal
