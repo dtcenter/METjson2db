@@ -163,12 +163,15 @@ func queryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 func getDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface{}) {
 	log.Println("getDocWithId(\n" + id + "\n)")
 
-	queryResult, err := col.Get("document-key", nil)
+	queryResult, err := col.Get(id, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var doc map[string]interface{}
 	err = queryResult.Content(&doc)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return doc
 }
 
