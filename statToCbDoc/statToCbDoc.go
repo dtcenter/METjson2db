@@ -46,6 +46,7 @@ type Column struct {
 type ConfigJSON struct {
 	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
 	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
+	UpdateOnlyOnDocKeyCountChange  bool     `json:"updateOnlyOnDocKeyCountChange"`
 	FlushToDbDataSectionMaxCount   int64    `json:"flushToDbDataSectionMaxCount"`
 	OverWriteData                  bool     `json:"overWriteData"`
 	WriteJSONsToFile               bool     `json:"writeJSONsToFile"`
@@ -115,8 +116,12 @@ var asyncWaitGroupFileProcessor sync.WaitGroup
 var asyncWaitGroupFlushToFiles sync.WaitGroup
 var asyncWaitGroupFlushToDb sync.WaitGroup
 
-// troubleshoot data structures
-var tsDocDataKeyCountMap map[string]int
+type DocKeyCounts struct {
+	HeaderLen int
+	DataLen   int
+}
+
+var docKeyCountMap map[string]DocKeyCounts
 
 // init runs before main() is evaluated
 func init() {
@@ -135,7 +140,7 @@ func main() {
 	cbLineTypeColDefs = make(map[string]ColDefArray)
 	cbDocs = make(map[string]CbDataDocument)
 	cbDocsMutex = &sync.RWMutex{}
-	tsDocDataKeyCountMap = make(map[string]int)
+	docKeyCountMap = make(map[string]DocKeyCounts)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
