@@ -60,7 +60,11 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 								log.Fatal(err)
 							} else {
 								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
-									len(doc.headerFields), len(dbReadDoc), len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
+									len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
+								if len(doc.headerFields) != (len(dbReadDoc)-1) || len(doc.data) != len(dbReadDoc["data"].(map[string]interface{})) {
+									log.Printf("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+										len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
+								}
 								// printQueryResult(queryResult)
 							}
 						}
