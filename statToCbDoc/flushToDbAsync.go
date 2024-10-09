@@ -69,7 +69,9 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 						}
 
 						if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
-							log.Printf(">>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
+							if len(doc.headerFields) == 0 {
+								log.Printf(">>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
+							}
 						}
 					}
 				}
