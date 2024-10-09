@@ -47,6 +47,7 @@ func statToCbFlush(flushFinal bool) {
 			headerLen := len(doc.headerFields)
 			dataLen := len(maps.Keys(doc.data))
 			if conf.UpdateOnlyOnDocKeyCountChange && headerLen == docKeyCountMap[doc.headerFields["ID"].StringVal].HeaderLen && dataLen == docKeyCountMap[doc.headerFields["ID"].StringVal].DataLen {
+				doc.mutex.RUnlock()
 				continue
 			}
 			flushed := doc.flushed
