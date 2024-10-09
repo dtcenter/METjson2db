@@ -44,14 +44,17 @@ func statToCbFlush(flushFinal bool) {
 		// for id, doc
 		for _, doc := range cbDocs {
 			doc.mutex.RLock()
+			docKeyCountMapMutex.RLock()
 			headerLen := len(doc.headerFields)
 			dataLen := len(maps.Keys(doc.data))
 			if conf.UpdateOnlyOnDocKeyCountChange && headerLen == docKeyCountMap[doc.headerFields["ID"].StringVal].HeaderLen && dataLen == docKeyCountMap[doc.headerFields["ID"].StringVal].DataLen {
 				doc.mutex.RUnlock()
+				docKeyCountMapMutex.RUnlock()
 				continue
 			}
 			flushed := doc.flushed
 			doc.mutex.RUnlock()
+			docKeyCountMapMutex.RUnlock()
 			if flushFinal || (int64(dataLen) >= conf.FlushToDbDataSectionMaxCount && !flushed) {
 				flushCount++
 				if conf.WriteJSONsToFile {
