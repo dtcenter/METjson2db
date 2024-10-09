@@ -211,6 +211,8 @@ func printQueryResult(queryResult *gocb.QueryResult) {
 		err := queryResult.Row(&result)
 		if err != nil {
 			log.Fatal(err)
+		} else {
+			fmt.Println(result)
 		}
 	}
 }
