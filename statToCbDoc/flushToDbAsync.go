@@ -55,14 +55,16 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							log.Printf(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.toJSONString())
 						}
 						if slices.Contains(troubleShoot.IdTrack.Actions, "verifyWithDbRead") {
-							// sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
-							// log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
-							m := getDocWithId(conn.Collection, id)
-							// result := queryWithSQLStringMAP(conn.Scope, sqlStr)
-							// m := result[0].(map[string]interface{})
-							dbReadDoc := m["c"].(map[string]interface{})
-							if err != nil {
-								log.Fatal(err)
+							/*
+								sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
+								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
+								result := queryWithSQLStringMAP(conn.Scope, sqlStr)
+								m := result[0].(map[string]interface{})
+								dbReadDoc := m["c"].(map[string]interface{})
+							*/
+							dbReadDoc := getDocWithId(conn.Collection, id)
+							if dbReadDoc == nil {
+								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
 							} else {
 								log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 									len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
@@ -70,7 +72,6 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 									log.Printf("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 										len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
 								}
-								// printQueryResult(queryResult)
 							}
 						}
 
