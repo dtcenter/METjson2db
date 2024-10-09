@@ -27,8 +27,12 @@ func statToCbFlush(flushFinal bool) {
 	if conf.RunNonThreaded {
 		conn := getDbConnection(credentials)
 		for id, doc := range cbDocs {
-			dataLen := int64(len(maps.Keys(doc.data)))
-			if flushFinal || (dataLen >= conf.FlushToDbDataSectionMaxCount) {
+			headerLen := len(doc.headerFields)
+			dataLen := len(maps.Keys(doc.data))
+			if conf.UpdateOnlyOnDocKeyCountChange && headerLen == docKeyCountMap[doc.headerFields["ID"].StringVal].HeaderLen && dataLen == docKeyCountMap[doc.headerFields["ID"].StringVal].DataLen {
+				continue
+			}
+			if flushFinal || int64(dataLen) >= int64(conf.FlushToDbDataSectionMaxCount) {
 				if conf.WriteJSONsToFile {
 					flushToFiles(id)
 				}
@@ -36,6 +40,7 @@ func statToCbFlush(flushFinal bool) {
 					flushToDb(conn, id)
 				}
 			}
+			docKeyCountMap[id] = DocKeyCounts{len(doc.headerFields), len(doc.data)}
 		}
 	} else {
 		// distribute docs to channels, round-robin, for async processing
