@@ -87,7 +87,7 @@ func flushToFiles(id string) {
 	// log.Printf("flushToFiles(%s)", id)
 
 	doc := cbDocs[id]
-	log.Printf("data keys:%v", maps.Keys(doc.data))
+	// log.Printf("data keys:%v", maps.Keys(doc.data))
 
 	docStr := []byte(doc.toJSONString())
 	fileName := conf.OutputFolder + "/" + id + ".json"
@@ -101,7 +101,7 @@ func flushToDb(conn CbConnection, id string) {
 	// log.Printf("flushToDb(%s)", id)
 
 	doc := cbDocs[id]
-	log.Printf("data keys:%v", maps.Keys(doc.data))
+	// log.Printf("data keys:%v", maps.Keys(doc.data))
 
 	/*
 		TODO:

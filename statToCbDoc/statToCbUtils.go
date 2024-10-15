@@ -56,7 +56,7 @@ func readCbDocument(file string) (CbDataDocument, error) {
 
 	data := parsed["data"].(map[string]any)
 	dataKeys := maps.Keys(data)
-	log.Printf("data keys:\n%v", dataKeys)
+	// log.Printf("data keys:\n%v", dataKeys)
 	for i := 0; i < len(dataKeys); i++ {
 		dataKey := dataKeys[i]
 		doc.data[dataKey] = make(map[string]CbDataValue)
