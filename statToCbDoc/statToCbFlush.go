@@ -151,6 +151,16 @@ func flushToDb(conn CbConnection, id string) {
 					}
 				}
 
+				if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDocsInDb") {
+					sqlStr := "SELECT META(d).id FROM metdata._default.MET_default AS d WHERE d IS null"
+					// log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
+					result := queryWithSQLStringMAP(conn.Scope, sqlStr)
+					if len(result) > 0 {
+						log.Printf("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDocsInDb] empty docs[%d] found ion DB!!!", len(result))
+						log.Fatal("Terminating due to track error ....")
+					}
+				}
+
 				if slices.Contains(troubleShoot.IdTrack.Actions, "trackDataKeyCount") {
 					log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]", len(doc.headerFields), docKeyCountMap[id].DataLen, len(doc.data))
 				}
