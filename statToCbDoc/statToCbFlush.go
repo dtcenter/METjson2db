@@ -84,7 +84,7 @@ func statToCbFlush(flushFinal bool) {
 }
 
 func flushToFiles(id string) {
-	log.Printf("flushToFiles(%s)", id)
+	// log.Printf("flushToFiles(%s)", id)
 
 	doc := cbDocs[id]
 	log.Printf("data keys:%v", maps.Keys(doc.data))
@@ -98,7 +98,7 @@ func flushToFiles(id string) {
 }
 
 func flushToDb(conn CbConnection, id string) {
-	log.Printf("flushToDb(%s)", id)
+	// log.Printf("flushToDb(%s)", id)
 
 	doc := cbDocs[id]
 	log.Printf("data keys:%v", maps.Keys(doc.data))
