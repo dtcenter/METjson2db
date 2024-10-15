@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"slices"
 
 	"golang.org/x/exp/maps"
 	// "github.com/couchbase/gocb/v2"
@@ -115,5 +116,45 @@ func flushToDb(conn CbConnection, id string) {
 	_, err := conn.Collection.Upsert(doc.headerFields["ID"].StringVal, anyJson, nil)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if troubleShoot.EnableTrackContextFlushToDb {
+		for i := 0; i < len(troubleShoot.IdTrack.IdList); i++ {
+			if id == troubleShoot.IdTrack.IdList[i] || troubleShoot.IdTrack.IdList[i] == "*" {
+				if slices.Contains(troubleShoot.IdTrack.Actions, "logJSON") {
+					log.Printf(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.toJSONString())
+				}
+				if slices.Contains(troubleShoot.IdTrack.Actions, "verifyWithDbRead") {
+					/*
+						sqlStr := "SELECT c FROM metdata._default.MET_default AS c WHERE c.ID = \"" + id + "\""
+						log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
+						result := queryWithSQLStringMAP(conn.Scope, sqlStr)
+						m := result[0].(map[string]interface{})
+						dbReadDoc := m["c"].(map[string]interface{})
+					*/
+					dbReadDoc := getDocWithId(conn.Collection, id)
+					if dbReadDoc == nil {
+						log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
+					} else {
+						log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+							len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
+						if len(doc.headerFields) != (len(dbReadDoc)-1) || len(doc.data) != len(dbReadDoc["data"].(map[string]interface{})) {
+							log.Printf("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+								len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
+						}
+					}
+				}
+
+				if slices.Contains(troubleShoot.IdTrack.Actions, "trackDataKeyCount") {
+					log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]", len(doc.headerFields), docKeyCountMap[id].DataLen, len(doc.data))
+				}
+
+				if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
+					if len(doc.headerFields) == 0 {
+						log.Printf(">>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
+					}
+				}
+			}
+		}
 	}
 }
