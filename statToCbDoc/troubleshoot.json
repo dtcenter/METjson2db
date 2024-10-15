@@ -1,7 +1,8 @@
 {
     "documentation_0": "set track options below to false in production",
-    "enableTrackContextFlushToFile": true,
+    "enableTrackContextFlushToFile": false,
     "enableTrackContextFlushToDb": true,
+    "terminateAtFirstTrackError" : true,
     "idTrack": {
         "actions": [
             "verifyWithDbRead"

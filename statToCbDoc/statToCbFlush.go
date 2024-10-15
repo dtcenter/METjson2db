@@ -133,15 +133,21 @@ func flushToDb(conn CbConnection, id string) {
 						dbReadDoc := m["c"].(map[string]interface{})
 					*/
 					dbReadDoc := getDocWithId(conn.Collection, id)
+					trackError := false
 					if dbReadDoc == nil {
 						log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
+						trackError = true
 					} else {
 						log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 							len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
 						if len(doc.headerFields) != (len(dbReadDoc)-1) || len(doc.data) != len(dbReadDoc["data"].(map[string]interface{})) {
 							log.Printf("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 								len(doc.headerFields), len(dbReadDoc)-1, len(doc.data), len(dbReadDoc["data"].(map[string]interface{})))
+							trackError = true
 						}
+					}
+					if trackError && troubleShoot.TerminateAtFirstTrackError {
+						log.Fatal("Terminating due to track error ....")
 					}
 				}
 
@@ -151,7 +157,10 @@ func flushToDb(conn CbConnection, id string) {
 
 				if slices.Contains(troubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
 					if len(doc.headerFields) == 0 {
-						log.Printf(">>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
+						log.Printf("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.headerFields), len(doc.data))
+						if troubleShoot.TerminateAtFirstTrackError {
+							log.Fatal("Terminating due to track error ....")
+						}
 					}
 				}
 			}
