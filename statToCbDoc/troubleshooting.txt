@@ -1,3 +1,40 @@
+October - 2024 - notes on empty document issue 
+==============================================
+Delete all documents in the bucket, on Couchbase (adb-cb1) UI:
+
+DELETE FROM metdata._default.MET_default;
+
+On adb-cb1
+cd /home/amb-verif/METdatacb/statToCbDoc
+
+go run . -c ~/credentials.MET -s ./settings.json -l ./load_spec.json
+
+After about 47748 lines are processed, (10,250 documents upserted to DB) it exits with the following error.
+
+
+2024/10/21 22:36:58 statToCbFlush.go:141: >>>>>>>>>>>>> Tracking[verifyWithDbRead] ID::V11.1.0:FV3_GSL_C384:20240801_000000:P100:VGRD:P100:CONUS:SL1L2, headerFields:[cur:18, db:18], data:[cur:3, db:3]
+2024/10/21 22:36:58 db-utils.go:179: queryWithSQLStringMAP(
+SELECT META(d).id FROM metdata._default.MET_default AS d WHERE d IS null
+)
+2024/10/21 22:36:59 statToCbFlush.go:159: ******************** >>>>>>>>>>>>> Tracking[checkForEmptyDocsInDb] empty docs[3300] found ion DB!!!
+2024/10/21 22:36:59 statToCbFlush.go:160: Terminating due to track error ....
+exit status 1
+
+Some notes - I am able to reproduce this in single-threaded mode  (settings.json => "runNonThreaded": true,)
+
+Single threaded code path:
+statToCbDoc/statToCbDoc.go:299 startProcessing(inputFiles)
+=>
+statToCbDoc/statToCbRun.go:41 err := statFileToCbDoc(file)
+statToCbDoc/statToCbRun.go:48 statToCbFlush(false)
+=>
+statToCbDoc/statToCbFlush.go:41 flushToDb(conn, id)
+statToCbDoc/statToCbFlush.go:100 func flushToDb(conn CbConnection, id string) {
+
+
+
+Troubleshooting - Documentation
+===============================
 Troubleshooting is driven by settings in the troubleshoot.json
 The run will load this file from the working directory.
 
