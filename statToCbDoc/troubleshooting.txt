@@ -1,0 +1,38 @@
+Troubleshooting is driven by settings in the troubleshoot.json
+The run will load this file from the working directory.
+
+NOTE:
+In production, please set the following to false:
+    "enableTrackContextFlushToFile": false,
+    "enableTrackContextFlushToDb": false,
+
+Current implementation of troubleshooting focuses on 
+narrowing down data upload errors.  Since the data is converted
+to JSON documents with unique IDs, it achieves this by tracking specific
+document IDs.
+
+
+For example, the configuration below:
+
+    "terminateAtFirstTrackError" : true,
+    "idTrack": {
+        "actions": [
+            "verifyWithDbRead",
+            "checkForEmptyDocsInDb"
+        ],
+        "idList": [
+            ":V11.1.0:FV3_GSL_C384:20240801_000000:P100:VGRD:P100:CONUS:SL1L2",
+            ":V11.1.0:GFS:20240203_120000:P10:SPFH:P10:PNA:SL1L2"
+        ]
+    },
+
+will check each ID in the idList using the actions listed.
+
+action: verifyWithDbRead
+------------------------
+Verifies the document currently just upserted with an immediate DB
+read of the same and compares both.
+
+action: checkForEmptyDocsInDb
+After each upsert, checks if there are any empty documents in the DB.
+Note that this queries the entire DB for empty (null) documents.

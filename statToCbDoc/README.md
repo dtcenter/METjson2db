@@ -71,3 +71,4 @@ By default, log is printed to stdout, but if you instead want to log to a file, 
 # troubleshoot.json
 If a troubleshoot.json file exists in the working folder, it would be used to log specific troubleshooting information.
 For example, this file can be used to track extra logging for a document with a specific ID.
+For more detailed information on troubleshooting, please refer to the troubleshooting.txt document.
