@@ -110,10 +110,15 @@ func flushToDb(conn CbConnection, id string) {
 	*/
 
 	var anyJson map[string]interface{}
-	json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
+	err := json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
+
+	if err != nil || anyJson["data"] == nil || len(anyJson["data"].(map[string]interface{})) == 0 {
+		log.Printf("NULL document[%s], exiting ...", id)
+		log.Fatal("NULL document, exiting ...")
+	}
 
 	// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-	_, err := conn.Collection.Upsert(doc.headerFields["ID"].StringVal, anyJson, nil)
+	_, err = conn.Collection.Upsert(doc.headerFields["ID"].StringVal, anyJson, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -134,7 +139,7 @@ func flushToDb(conn CbConnection, id string) {
 					*/
 					dbReadDoc := getDocWithId(conn.Collection, id)
 					trackError := false
-					if dbReadDoc == nil {
+					if dbReadDoc == nil || dbReadDoc["data"] == nil || len(dbReadDoc["data"].(map[string]interface{})) == 0 {
 						log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
 						trackError = true
 					} else {
