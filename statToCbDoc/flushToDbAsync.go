@@ -47,7 +47,7 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		*/
 
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-		_, err := conn.Collection.Upsert(id, anyJson, nil)
+		_, err = conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {
 			log.Println(err)
 			log.Printf("******* Upsert error:ID:%s", id)
