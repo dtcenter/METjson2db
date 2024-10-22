@@ -113,8 +113,8 @@ func flushToDb(conn CbConnection, id string) {
 	err := json.Unmarshal([]byte(doc.toJSONString()), &anyJson)
 
 	if err != nil || anyJson["data"] == nil || len(anyJson["data"].(map[string]interface{})) == 0 {
-		log.Printf("NULL document[%s], exiting ...", id)
-		log.Fatal("NULL document, exiting ...")
+		log.Printf("NULL document[%s]", id)
+		return
 	}
 
 	// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
