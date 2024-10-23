@@ -37,7 +37,13 @@ func statFileToCbDoc(filepath string) error {
 		// log.Printf("%d:%v:%d", lineCount, fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
-		statFieldsToCbDoc(lineType, fields)
+		doc := statFieldsToCbDoc(lineType, fields)
+
+		if len(doc.headerFields) < 2 || len(doc.data) == 0 {
+			log.Printf("NULL document[%s]", doc.headerFields["ID"].StringVal)
+			log.Printf("lineType:%s, filepath:%s, line:%d", lineType, filepath, lineCount)
+			continue
+		}
 
 		/* check if time to flush cbDocs to files and/or db
 		See spec in readme, section:
@@ -71,13 +77,13 @@ func statFileToCbDoc(filepath string) error {
 	return nil
 }
 
-func statFieldsToCbDoc(lineType string, fields []string) {
+func statFieldsToCbDoc(lineType string, fields []string) CbDataDocument {
 	// log.Println("statFieldsToCbDoc(" + lineType + ")")
 
 	coldef, ok := cbLineTypeColDefs[lineType]
 	if !ok {
 		log.Printf("no coldef for lineType:%s", lineType)
-		return
+		return CbDataDocument{}
 	}
 	// log.Printf("fields[]:%d, coldef[]:%d", len(fields), len(coldef))
 
@@ -145,4 +151,5 @@ func statFieldsToCbDoc(lineType string, fields []string) {
 	}
 
 	doc.mutex.Unlock()
+	return doc
 }
