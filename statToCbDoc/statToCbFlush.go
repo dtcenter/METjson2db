@@ -64,14 +64,14 @@ func statToCbFlush(flushFinal bool) {
 			if flushFinal || (int64(dataLen) >= conf.FlushToDbDataSectionMaxCount && !flushed) {
 				flushCount++
 				if conf.WriteJSONsToFile {
-					asynFlushToFileChannels[idxFiles] <- doc
+					asyncFlushToFileChannels[idxFiles] <- doc
 					idxFiles++
 					if idxFiles >= int(conf.ThreadsWriteToDisk) {
 						idxFiles = 0
 					}
 				}
 				if conf.UploadToDb {
-					asynFlushToDbChannels[idxDb] <- doc
+					asyncFlushToDbChannels[idxDb] <- doc
 					idxDb++
 					if idxDb >= int(conf.ThreadsDbUpload) {
 						idxDb = 0

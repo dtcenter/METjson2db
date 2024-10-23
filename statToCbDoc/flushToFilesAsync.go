@@ -14,7 +14,7 @@ func flushToFilesAsync(threadIdx int) {
 	count := 0
 	errors := 0
 	for {
-		doc, ok := <-asynFlushToFileChannels[threadIdx]
+		doc, ok := <-asyncFlushToFileChannels[threadIdx]
 		doc.mutex.Lock()
 		if len(doc.headerFields) == 0 {
 			log.Printf("\tflushToFilesAsync(%d), end-marker received!", threadIdx)
@@ -31,5 +31,5 @@ func flushToFilesAsync(threadIdx int) {
 	log.Printf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
 	returnDoc := CbDataDocument{}
 	returnDoc.initReturn(int64(count), int64(errors))
-	asynFlushToFileChannels[threadIdx] <- returnDoc
+	asyncFlushToFileChannels[threadIdx] <- returnDoc
 }

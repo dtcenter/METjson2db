@@ -48,21 +48,24 @@ func startProcessing(files []string) bool {
 			}
 		}
 	} else {
-		// distribute files to channels, round-robin, for async processing
-		idx := 0
-		for file, status := range statToCbRun.fileStatus {
-			log.Printf(file, status)
-			asynFileProcessorChannels[idx] <- file
-			idx++
-			if idx >= int(conf.ThreadsFileProcessor) {
-				idx = 0
+		log.Fatal("Unimplemented feature, threadsFileProcessor > 1    (FOR A FUTURE RELEASE!!!!)")
+		/*
+			// distribute files to channels, round-robin, for async processing
+			idx := 0
+			for file, status := range statToCbRun.fileStatus {
+				log.Printf(file, status)
+				asyncFileProcessorChannels[idx] <- file
+				idx++
+				if idx >= int(conf.ThreadsFileProcessor) {
+					idx = 0
+				}
 			}
-		}
-		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
-			asynFileProcessorChannels[fi] <- "end"
-		}
-		asyncWaitGroupFileProcessor.Wait()
-		log.Printf("asyncWaitGroupFileProcessor finished!")
+			for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
+				asyncFileProcessorChannels[fi] <- "end"
+			}
+			asyncWaitGroupFileProcessor.Wait()
+			log.Printf("asyncWaitGroupFileProcessor finished!")
+		*/
 	}
 
 	log.Printf(fmt.Sprintf("%d", len(files)) + " files processed in:" + fmt.Sprintf("%d", time.Since(start).Milliseconds()) + " ms")

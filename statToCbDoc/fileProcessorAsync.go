@@ -15,7 +15,7 @@ func fileProcessorAsync(threadIdx int) {
 	count := 0
 	errors := 0
 	for {
-		file, ok := <-asynFileProcessorChannels[threadIdx]
+		file, ok := <-asyncFileProcessorChannels[threadIdx]
 		if file == "end" {
 			log.Printf("\tfileProcessorAsync(%d), end-marker received!", threadIdx)
 			break
@@ -36,5 +36,5 @@ func fileProcessorAsync(threadIdx int) {
 		}
 	}
 	log.Printf("fileProcessorAsync(%d) file count:%d, errors:%d", threadIdx, count, errors)
-	asynFileProcessorChannels[threadIdx] <- fmt.Sprintf("endReturn:%d:%d", count, errors)
+	asyncFileProcessorChannels[threadIdx] <- fmt.Sprintf("endReturn:%d:%d", count, errors)
 }

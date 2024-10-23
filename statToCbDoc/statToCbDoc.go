@@ -110,9 +110,10 @@ var cbDocs map[string]CbDataDocument
 var cbDocsMutex *sync.RWMutex
 var dataKeyIdx int
 var credentials = Credentials{}
-var asynFileProcessorChannels []chan string
-var asynFlushToFileChannels []chan CbDataDocument
-var asynFlushToDbChannels []chan CbDataDocument
+
+var asyncFileProcessorChannels []chan string
+var asyncFlushToFileChannels []chan CbDataDocument
+var asyncFlushToDbChannels []chan CbDataDocument
 var asyncWaitGroupFileProcessor sync.WaitGroup
 var asyncWaitGroupFlushToFiles sync.WaitGroup
 var asyncWaitGroupFlushToDb sync.WaitGroup
@@ -276,7 +277,7 @@ func main() {
 	if !conf.RunNonThreaded {
 		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
 			fi := fi
-			asynFileProcessorChannels = append(asynFileProcessorChannels, make(chan string, conf.ChannelBufferSizeNumberOfFiles))
+			asyncFileProcessorChannels = append(asyncFileProcessorChannels, make(chan string, conf.ChannelBufferSizeNumberOfFiles))
 			asyncWaitGroupFileProcessor.Add(1)
 			go func() {
 				defer asyncWaitGroupFileProcessor.Done()
@@ -286,7 +287,7 @@ func main() {
 
 		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
 			fi := fi
-			asynFlushToFileChannels = append(asynFlushToFileChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
+			asyncFlushToFileChannels = append(asyncFlushToFileChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
 			asyncWaitGroupFlushToFiles.Add(1)
 			go func() {
 				defer asyncWaitGroupFlushToFiles.Done()
@@ -296,7 +297,7 @@ func main() {
 
 		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
 			di := di
-			asynFlushToDbChannels = append(asynFlushToDbChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
+			asyncFlushToDbChannels = append(asyncFlushToDbChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
 			asyncWaitGroupFlushToDb.Add(1)
 			go func() {
 				defer asyncWaitGroupFlushToDb.Done()
@@ -321,11 +322,11 @@ func main() {
 		endMarkerDoc.init()
 
 		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
-			asynFlushToFileChannels[fi] <- endMarkerDoc
+			asyncFlushToFileChannels[fi] <- endMarkerDoc
 		}
 
 		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
-			asynFlushToDbChannels[di] <- endMarkerDoc
+			asyncFlushToDbChannels[di] <- endMarkerDoc
 		}
 
 		asyncWaitGroupFlushToFiles.Wait()
@@ -334,14 +335,14 @@ func main() {
 		log.Printf("asyncWaitGroupFlushToDb finished!")
 
 		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
-			asynFileProcessorChannels[fi] <- "end"
+			asyncFileProcessorChannels[fi] <- "end"
 		}
 		asyncWaitGroupFileProcessor.Wait()
 		log.Printf("asyncWaitGroupFileProcessor finished!")
 
 		// get return info from threads
 		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
-			doc, ok := <-asynFlushToFileChannels[fi]
+			doc, ok := <-asyncFlushToFileChannels[fi]
 			if ok && len(doc.headerFields) > 0 {
 				log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
 				fileTotalCount += doc.headerFields["count"].IntVal
@@ -353,7 +354,7 @@ func main() {
 		}
 
 		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
-			doc, ok := <-asynFlushToDbChannels[di]
+			doc, ok := <-asyncFlushToDbChannels[di]
 			if ok && len(doc.headerFields) > 0 {
 				log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
 				dbTotalCount += doc.headerFields["count"].IntVal

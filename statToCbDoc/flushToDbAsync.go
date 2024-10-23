@@ -16,7 +16,7 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 	count := 0
 	errors := 0
 	for {
-		doc, ok := <-asynFlushToDbChannels[threadIdx]
+		doc, ok := <-asyncFlushToDbChannels[threadIdx]
 		doc.mutex.Lock()
 		if len(doc.headerFields) == 0 {
 			log.Printf("\tflushToDbAsync(%d), end-marker received!", threadIdx)
@@ -117,5 +117,5 @@ func flushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 	log.Printf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
 	returnDoc := CbDataDocument{}
 	returnDoc.initReturn(int64(count), int64(errors))
-	asynFlushToDbChannels[threadIdx] <- returnDoc
+	asyncFlushToDbChannels[threadIdx] <- returnDoc
 }
