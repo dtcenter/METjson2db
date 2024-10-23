@@ -135,9 +135,10 @@ func statFieldsToCbDoc(lineType string, fields []string) CbDataDocument {
 	dsec := DataSection{}
 	// log.Printf("data key:%s", fields[dataKeyIdx])
 	// log.Printf("fields:\n", fields)
-	doc.data[fields[dataKeyIdx]] = dsec
+	dataKey := fields[dataKeyIdx]
+	doc.data[dataKey] = dsec
 	for i := 0; i < len(coldef); i++ {
-		if !coldef[i].IsHeader && !slices.Contains(conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreValues, fields[i]) {
+		if !coldef[i].IsHeader && coldef[i].Name != dataKey && !slices.Contains(conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreValues, fields[i]) {
 			switch coldef[i].DataType {
 			case 0:
 				dsec[coldef[i].Name] = makeStringCbDataValue(fields[i])
