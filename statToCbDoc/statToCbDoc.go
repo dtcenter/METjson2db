@@ -270,7 +270,8 @@ func main() {
 
 	generateColDefsFromConfig(conf, cbLineTypeColDefs)
 
-	log.Printf("inputFiles:\n%v", inputFiles)
+	// log.Printf("inputFiles:\n%v", inputFiles)
+	log.Printf("inputFiles:%d", len(inputFiles))
 
 	if !conf.RunNonThreaded {
 		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {

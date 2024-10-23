@@ -22,8 +22,9 @@ func init() {
 }
 
 func startProcessing(files []string) bool {
-	log.Println("startProcessing(" + fmt.Sprint(len(files)) + ")")
-	log.Printf("files:\n%v", files)
+	log.Printf("startProcessing(%d)", len(files))
+
+	// log.Printf("files:\n%v", files)
 
 	for i := 0; i < len(files); i++ {
 		if len(files[i]) > 0 {
