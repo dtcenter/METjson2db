@@ -86,7 +86,14 @@ func statFieldsToCbDoc(lineType string, fields []string) CbDataDocument {
 	coldef, ok := cbLineTypeColDefs[lineType]
 	if !ok {
 		log.Printf("no coldef for lineType:%s", lineType)
+		lineTypeStats[lineType] = LineTypeStat{0, false}
 		return CbDataDocument{}
+	}
+	lt, ok := lineTypeStats[lineType]
+	if !ok {
+		lineTypeStats[lineType] = LineTypeStat{1, true}
+	} else {
+		lineTypeStats[lineType] = LineTypeStat{lt.ProcessedCount + 1, true}
 	}
 	// log.Printf("fields[]:%d, coldef[]:%d", len(fields), len(coldef))
 

@@ -117,6 +117,13 @@ var asyncWaitGroupFileProcessor sync.WaitGroup
 var asyncWaitGroupFlushToFiles sync.WaitGroup
 var asyncWaitGroupFlushToDb sync.WaitGroup
 
+type LineTypeStat struct {
+	ProcessedCount int
+	NotHandled     bool
+}
+
+var lineTypeStats map[string]LineTypeStat
+
 type DocKeyCounts struct {
 	HeaderLen int
 	DataLen   int
@@ -144,6 +151,8 @@ func main() {
 	cbDocsMutex = &sync.RWMutex{}
 	docKeyCountMapMutex = &sync.RWMutex{}
 	docKeyCountMap = make(map[string]DocKeyCounts)
+
+	lineTypeStats = make(map[string]LineTypeStat)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -366,6 +375,7 @@ func main() {
 
 	log.Printf("\tstatToCbDoc, files:%d, docs:%d, file-stats:[%d,%d], db-stats[%d,%d] finished in %v", len(inputFiles),
 		len(cbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
+	log.Printf("Line Type Stats:%v", lineTypeStats)
 }
 
 func parseLoadSpec(file string) (LoadSpec, error) {
