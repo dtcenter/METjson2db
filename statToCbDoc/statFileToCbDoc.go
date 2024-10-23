@@ -33,6 +33,9 @@ func statFileToCbDoc(filepath string) error {
 	for fileScanner.Scan() {
 		lineStr := fileScanner.Text()
 		lineCount += 1
+		if lineCount == 1 {
+			continue
+		}
 		fields := strings.Fields(lineStr)
 		// log.Printf("%d:%v:%d", lineCount, fields, len(fields))
 		// _ = fields // remove declared but not used errors
