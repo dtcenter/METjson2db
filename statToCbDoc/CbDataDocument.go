@@ -104,7 +104,8 @@ func (doc *CbDataDocument) toJSONString() string {
 			case valval.DataType == 0:
 				valvals = valval.StringVal
 			case valval.DataType == 1:
-				valvals = fmt.Sprintf("%d", valval.IntVal)
+				valvals_0 := fmt.Sprintf("%d", valval.IntVal)
+				valvals = strings.TrimLeft(valvals_0, "0")
 			case valval.DataType == 2:
 				valvals = strconv.FormatFloat(valval.FloatVal, 'f', -1, 64)
 			}
