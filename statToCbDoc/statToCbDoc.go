@@ -365,7 +365,7 @@ func main() {
 	*/
 
 	log.Printf("\tstatToCbDoc, files:%d, docs:%d, file-stats:[%d,%d], db-stats[%d,%d] finished in %v", len(inputFiles),
-		fileTotalCount, len(cbDocs), fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
+		len(cbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
 }
 
 func parseLoadSpec(file string) (LoadSpec, error) {
