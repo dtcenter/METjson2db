@@ -89,8 +89,6 @@ type Credentials struct {
 	Cb_collection string `yaml:"cb_collection"`
 }
 
-// var builders map[string]IStatToCbBuilder
-
 // the map below holds template docs created from settings.json
 type ColDef struct {
 	Name      string
@@ -146,7 +144,6 @@ func main() {
 	start := time.Now()
 	log.Print("meta-update:main()")
 
-	// builders = make(map[string]IStatToCbBuilder)
 	cbLineTypeColDefs = make(map[string]ColDefArray)
 	cbDocs = make(map[string]CbDataDocument)
 	cbDocsMutex = &sync.RWMutex{}

@@ -57,16 +57,6 @@ func statFileToCbDoc(filepath string) error {
 			statToCbFlush(false)
 		}
 
-		// if so also init cbDocs after that
-		/*
-			builder := getBuilder(lineType, cbLineTypeColDefs[lineType], fields)
-			if nil != builder {
-				builder.processFields()
-			} else {
-				log.Printf("Unknown line tye:", lineType)
-			}
-		*/
-
 		/*
 			if totalLinesProcessed == 100 {
 				break
