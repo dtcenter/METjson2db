@@ -18,9 +18,9 @@ Please note that the cb_user and cb_password values should be replaced with actu
 cb_host: couchbase://adb-cb1.gsd.esrl.noaa.gov
 cb_user: ***
 cb_password: ***
-cb_bucket: vxdata
+cb_bucket: metdata
 cb_scope: _default
-cb_collection: METAR
+# The target collection must be specified in load_spec.json => "target_collection": "MET_default"
 
 To point to cluster, use
 cb_host: adb-cb2.gsd.esrl.noaa.gov,adb-cb3.gsd.esrl.noaa.gov,adb-cb4.gsd.esrl.noaa.gov
