@@ -2,3 +2,8 @@ MET data files from Hera in ~/scratch/data/MET/
 
 See document: 
 https://docs.google.com/document/d/1oo975nGynCyjnesw5WmBoGAEbrN8y-bokjpmXY4gow8/edit#heading=h.gi09vodnirzs
+
+
+Useful commands
+Copy stat files in a folder tree to another folder
+find ~/scratch/data/MET/met_regression/ -name '*.stat' | xargs -I FOO cp FOO ~/scratch/data/MET/met_regression_just_stat_files

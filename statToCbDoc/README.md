@@ -1,8 +1,6 @@
 # METdatacb => statToCbDoc
 # GO lang converter for MET stat files to Couchbase document JSON 
 
-# Compile time requirement
-Go runtime >= 1.21.3
 
 # Runtime dependencies
 Make sure settings.json is in the same folder as the statToCbDoc executable
