@@ -37,6 +37,9 @@ func statFileToCbDoc(filepath string) error {
 			continue
 		}
 		fields := strings.Fields(lineStr)
+		if len(fields) < 24 {
+			continue
+		}
 		// log.Printf("%d:%v:%d", lineCount, fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]

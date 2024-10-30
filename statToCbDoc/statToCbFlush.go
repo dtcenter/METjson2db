@@ -26,7 +26,7 @@ func statToCbFlush(flushFinal bool) {
 	*/
 	flushCount := 0
 	if conf.RunNonThreaded {
-		conn := getDbConnection(credentials)
+
 		for id, doc := range cbDocs {
 			headerLen := len(doc.headerFields)
 			dataLen := len(maps.Keys(doc.data))
@@ -38,6 +38,7 @@ func statToCbFlush(flushFinal bool) {
 					flushToFiles(id)
 				}
 				if conf.UploadToDb {
+					conn := getDbConnection(credentials)
 					flushToDb(conn, id)
 				}
 			}

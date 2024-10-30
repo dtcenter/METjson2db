@@ -117,8 +117,8 @@ var asyncWaitGroupFlushToFiles sync.WaitGroup
 var asyncWaitGroupFlushToDb sync.WaitGroup
 
 type LineTypeStat struct {
-	ProcessedCount int
-	NotHandled     bool
+	ProcessedCount int  `json:"ProcessedCount"`
+	Handled        bool `json:"Handled"`
 }
 
 var lineTypeStats map[string]LineTypeStat
@@ -374,7 +374,7 @@ func main() {
 
 	log.Printf("\tstatToCbDoc, files:%d, docs:%d, file-stats:[%d,%d], db-stats[%d,%d] finished in %v", len(inputFiles),
 		len(cbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
-	log.Printf("Line Type Stats:%v", lineTypeStats)
+	log.Printf("Line Type Stats:%v", jsonPrettyPrintStruct(lineTypeStats))
 }
 
 func parseLoadSpec(file string) (LoadSpec, error) {
