@@ -1,0 +1,11 @@
+cmd put main.go under it
+main.go import packages from github
+vxDP puts credentials host etc in .env, where does MET dataio put stuff ? (Molly)
+api/api_test.go
+CoPilot can generate tests
+.gitignore above project specific files are common
+copy .golangci.yml to project
+Mac down - markdown test on Mac
+Copy the LICENSE files
+Copy Diaclaimer from vx readme
+copy over .github folder

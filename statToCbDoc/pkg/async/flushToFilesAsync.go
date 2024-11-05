@@ -1,7 +1,8 @@
-package main
+package async
 
 import (
 	"log"
+	"os"
 	// "github.com/couchbase/gocb/v2"
 )
 
@@ -24,6 +25,12 @@ func flushToFilesAsync(threadIdx int) {
 		if !ok {
 			log.Printf("\tflushToFilesAsync(%d), no documents in channel!", threadIdx)
 			break
+		}
+		docStr := []byte(doc.toJSONString())
+		fileName := conf.OutputFolder + "/" + doc.headerFields["ID"].StringVal + ".json"
+		err := os.WriteFile(fileName, docStr, 0644)
+		if err != nil {
+			log.Printf("Error writing output:%s", fileName)
 		}
 		//log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 		doc.mutex.Unlock()

@@ -27,7 +27,7 @@ cb_host: adb-cb2.gsd.esrl.noaa.gov,adb-cb3.gsd.esrl.noaa.gov,adb-cb4.gsd.esrl.no
 ## cd METdatacb/statToCbDoc
 go build .
 ## run using ~/credentials, ./settings.json , ./load_spec.json 
-go run . -c ~/credentials -s ./settings.json -l ./load_spec.json
+go run ./cmd/main -c ~/credentials -s ./settings.json -l ./load_spec.json
 # to test for race conditions, add "-race" as below
 go run -race . -c ~/credentials -s ./settings.json -l ./load_spec.json
 ## run with specific credentials,settings, load_spec and/or for a specific stat file
