@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	// "github.com/couchbase/gocb/v2"
+
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/main"
 )
 
 // init runs before main() is evaluated
@@ -15,7 +17,7 @@ func fileProcessorAsync(threadIdx int) {
 	count := 0
 	errors := 0
 	for {
-		file, ok := <-asyncFileProcessorChannels[threadIdx]
+		file, ok := <-main.asyncFileProcessorChannels[threadIdx]
 		if file == "end" {
 			log.Printf("\tfileProcessorAsync(%d), end-marker received!", threadIdx)
 			break

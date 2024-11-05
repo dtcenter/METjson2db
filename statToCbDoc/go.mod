@@ -1,4 +1,4 @@
-module statToCbDoc
+module github.com/NOAA-GSL/METdatacb/statToCbDoc
 
 go 1.21.3
 

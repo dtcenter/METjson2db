@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"encoding/json"
@@ -9,6 +9,9 @@ import (
 	"github.com/relvacode/iso8601"
 	"golang.org/x/exp/maps"
 	// "github.com/couchbase/gocb/v2"
+
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
 )
 
 // init runs before main() is evaluated
@@ -17,10 +20,10 @@ func init() {
 	log.Println("StatToCbUtils:init()")
 }
 
-func readCbDocument(file string) (CbDataDocument, error) {
+func readCbDocument(file string) (types.CbDataDocument, error) {
 	log.Println("CbDataDocument(" + file + ")")
 
-	doc := CbDataDocument{}
+	doc := types.CbDataDocument{}
 	doc.init()
 
 	jsonText, err := os.ReadFile(file)
@@ -42,7 +45,7 @@ func readCbDocument(file string) (CbDataDocument, error) {
 				// t is []uint8
 			case string:
 				log.Printf(key, "\t", val, "\t", "string")
-				doc.headerFields[key] = makeStringCbDataValue(val.(string))
+				doc.headerFields[key] = utils.makeStringCbDataValue(val.(string))
 			case uint64:
 				log.Printf(key, "\t", val, "\t", "unit64")
 			case float64:

@@ -15,131 +15,12 @@ import (
 	// "github.com/couchbase/gocb/v2"
 
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/async"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/common"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/utils"
 )
-
-type StrArray []string
-
-type Metadata []struct {
-	Name       string   `json:"name"`
-	App        string   `json:"app"`
-	SubDocType string   `json:"subDocType"`
-	DocType    StrArray `json:"docType"`
-}
-
-type LoadSpec struct {
-	Email            string `json:"email"`
-	TargetCollection string `json:"target_collection"`
-	Verbose          bool   `json:"verbose"`
-	FolderTmpl       string `json:"folder_tmpl"`
-	LoadVal          struct {
-		Field []struct {
-			Val  StrArray `json:"val"`
-			Name string   `json:"_name"`
-		} `json:"field"`
-	} `json:"load_val"`
-	LoadNote string `json:"load_note"`
-}
-
-type Column struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type ConfigJSON struct {
-	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
-	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
-	UpdateOnlyOnDocKeyCountChange  bool     `json:"updateOnlyOnDocKeyCountChange"`
-	FlushToDbDataSectionMaxCount   int64    `json:"flushToDbDataSectionMaxCount"`
-	OverWriteData                  bool     `json:"overWriteData"`
-	WriteJSONsToFile               bool     `json:"writeJSONsToFile"`
-	UploadToDb                     bool     `json:"uploadToDb"`
-	OutputFolder                   string   `json:"outputFolder"`
-	RunNonThreaded                 bool     `json:"runNonThreaded"`
-	ThreadsFileProcessor           int64    `json:"threadsFileProcessor"`
-	ThreadsWriteToDisk             int64    `json:"threadsWriteToDisk"`
-	ThreadsDbUpload                int64    `json:"threadsDbUpload"`
-	ChannelBufferSizeNumberOfDocs  int64    `json:"channelBufferSizeNumberOfDocs"`
-	ChannelBufferSizeNumberOfFiles int64    `json:"channelBufferSizeNumberOfFiles"`
-	IdColumns                      []string `json:"idColumns"`
-	HeaderColumns                  []string `json:"headerColumns"`
-	DataKeyColumns                 []string `jaon:"dataKeyColumns"`
-	IgnoreColumns                  []string `json:"ignoreColumns"`
-	IgnoreValues                   []string `json:"ignoreValues"`
-	CommonColumns                  []Column `json:"commonColumns"`
-	LineTypeColumns                []struct {
-		LineType string   `json:"lineType"`
-		Columns  []Column `json:"columns"`
-	} `json:"lineTypeColumns"`
-}
-
-type TroubleShoot struct {
-	EnableTrackContextFlushToFile bool `json:"enableTrackContextFlushToFile"`
-	EnableTrackContextFlushToDb   bool `json:"enableTrackContextFlushToDb"`
-	TerminateAtFirstTrackError    bool `json:"terminateAtFirstTrackError"`
-	IdTrack                       struct {
-		IdList  []string `json:"idList"`
-		Actions []string `json:"actions"`
-	} `json:"idTrack"`
-}
-
-type Credentials struct {
-	Cb_host       string `yaml:"cb_host"`
-	Cb_user       string `yaml:"cb_user"`
-	Cb_password   string `yaml:"cb_password"`
-	Cb_bucket     string `yaml:"cb_bucket"`
-	Cb_scope      string `yaml:"cb_scope"`
-	Cb_collection string `yaml:"cb_collection"`
-}
-
-// the map below holds template docs created from settings.json
-type ColDef struct {
-	Name      string
-	DataType  int // 0-string, 1-int64, 2-float64, 3-epoch
-	IsHeader  bool
-	IsID      bool
-	IsDataKey bool
-}
-
-type ColDefArray []ColDef
-
-var conf = ConfigJSON{}
-var troubleShoot = TroubleShoot{}
-var cbLineTypeColDefs map[string]ColDefArray
-var totalLinesProcessed = 0
-var cbDocs map[string]CbDataDocument
-var cbDocsMutex *sync.RWMutex
-var dataKeyIdx int
-var credentials = Credentials{}
-
-var asyncFileProcessorChannels []chan string
-var asyncFlushToFileChannels []chan CbDataDocument
-var asyncFlushToDbChannels []chan CbDataDocument
-var asyncWaitGroupFileProcessor sync.WaitGroup
-var asyncWaitGroupFlushToFiles sync.WaitGroup
-var asyncWaitGroupFlushToDb sync.WaitGroup
-
-type LineTypeStat struct {
-	ProcessedCount int  `json:"ProcessedCount"`
-	Handled        bool `json:"Handled"`
-}
-
-var lineTypeStats map[string]LineTypeStat
-
-type DocKeyCounts struct {
-	HeaderLen int
-	DataLen   int
-}
-
-var docKeyCountMapMutex *sync.RWMutex
-var docKeyCountMap map[string]DocKeyCounts
-
-// init runs before main() is evaluated
-func init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("meta-update:init()")
-}
 
 func main() {
 	// Uncomment following line to enable logging
@@ -148,13 +29,13 @@ func main() {
 	start := time.Now()
 	log.Print("meta-update:main()")
 
-	cbLineTypeColDefs = make(map[string]ColDefArray)
-	cbDocs = make(map[string]CbDataDocument)
-	cbDocsMutex = &sync.RWMutex{}
-	docKeyCountMapMutex = &sync.RWMutex{}
-	docKeyCountMap = make(map[string]DocKeyCounts)
+	common.cbLineTypeColDefs = make(map[string]types.ColDefArray)
+	common.cbDocs = make(map[string]types.CbDataDocument)
+	state.cbDocsMutex = &sync.RWMutex{}
+	state.docKeyCountMapMutex = &sync.RWMutex{}
+	state.docKeyCountMap = make(map[string]types.DocKeyCounts)
 
-	lineTypeStats = make(map[string]LineTypeStat)
+	state.lineTypeStats = make(map[string]types.LineTypeStat)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -183,7 +64,7 @@ func main() {
 	}
 	log.Printf("folder_tmpl:%d", len(loadSpec.FolderTmpl))
 	log.Printf("LoadVal.Field[0].Val length:%d", len(loadSpec.LoadVal.Field[0].Val))
-	fmt.Println("LoadSpec:\n" + jsonPrettyPrintStruct(loadSpec))
+	fmt.Println("LoadSpec:\n" + utils.jsonPrettyPrintStruct(loadSpec))
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
@@ -242,47 +123,47 @@ func main() {
 		os.Exit(1)
 	}
 
-	conf, err = parseConfig(settingsFilePath)
+	state.conf, err = parseConfig(settingsFilePath)
 	if err != nil {
 		log.Fatal("Unable to parse config")
 		return
 	}
 
-	troubleShoot, err = parseTroubleShoot("troubleshoot.json")
+	state.troubleShoot, err = parseTroubleShoot("troubleshoot.json")
 	if err != nil {
 		log.Fatal("No troubleshoot.json found, skipping trouble shooting ...")
 		return
 	}
 
-	log.Printf("MaxFilesInProcessChunk:%d", conf.MaxFilesInProcessChunk)
-	log.Printf("maxLinesToLoad:%d", conf.MaxLinesToLoad)
-	log.Printf("flushToDbDataSectionMaxCount:%d", conf.FlushToDbDataSectionMaxCount)
-	log.Printf("overWriteData:%t", conf.OverWriteData)
-	log.Printf("writeJSONsToFile:%t", conf.WriteJSONsToFile)
-	log.Printf("HeaderColumns length:%d", len(conf.HeaderColumns))
-	log.Printf("CommonColumns length:%d", len(conf.CommonColumns))
-	log.Printf("LineTypeColumns length:%d", len(conf.LineTypeColumns))
+	log.Printf("MaxFilesInProcessChunk:%d", state.conf.MaxFilesInProcessChunk)
+	log.Printf("maxLinesToLoad:%d", state.conf.MaxLinesToLoad)
+	log.Printf("flushToDbDataSectionMaxCount:%d", state.conf.FlushToDbDataSectionMaxCount)
+	log.Printf("overWriteData:%t", state.conf.OverWriteData)
+	log.Printf("writeJSONsToFile:%t", state.conf.WriteJSONsToFile)
+	log.Printf("HeaderColumns length:%d", len(state.conf.HeaderColumns))
+	log.Printf("CommonColumns length:%d", len(state.conf.CommonColumns))
+	log.Printf("LineTypeColumns length:%d", len(state.conf.LineTypeColumns))
 
-	credentials = getCredentials(credentialsFilePath)
+	state.credentials = getCredentials(credentialsFilePath)
 	if len(loadSpec.TargetCollection) > 0 {
 		log.Printf("Using load_spec target collection:%s", loadSpec.TargetCollection)
-		credentials.Cb_collection = loadSpec.TargetCollection
+		state.credentials.Cb_collection = loadSpec.TargetCollection
 	}
-	log.Printf("DB:(%s.%s.%s)", credentials.Cb_bucket, credentials.Cb_scope, credentials.Cb_collection)
+	log.Printf("DB:(%s.%s.%s)", state.credentials.Cb_bucket, state.credentials.Cb_scope, state.credentials.Cb_collection)
 
-	generateColDefsFromConfig(conf, cbLineTypeColDefs)
+	generateColDefsFromConfig(state.conf, state.cbLineTypeColDefs)
 
 	// log.Printf("inputFiles:\n%v", inputFiles)
 	log.Printf("inputFiles:%d", len(inputFiles))
 
-	if !conf.RunNonThreaded {
-		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
+	if !state.conf.RunNonThreaded {
+		for fi := 0; fi < int(state.conf.ThreadsFileProcessor); fi++ {
 			fi := fi
-			asyncFileProcessorChannels = append(asyncFileProcessorChannels, make(chan string, conf.ChannelBufferSizeNumberOfFiles))
-			asyncWaitGroupFileProcessor.Add(1)
+			state.asyncFileProcessorChannels = append(state.asyncFileProcessorChannels, make(chan string, state.conf.ChannelBufferSizeNumberOfFiles))
+			state.asyncWaitGroupFileProcessor.Add(1)
 			go func() {
-				defer asyncWaitGroupFileProcessor.Done()
-				fileProcessorAsync(fi)
+				defer state.asyncWaitGroupFileProcessor.Done()
+				async.fileProcessorAsync(fi)
 			}()
 		}
 
