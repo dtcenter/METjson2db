@@ -14,9 +14,9 @@ import (
 	"gopkg.in/yaml.v3"
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/async"
-	"github.com/NOAA-GSL/METdatacb/pkg/core"
-	"github.com/NOAA-GSL/METdatacb/pkg/utils"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/async"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/utils"
 )
 
 type StrArray []string
