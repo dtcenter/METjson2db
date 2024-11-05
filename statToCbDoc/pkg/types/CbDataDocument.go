@@ -1,4 +1,4 @@
-package core
+package types
 
 import (
 	"fmt"
@@ -20,55 +20,55 @@ type CbDataValue struct {
 type DataSection map[string]CbDataValue
 
 type CbDataDocument struct {
-	headerFields map[string]CbDataValue
-	data         map[string]DataSection
-	flushed      bool
-	mutex        *sync.RWMutex
+	HeaderFields map[string]CbDataValue
+	Data         map[string]DataSection
+	Flushed      bool
+	Mutex        *sync.RWMutex
 }
 
-func makeStringCbDataValue(val string) CbDataValue {
+func MakeStringCbDataValue(val string) CbDataValue {
 	rv := CbDataValue{}
 	rv.DataType = 0
 	rv.StringVal = val
 	return rv
 }
 
-func makeIntCbDataValue(val int64) CbDataValue {
+func MakeIntCbDataValue(val int64) CbDataValue {
 	rv := CbDataValue{}
 	rv.DataType = 1
 	rv.IntVal = val
 	return rv
 }
 
-func makeFloatCbDataValue(val float64) CbDataValue {
+func MakeFloatCbDataValue(val float64) CbDataValue {
 	rv := CbDataValue{}
 	rv.DataType = 2
 	rv.FloatVal = val
 	return rv
 }
 
-func (doc *CbDataDocument) init() {
-	doc.headerFields = make(map[string]CbDataValue)
-	doc.data = make(map[string]DataSection)
-	doc.mutex = &sync.RWMutex{}
-	doc.flushed = false
+func (doc *CbDataDocument) Init() {
+	doc.HeaderFields = make(map[string]CbDataValue)
+	doc.Data = make(map[string]DataSection)
+	doc.Mutex = &sync.RWMutex{}
+	doc.Flushed = false
 }
 
-func (doc *CbDataDocument) initReturn(count int64, errors int64) {
-	doc.headerFields = make(map[string]CbDataValue)
-	doc.data = make(map[string]DataSection)
-	doc.headerFields["count"] = makeIntCbDataValue(count)
-	doc.headerFields["errors"] = makeIntCbDataValue(errors)
+func (doc *CbDataDocument) InitReturn(count int64, errors int64) {
+	doc.HeaderFields = make(map[string]CbDataValue)
+	doc.Data = make(map[string]DataSection)
+	doc.HeaderFields["count"] = MakeIntCbDataValue(count)
+	doc.HeaderFields["errors"] = MakeIntCbDataValue(errors)
 }
 
-func (doc *CbDataDocument) toJSONString() string {
+func (doc *CbDataDocument) ToJSONString() string {
 	var sb strings.Builder
 	sb.WriteString("{\n")
 
-	shkeys := maps.Keys(doc.headerFields)
+	shkeys := maps.Keys(doc.HeaderFields)
 	for i := 0; i < len(shkeys); i++ {
 		shf := shkeys[i]
-		shv := doc.headerFields[shf]
+		shv := doc.HeaderFields[shf]
 		switch {
 		case shv.DataType == 0:
 			sb.WriteString("\t\"" + shf + "\": \"" + shv.StringVal + "\",\n")
@@ -79,7 +79,7 @@ func (doc *CbDataDocument) toJSONString() string {
 		}
 	}
 
-	ddkeys := maps.Keys(doc.data)
+	ddkeys := maps.Keys(doc.Data)
 	if len(ddkeys) == 0 {
 		sb.WriteString("}\n")
 		return sb.String()
@@ -89,7 +89,7 @@ func (doc *CbDataDocument) toJSONString() string {
 
 	for di := 0; di < len(ddkeys); di++ {
 		dkey := ddkeys[di]
-		dsec := doc.data[dkey]
+		dsec := doc.Data[dkey]
 
 		sb.WriteString("\t\t\"" + dkey + "\": {\n")
 

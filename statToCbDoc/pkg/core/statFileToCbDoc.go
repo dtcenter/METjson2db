@@ -8,6 +8,10 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/utils"
 )
 
 // init runs before main() is evaluated
@@ -15,7 +19,7 @@ func init() {
 	log.Println("statToJSON:init()")
 }
 
-func statFileToCbDoc(filepath string) error {
+func StatFileToCbDoc(filepath string) error {
 	log.Println("statFileToCbDoc(" + filepath + ")")
 
 	inputFile, err := os.Open(filepath)
@@ -45,8 +49,8 @@ func statFileToCbDoc(filepath string) error {
 		lineType := fields[23]
 		doc := statFieldsToCbDoc(lineType, fields)
 
-		if len(doc.headerFields) < 2 || len(doc.data) == 0 {
-			log.Printf("NULL document[%s]", doc.headerFields["ID"].StringVal)
+		if len(doc.HeaderFields) < 2 || len(doc.Data) == 0 {
+			log.Printf("NULL document[%s]", doc.HeaderFields["ID"].StringVal)
 			log.Printf("lineType:%s, filepath:%s, line:%d", lineType, filepath, lineCount)
 			continue
 		}
@@ -55,8 +59,8 @@ func statFileToCbDoc(filepath string) error {
 		See spec in readme, section:
 		# Output location, configuration and logic
 		*/
-		totalLinesProcessed++
-		if (totalLinesProcessed % 1000) == 0 {
+		state.TotalLinesProcessed++
+		if (state.TotalLinesProcessed % 1000) == 0 {
 			statToCbFlush(false)
 		}
 
@@ -73,20 +77,20 @@ func statFileToCbDoc(filepath string) error {
 	return nil
 }
 
-func statFieldsToCbDoc(lineType string, fields []string) CbDataDocument {
+func statFieldsToCbDoc(lineType string, fields []string) types.CbDataDocument {
 	// log.Println("statFieldsToCbDoc(" + lineType + ")")
 
-	coldef, ok := cbLineTypeColDefs[lineType]
+	coldef, ok := state.CbLineTypeColDefs[lineType]
 	if !ok {
 		log.Printf("no coldef for lineType:%s", lineType)
-		lineTypeStats[lineType] = LineTypeStat{0, false}
-		return CbDataDocument{}
+		state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: 0, Handled: false}
+		return types.CbDataDocument{}
 	}
-	lt, ok := lineTypeStats[lineType]
+	lt, ok := state.LineTypeStats[lineType]
 	if !ok {
-		lineTypeStats[lineType] = LineTypeStat{1, true}
+		state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: 1, Handled: true}
 	} else {
-		lineTypeStats[lineType] = LineTypeStat{lt.ProcessedCount + 1, true}
+		state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: (lt.ProcessedCount + 1), Handled: true}
 	}
 	// log.Printf("fields[]:%d, coldef[]:%d", len(fields), len(coldef))
 
@@ -97,63 +101,64 @@ func statFieldsToCbDoc(lineType string, fields []string) CbDataDocument {
 		}
 	}
 
-	cbDocsMutex.RLock()
-	doc, ok := cbDocs[id]
-	cbDocsMutex.RUnlock()
+	state.CbDocsMutex.RLock()
+	doc, ok := state.CbDocs[id]
+	state.CbDocsMutex.RUnlock()
 
 	if !ok {
-		doc = CbDataDocument{}
-		doc.init()
-		cbDocsMutex.Lock()
-		cbDocs[id] = doc
-		cbDocsMutex.Unlock()
-		doc.headerFields["ID"] = makeStringCbDataValue(id)
+		doc = types.CbDataDocument{}
+		doc.Init()
+		state.CbDocsMutex.Lock()
+		state.CbDocs[id] = doc
+		state.CbDocsMutex.Unlock()
+		doc.HeaderFields["ID"] = types.MakeStringCbDataValue(id)
 
 		// need to populate header fields
 		for i := 0; i < len(coldef); i++ {
-			if coldef[i].IsHeader && !slices.Contains(conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreValues, fields[i]) {
+			if coldef[i].IsHeader && !slices.Contains(state.Conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(state.Conf.IgnoreValues, fields[i]) {
 				switch coldef[i].DataType {
 				case 0:
-					doc.headerFields[coldef[i].Name] = makeStringCbDataValue(fields[i])
+					doc.HeaderFields[coldef[i].Name] = types.MakeStringCbDataValue(fields[i])
 				case 1:
 					intv, _ := strconv.Atoi(fields[i])
-					doc.headerFields[coldef[i].Name] = makeIntCbDataValue(int64(intv))
+					doc.HeaderFields[coldef[i].Name] = types.MakeIntCbDataValue(int64(intv))
 				case 2:
 					floatv, _ := strconv.ParseFloat(fields[i], 64)
-					doc.headerFields[coldef[i].Name] = makeFloatCbDataValue(floatv)
+					doc.HeaderFields[coldef[i].Name] = types.MakeFloatCbDataValue(floatv)
 				case 3:
-					doc.headerFields[coldef[i].Name] = makeIntCbDataValue(statDateToEpoh(fields[i]))
+					doc.HeaderFields[coldef[i].Name] = types.MakeIntCbDataValue(utils.StatDateToEpoh(fields[i]))
 				}
 			}
 		}
 
 	}
 
-	doc.mutex.Lock()
-	doc.flushed = false
+	doc.Mutex.Lock()
+	doc.Flushed = false
 	// now append data fields to doc
-	dsec := DataSection{}
+	dsec := types.DataSection{}
 	// log.Printf("data key:%s", fields[dataKeyIdx])
 	// log.Printf("fields:\n", fields)
-	dataKey := fields[dataKeyIdx]
-	doc.data[dataKey] = dsec
+	dataKey := fields[state.DataKeyIdx]
+	doc.Data[dataKey] = dsec
 	for i := 0; i < len(coldef); i++ {
-		if !coldef[i].IsHeader && !slices.Contains(conf.DataKeyColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(conf.IgnoreValues, fields[i]) {
+		if !coldef[i].IsHeader && !slices.Contains(state.Conf.DataKeyColumns, coldef[i].Name) &&
+			!slices.Contains(state.Conf.IgnoreColumns, coldef[i].Name) && !slices.Contains(state.Conf.IgnoreValues, fields[i]) {
 			switch coldef[i].DataType {
 			case 0:
-				dsec[coldef[i].Name] = makeStringCbDataValue(fields[i])
+				dsec[coldef[i].Name] = types.MakeStringCbDataValue(fields[i])
 			case 1:
 				intv, _ := strconv.Atoi(fields[i])
-				dsec[coldef[i].Name] = makeIntCbDataValue(int64(intv))
+				dsec[coldef[i].Name] = types.MakeIntCbDataValue(int64(intv))
 			case 2:
 				floatv, _ := strconv.ParseFloat(fields[i], 64)
-				dsec[coldef[i].Name] = makeFloatCbDataValue(floatv)
+				dsec[coldef[i].Name] = types.MakeFloatCbDataValue(floatv)
 			case 3:
-				dsec[coldef[i].Name] = makeIntCbDataValue(statDateToEpoh(fields[i]))
+				dsec[coldef[i].Name] = types.MakeIntCbDataValue(statDateToEpoh(fields[i]))
 			}
 		}
 	}
 
-	doc.mutex.Unlock()
+	doc.Mutex.Unlock()
 	return doc
 }

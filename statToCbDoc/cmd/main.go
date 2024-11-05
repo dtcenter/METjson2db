@@ -12,10 +12,8 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
-	// "github.com/couchbase/gocb/v2"
 
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/async"
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/common"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
@@ -29,13 +27,13 @@ func main() {
 	start := time.Now()
 	log.Print("meta-update:main()")
 
-	common.cbLineTypeColDefs = make(map[string]types.ColDefArray)
-	common.cbDocs = make(map[string]types.CbDataDocument)
-	state.cbDocsMutex = &sync.RWMutex{}
-	state.docKeyCountMapMutex = &sync.RWMutex{}
-	state.docKeyCountMap = make(map[string]types.DocKeyCounts)
+	state.CbLineTypeColDefs = make(map[string]types.ColDefArray)
+	state.CbDocs = make(map[string]types.CbDataDocument)
+	state.CbDocsMutex = &sync.RWMutex{}
+	state.DocKeyCountMapMutex = &sync.RWMutex{}
+	state.DocKeyCountMap = make(map[string]types.DocKeyCounts)
 
-	state.lineTypeStats = make(map[string]types.LineTypeStat)
+	state.LineTypeStats = make(map[string]types.LineTypeStat)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -64,7 +62,7 @@ func main() {
 	}
 	log.Printf("folder_tmpl:%d", len(loadSpec.FolderTmpl))
 	log.Printf("LoadVal.Field[0].Val length:%d", len(loadSpec.LoadVal.Field[0].Val))
-	fmt.Println("LoadSpec:\n" + utils.jsonPrettyPrintStruct(loadSpec))
+	fmt.Println("LoadSpec:\n" + utils.JsonPrettyPrintStruct(loadSpec))
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
@@ -123,108 +121,108 @@ func main() {
 		os.Exit(1)
 	}
 
-	state.conf, err = parseConfig(settingsFilePath)
+	state.Conf, err = parseConfig(settingsFilePath)
 	if err != nil {
 		log.Fatal("Unable to parse config")
 		return
 	}
 
-	state.troubleShoot, err = parseTroubleShoot("troubleshoot.json")
+	state.TroubleShoot, err = parseTroubleShoot("troubleshoot.json")
 	if err != nil {
 		log.Fatal("No troubleshoot.json found, skipping trouble shooting ...")
 		return
 	}
 
-	log.Printf("MaxFilesInProcessChunk:%d", state.conf.MaxFilesInProcessChunk)
-	log.Printf("maxLinesToLoad:%d", state.conf.MaxLinesToLoad)
-	log.Printf("flushToDbDataSectionMaxCount:%d", state.conf.FlushToDbDataSectionMaxCount)
-	log.Printf("overWriteData:%t", state.conf.OverWriteData)
-	log.Printf("writeJSONsToFile:%t", state.conf.WriteJSONsToFile)
-	log.Printf("HeaderColumns length:%d", len(state.conf.HeaderColumns))
-	log.Printf("CommonColumns length:%d", len(state.conf.CommonColumns))
-	log.Printf("LineTypeColumns length:%d", len(state.conf.LineTypeColumns))
+	log.Printf("MaxFilesInProcessChunk:%d", state.Conf.MaxFilesInProcessChunk)
+	log.Printf("maxLinesToLoad:%d", state.Conf.MaxLinesToLoad)
+	log.Printf("flushToDbDataSectionMaxCount:%d", state.Conf.FlushToDbDataSectionMaxCount)
+	log.Printf("overWriteData:%t", state.Conf.OverWriteData)
+	log.Printf("writeJSONsToFile:%t", state.Conf.WriteJSONsToFile)
+	log.Printf("HeaderColumns length:%d", len(state.Conf.HeaderColumns))
+	log.Printf("CommonColumns length:%d", len(state.Conf.CommonColumns))
+	log.Printf("LineTypeColumns length:%d", len(state.Conf.LineTypeColumns))
 
-	state.credentials = getCredentials(credentialsFilePath)
+	state.Credentials = getCredentials(credentialsFilePath)
 	if len(loadSpec.TargetCollection) > 0 {
 		log.Printf("Using load_spec target collection:%s", loadSpec.TargetCollection)
-		state.credentials.Cb_collection = loadSpec.TargetCollection
+		state.Credentials.Cb_collection = loadSpec.TargetCollection
 	}
-	log.Printf("DB:(%s.%s.%s)", state.credentials.Cb_bucket, state.credentials.Cb_scope, state.credentials.Cb_collection)
+	log.Printf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 
-	generateColDefsFromConfig(state.conf, state.cbLineTypeColDefs)
+	generateColDefsFromConfig(state.Conf, state.CbLineTypeColDefs)
 
 	// log.Printf("inputFiles:\n%v", inputFiles)
 	log.Printf("inputFiles:%d", len(inputFiles))
 
-	if !state.conf.RunNonThreaded {
-		for fi := 0; fi < int(state.conf.ThreadsFileProcessor); fi++ {
+	if !state.Conf.RunNonThreaded {
+		for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
 			fi := fi
-			state.asyncFileProcessorChannels = append(state.asyncFileProcessorChannels, make(chan string, state.conf.ChannelBufferSizeNumberOfFiles))
-			state.asyncWaitGroupFileProcessor.Add(1)
+			state.AsyncFileProcessorChannels = append(state.AsyncFileProcessorChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfFiles))
+			state.AsyncWaitGroupFileProcessor.Add(1)
 			go func() {
-				defer state.asyncWaitGroupFileProcessor.Done()
-				async.fileProcessorAsync(fi)
+				defer state.AsyncWaitGroupFileProcessor.Done()
+				async.FileProcessorAsync(fi)
 			}()
 		}
 
-		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
+		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
 			fi := fi
-			asyncFlushToFileChannels = append(asyncFlushToFileChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
-			asyncWaitGroupFlushToFiles.Add(1)
+			state.AsyncFlushToFileChannels = append(state.AsyncFlushToFileChannels, make(chan types.CbDataDocument, state.Conf.ChannelBufferSizeNumberOfDocs))
+			state.AsyncWaitGroupFlushToFiles.Add(1)
 			go func() {
-				defer asyncWaitGroupFlushToFiles.Done()
-				flushToFilesAsync(fi)
+				defer state.AsyncWaitGroupFlushToFiles.Done()
+				async.FlushToFilesAsync(fi)
 			}()
 		}
 
-		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
+		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
 			di := di
-			asyncFlushToDbChannels = append(asyncFlushToDbChannels, make(chan CbDataDocument, conf.ChannelBufferSizeNumberOfDocs))
-			asyncWaitGroupFlushToDb.Add(1)
+			state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan types.CbDataDocument, state.Conf.ChannelBufferSizeNumberOfDocs))
+			state.AsyncWaitGroupFlushToDb.Add(1)
 			go func() {
-				defer asyncWaitGroupFlushToDb.Done()
+				defer state.AsyncWaitGroupFlushToDb.Done()
 				// conn := getDbConnection(credentials)
-				flushToDbAsync(di)
+				async.FlushToDbAsync(di)
 			}()
 		}
 	}
 
-	startProcessing(inputFiles)
+	core.StartProcessing(inputFiles)
 
 	fileTotalCount := int64(0)
 	fileTotalErrors := int64(0)
 	dbTotalCount := int64(0)
 	dbTotalErrors := int64(0)
 
-	if !conf.RunNonThreaded {
+	if !state.Conf.RunNonThreaded {
 		log.Printf("Waiting for threads to finish ...")
 
 		// send end-marker doc to all channels
-		endMarkerDoc := CbDataDocument{}
-		endMarkerDoc.init()
+		endMarkerDoc := types.CbDataDocument{}
+		endMarkerDoc.Init()
 
-		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
-			asyncFlushToFileChannels[fi] <- endMarkerDoc
+		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+			state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
 		}
 
-		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
-			asyncFlushToDbChannels[di] <- endMarkerDoc
+		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+			state.AsyncFlushToDbChannels[di] <- endMarkerDoc
 		}
 
-		asyncWaitGroupFlushToFiles.Wait()
+		state.AsyncWaitGroupFlushToFiles.Wait()
 		log.Printf("asyncWaitGroupFlushToFiles finished!")
-		asyncWaitGroupFlushToDb.Wait()
+		state.AsyncWaitGroupFlushToDb.Wait()
 		log.Printf("asyncWaitGroupFlushToDb finished!")
 
-		for fi := 0; fi < int(conf.ThreadsFileProcessor); fi++ {
-			asyncFileProcessorChannels[fi] <- "end"
+		for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
+			state.AsyncFileProcessorChannels[fi] <- "end"
 		}
-		asyncWaitGroupFileProcessor.Wait()
+		state.AsyncWaitGroupFileProcessor.Wait()
 		log.Printf("asyncWaitGroupFileProcessor finished!")
 
 		// get return info from threads
-		for fi := 0; fi < int(conf.ThreadsWriteToDisk); fi++ {
-			doc, ok := <-asyncFlushToFileChannels[fi]
+		for fi := 0; fi < int(stae.Conf.ThreadsWriteToDisk); fi++ {
+			doc, ok := <-state.AsyncFlushToFileChannels[fi]
 			if ok && len(doc.headerFields) > 0 {
 				log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
 				fileTotalCount += doc.headerFields["count"].IntVal
@@ -235,8 +233,8 @@ func main() {
 			}
 		}
 
-		for di := 0; di < int(conf.ThreadsDbUpload); di++ {
-			doc, ok := <-asyncFlushToDbChannels[di]
+		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+			doc, ok := <-state.AsyncFlushToDbChannels[di]
 			if ok && len(doc.headerFields) > 0 {
 				log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
 				dbTotalCount += doc.headerFields["count"].IntVal
@@ -247,25 +245,15 @@ func main() {
 		}
 	}
 
-	// conn := getDbConnection(credentials)
-	// log.Printf("Connected to Couchbase:%s", conn.vxDBTARGET)
-
-	/*
-		cbDoc0, err := readCbDocument("/Users/gopa.padmanabhan/git/ascend/METdatacb/docs/MET_cb_doc_v1_epoch.json")
-		if err == nil {
-			log.Printf("Cb doc:\n", cbDoc0.toJSONString())
-		}
-	*/
-
 	log.Printf("\tstatToCbDoc, files:%d, docs:%d, file-stats:[%d,%d], db-stats[%d,%d] finished in %v", len(inputFiles),
-		len(cbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
-	log.Printf("Line Type Stats:%v", jsonPrettyPrintStruct(lineTypeStats))
+		len(state.CbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
+	log.Printf("Line Type Stats:%v", utils.JsonPrettyPrintStruct(state.LineTypeStats))
 }
 
-func parseLoadSpec(file string) (LoadSpec, error) {
+func parseLoadSpec(file string) (types.LoadSpec, error) {
 	log.Println("parseLoadSpec(" + file + ")")
 
-	ls := LoadSpec{}
+	ls := types.LoadSpec{}
 	configFile, err := os.Open(file)
 	if err != nil {
 		log.Fatal("opening load_spec file", err.Error())
@@ -283,10 +271,10 @@ func parseLoadSpec(file string) (LoadSpec, error) {
 	return ls, nil
 }
 
-func parseConfig(file string) (ConfigJSON, error) {
+func parseConfig(file string) (types.ConfigJSON, error) {
 	log.Println("parseConfig(" + file + ")")
 
-	conf := ConfigJSON{}
+	conf := types.ConfigJSON{}
 	configFile, err := os.Open(file)
 	if err != nil {
 		log.Fatal("opening config file", err.Error())
@@ -304,11 +292,11 @@ func parseConfig(file string) (ConfigJSON, error) {
 	return conf, nil
 }
 
-func parseTroubleShoot(file string) (TroubleShoot, error) {
+func parseTroubleShoot(file string) (types.TroubleShoot, error) {
 
 	log.Println("parseTroubleShoot(" + file + ")")
 
-	ts := TroubleShoot{}
+	ts := types.TroubleShoot{}
 	tsFile, err := os.Open(file)
 	if err != nil {
 		log.Printf("opening troubleshoot.json file:%s", err.Error())
@@ -326,8 +314,8 @@ func parseTroubleShoot(file string) (TroubleShoot, error) {
 	return ts, nil
 }
 
-func getCredentials(credentialsFilePath string) Credentials {
-	creds := Credentials{}
+func getCredentials(credentialsFilePath string) types.Credentials {
+	creds := types.Credentials{}
 	yamlFile, err := os.ReadFile(credentialsFilePath)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
@@ -339,20 +327,20 @@ func getCredentials(credentialsFilePath string) Credentials {
 	return creds
 }
 
-func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]ColDefArray) {
+func generateColDefsFromConfig(conf types.ConfigJSON, cbLineTypeColDefs map[string]types.ColDefArray) {
 	for i := 0; i < len(conf.LineTypeColumns); i++ {
 		lt := conf.LineTypeColumns[i].LineType
 		ltcols := conf.LineTypeColumns[i].Columns
-		doc := CbDataDocument{}
-		doc.init()
+		doc := types.CbDataDocument{}
+		doc.Init()
 
 		// first add common columns
 		ccols := conf.CommonColumns
-		cbLineTypeColDefs[lt] = make(ColDefArray, len(ccols)+len(ltcols))
+		cbLineTypeColDefs[lt] = make(types.ColDefArray, len(ccols)+len(ltcols))
 
 		for cci := 0; cci < len(ccols); cci++ {
 			ccol := ccols[cci]
-			coldef := ColDef{}
+			coldef := types.ColDef{}
 			coldef.Name = ccol.Name
 			switch {
 			case ccol.Type == "string":
@@ -368,7 +356,7 @@ func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]Col
 			coldef.IsHeader = slices.Contains(conf.HeaderColumns, coldef.Name)
 			coldef.IsDataKey = slices.Contains(conf.DataKeyColumns, coldef.Name)
 			if coldef.IsDataKey {
-				dataKeyIdx = cci
+				state.DataKeyIdx = cci
 			}
 			cbLineTypeColDefs[lt][cci] = coldef
 		}
@@ -376,7 +364,7 @@ func generateColDefsFromConfig(conf ConfigJSON, cbLineTypeColDefs map[string]Col
 		// now add line type specific columns
 		for ltci := 0; ltci < len(ltcols); ltci++ {
 			ltcol := ltcols[ltci]
-			coldef := ColDef{}
+			coldef := types.ColDef{}
 			coldef.Name = ltcol.Name
 			switch {
 			case ltcol.Type == "string":

@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
 )
 
 // init runs before main() is evaluated
@@ -39,7 +36,7 @@ func jsonPrettyPrint(in []interface{}) string {
 	return out.String()
 }
 
-func jsonPrettyPrintStruct(in interface{}) string {
+func JsonPrettyPrintStruct(in interface{}) string {
 	jsonText, err := json.Marshal(in)
 	if err != nil {
 		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)

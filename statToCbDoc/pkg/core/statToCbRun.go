@@ -4,31 +4,29 @@ import (
 	"fmt"
 	"log"
 	"time"
+
 	// "github.com/couchbase/gocb/v2"
+
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
 )
-
-var statToCbRun = StatToCbRun{}
-
-type StatToCbRun struct {
-	fileStatus map[string]string         // filename:status
-	documents  map[string]CbDataDocument // id:doc
-}
 
 // init runs before main() is evaluated
 func init() {
 	log.Println("StatToCbRun:init()")
-	statToCbRun.fileStatus = make(map[string]string)
-	statToCbRun.documents = make(map[string]CbDataDocument)
+	state.StatToCbRun.FileStatus = make(map[string]string)
+	state.StatToCbRun.Documents = make(map[string]types.CbDataDocument)
 }
 
-func startProcessing(files []string) bool {
+func StartProcessing(files []string) bool {
 	log.Printf("startProcessing(%d)", len(files))
 
 	// log.Printf("files:\n%v", files)
 
 	for i := 0; i < len(files); i++ {
 		if len(files[i]) > 0 {
-			statToCbRun.fileStatus[files[i]] = "processing"
+			state.StatToCbRun.FileStatus[files[i]] = "processing"
 		}
 	}
 
@@ -36,15 +34,15 @@ func startProcessing(files []string) bool {
 
 	start := time.Now()
 
-	if conf.ThreadsFileProcessor <= 1 {
-		for file, status := range statToCbRun.fileStatus {
+	if state.Conf.ThreadsFileProcessor <= 1 {
+		for file, status := range state.StatToCbRun.FileStatus {
 			log.Printf(file, status)
-			err := statFileToCbDoc(file)
+			err := core.StatFileToCbDoc(file)
 			if err != nil {
 				log.Println("Unable to process:" + file)
-				statToCbRun.fileStatus[file] = "error"
+				state.StatToCbRun.FileStatus[file] = "error"
 			} else {
-				statToCbRun.fileStatus[file] = "finished"
+				state.StatToCbRun.FileStatus[file] = "finished"
 			}
 		}
 	} else {

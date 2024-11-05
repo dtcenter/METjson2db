@@ -7,25 +7,19 @@ import (
 	"time"
 
 	"github.com/couchbase/gocb/v2"
-)
 
-type CbConnection struct {
-	Cluster    *gocb.Cluster
-	Bucket     *gocb.Bucket
-	Scope      *gocb.Scope
-	Collection *gocb.Collection
-	vxDBTARGET string
-}
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
+)
 
 // init runs before main() is evaluated
 func init() {
 	log.Println("db-utils:init()")
 }
 
-func getDbConnection(cred Credentials) (conn CbConnection) {
+func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 	log.Printf("getDbConnection(%s.%s.%s)", cred.Cb_bucket, cred.Cb_scope, cred.Cb_collection)
 
-	conn = CbConnection{}
+	conn = types.CbConnection{}
 	connectionString := cred.Cb_host
 	bucketName := cred.Cb_bucket
 	collection := cred.Cb_collection
@@ -48,7 +42,6 @@ func getDbConnection(cred Credentials) (conn CbConnection) {
 	conn.Cluster = cluster
 	conn.Bucket = conn.Cluster.Bucket(bucketName)
 	conn.Collection = conn.Bucket.Collection(collection)
-	conn.vxDBTARGET = cred.Cb_bucket + "." + cred.Cb_scope + "." + cred.Cb_collection
 
 	// log.Println("vxDBTARGET:" + conn.vxDBTARGET)
 
@@ -160,7 +153,7 @@ func queryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 	return retValues
 }
 
-func getDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface{}) {
+func GetDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface{}) {
 	log.Println("getDocWithId(\n" + id + "\n)")
 
 	queryResult, err := col.Get(id, nil)
@@ -175,7 +168,7 @@ func getDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface
 	return doc
 }
 
-func queryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{}) {
+func QueryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{}) {
 	log.Println("queryWithSQLStringMAP(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(

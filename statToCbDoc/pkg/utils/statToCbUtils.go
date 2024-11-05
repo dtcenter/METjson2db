@@ -8,9 +8,9 @@ import (
 
 	"github.com/relvacode/iso8601"
 	"golang.org/x/exp/maps"
+
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
 )
 
@@ -24,7 +24,7 @@ func readCbDocument(file string) (types.CbDataDocument, error) {
 	log.Println("CbDataDocument(" + file + ")")
 
 	doc := types.CbDataDocument{}
-	doc.init()
+	doc.Init()
 
 	jsonText, err := os.ReadFile(file)
 	if err != nil {
@@ -45,12 +45,12 @@ func readCbDocument(file string) (types.CbDataDocument, error) {
 				// t is []uint8
 			case string:
 				log.Printf(key, "\t", val, "\t", "string")
-				doc.headerFields[key] = utils.makeStringCbDataValue(val.(string))
+				doc.HeaderFields[key] = types.MakeStringCbDataValue(val.(string))
 			case uint64:
 				log.Printf(key, "\t", val, "\t", "unit64")
 			case float64:
 				log.Printf(key, "\t", val, "\t", "float64")
-				doc.headerFields[key] = makeFloatCbDataValue(val.(float64))
+				doc.HeaderFields[key] = types.MakeFloatCbDataValue(val.(float64))
 			default:
 				log.Printf("unknown type:", key, "\t", reflect.TypeOf(val), "\t", t)
 			}
@@ -62,14 +62,14 @@ func readCbDocument(file string) (types.CbDataDocument, error) {
 	// log.Printf("data keys:\n%v", dataKeys)
 	for i := 0; i < len(dataKeys); i++ {
 		dataKey := dataKeys[i]
-		doc.data[dataKey] = make(map[string]CbDataValue)
+		doc.Data[dataKey] = make(map[string]types.CbDataValue)
 		dataVal := data[dataKey].(map[string]any)
 		valKeys := maps.Keys(dataVal)
 		log.Printf("\tval keys:\n%v", valKeys)
 		for i := 0; i < len(valKeys); i++ {
 			key := valKeys[i]
 			val := dataVal[key].(float64)
-			doc.data[dataKey][key] = makeFloatCbDataValue(val)
+			doc.Data[dataKey][key] = types.MakeFloatCbDataValue(val)
 			log.Printf("\t%s,%f", key, val)
 		}
 	}
@@ -78,7 +78,7 @@ func readCbDocument(file string) (types.CbDataDocument, error) {
 	return doc, err
 }
 
-func statDateToEpoh(dateStr string) int64 {
+func StatDateToEpoh(dateStr string) int64 {
 	// 20240203_120000 => 2024-02-03T12:00:00
 	yyyy := dateStr[0:4]
 	mm := dateStr[4:6]

@@ -3,9 +3,11 @@ package async
 import (
 	"fmt"
 	"log"
+
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/main"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
+	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
 )
 
 // init runs before main() is evaluated
@@ -13,11 +15,11 @@ func init() {
 	log.Println("fileProcessorAsync:init()")
 }
 
-func fileProcessorAsync(threadIdx int) {
+func FileProcessorAsync(threadIdx int) {
 	count := 0
 	errors := 0
 	for {
-		file, ok := <-main.asyncFileProcessorChannels[threadIdx]
+		file, ok := <-state.AsyncFileProcessorChannels[threadIdx]
 		if file == "end" {
 			log.Printf("\tfileProcessorAsync(%d), end-marker received!", threadIdx)
 			break
@@ -27,16 +29,16 @@ func fileProcessorAsync(threadIdx int) {
 			break
 		}
 		log.Printf("fileProcessorAsync(%d), file:%s", threadIdx, file)
-		err := statFileToCbDoc(file)
+		err := core.StatFileToCbDoc(file)
 		if err != nil {
 			log.Println("Unable to process:" + file)
-			statToCbRun.fileStatus[file] = "error"
+			state.StatToCbRun.FileStatus[file] = "error"
 			errors++
 		} else {
-			statToCbRun.fileStatus[file] = "finished"
+			state.StatToCbRun.FileStatus[file] = "finished"
 			count++
 		}
 	}
 	log.Printf("fileProcessorAsync(%d) file count:%d, errors:%d", threadIdx, count, errors)
-	asyncFileProcessorChannels[threadIdx] <- fmt.Sprintf("endReturn:%d:%d", count, errors)
+	state.AsyncFileProcessorChannels[threadIdx] <- fmt.Sprintf("endReturn:%d:%d", count, errors)
 }

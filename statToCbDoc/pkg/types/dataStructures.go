@@ -1,5 +1,16 @@
 package types
 
+import (
+	"github.com/couchbase/gocb/v2"
+)
+
+type CbConnection struct {
+	Cluster    *gocb.Cluster
+	Bucket     *gocb.Bucket
+	Scope      *gocb.Scope
+	Collection *gocb.Collection
+}
+
 type StrArray []string
 
 type Metadata []struct {
@@ -93,4 +104,9 @@ type LineTypeStat struct {
 type DocKeyCounts struct {
 	HeaderLen int
 	DataLen   int
+}
+
+type StatToCbRun struct {
+	FileStatus map[string]string         // filename:status
+	Documents  map[string]CbDataDocument // id:doc
 }

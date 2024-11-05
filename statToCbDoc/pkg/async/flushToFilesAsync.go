@@ -11,7 +11,7 @@ func init() {
 	log.Println("flushToFilesAsync:init()")
 }
 
-func flushToFilesAsync(threadIdx int) {
+func FlushToFilesAsync(threadIdx int) {
 	count := 0
 	errors := 0
 	for {
