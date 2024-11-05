@@ -221,12 +221,12 @@ func main() {
 		log.Printf("asyncWaitGroupFileProcessor finished!")
 
 		// get return info from threads
-		for fi := 0; fi < int(stae.Conf.ThreadsWriteToDisk); fi++ {
+		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
 			doc, ok := <-state.AsyncFlushToFileChannels[fi]
-			if ok && len(doc.headerFields) > 0 {
-				log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
-				fileTotalCount += doc.headerFields["count"].IntVal
-				fileTotalErrors += doc.headerFields["errors"].IntVal
+			if ok && len(doc.HeaderFields) > 0 {
+				log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+				fileTotalCount += doc.HeaderFields["count"].IntVal
+				fileTotalErrors += doc.HeaderFields["errors"].IntVal
 			} else {
 				log.Printf("\tflushToFilesAsync[%d], errors:", fi)
 
@@ -235,10 +235,10 @@ func main() {
 
 		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
 			doc, ok := <-state.AsyncFlushToDbChannels[di]
-			if ok && len(doc.headerFields) > 0 {
-				log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.headerFields["count"].IntVal, doc.headerFields["errors"].IntVal)
-				dbTotalCount += doc.headerFields["count"].IntVal
-				dbTotalErrors += doc.headerFields["errors"].IntVal
+			if ok && len(doc.HeaderFields) > 0 {
+				log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+				dbTotalCount += doc.HeaderFields["count"].IntVal
+				dbTotalErrors += doc.HeaderFields["errors"].IntVal
 			} else {
 				log.Printf("\tflushToDbAsync[%d], errors:", di)
 			}

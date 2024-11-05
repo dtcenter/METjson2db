@@ -7,7 +7,6 @@ import (
 
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
 )
@@ -37,7 +36,7 @@ func StartProcessing(files []string) bool {
 	if state.Conf.ThreadsFileProcessor <= 1 {
 		for file, status := range state.StatToCbRun.FileStatus {
 			log.Printf(file, status)
-			err := core.StatFileToCbDoc(file)
+			err := StatFileToCbDoc(file)
 			if err != nil {
 				log.Println("Unable to process:" + file)
 				state.StatToCbRun.FileStatus[file] = "error"

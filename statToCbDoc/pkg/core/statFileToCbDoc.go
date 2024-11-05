@@ -154,7 +154,7 @@ func statFieldsToCbDoc(lineType string, fields []string) types.CbDataDocument {
 				floatv, _ := strconv.ParseFloat(fields[i], 64)
 				dsec[coldef[i].Name] = types.MakeFloatCbDataValue(floatv)
 			case 3:
-				dsec[coldef[i].Name] = types.MakeIntCbDataValue(statDateToEpoh(fields[i]))
+				dsec[coldef[i].Name] = types.MakeIntCbDataValue(utils.StatDateToEpoh(fields[i]))
 			}
 		}
 	}
