@@ -4,8 +4,8 @@
     "updateOnlyOnDocKeyCountChange": true,
     "flushToDbDataSectionMaxCount": 2,
     "overWriteData" : false,
-    "writeJSONsToFile": true,
-    "uploadToDb": false,
+    "writeJSONsToFile": false,
+    "uploadToDb": true,
     "outputFolder": "./output",
     "runNonThreaded": false,
     "doc_threadsFileProcessor": "set to 1 to single thread file processor",
@@ -15,6 +15,7 @@
     "threadsDbUpload": 32,
     "channelBufferSizeNumberOfDocs": 1024,
     "channelBufferSizeNumberOfFiles": 48,
+    "lineTypeDefs": "./lineTypeDefs",
     "headerColumns": [
         "VERSION",
         "MODEL",
@@ -152,164 +153,6 @@
         {
             "name": "LINE_TYPE",
             "type": "string"
-        }
-    ],
-    "lineTypeColumns": [
-        {
-            "lineType": "SL1L2",
-            "columns": [
-                {
-                    "name": "TOTAL",
-                    "type": "int"
-                },
-                {
-                    "name": "FBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "OBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "FOBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "FFBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "OOBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "MAE",
-                    "type": "float"
-                }
-            ]
-        },
-        {
-            "lineType": "SAL1L2",
-            "columns": [
-                {
-                    "name": "TOTAL",
-                    "type": "int"
-                },
-                {
-                    "name": "FABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "OABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "FOABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "FFABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "OOABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "MAE",
-                    "type": "float"
-                }
-            ]
-        },
-        {
-            "lineType": "VL1L2",
-            "columns": [
-                {
-                    "name": "TOTAL",
-                    "type": "int"
-                },
-                {
-                    "name": "UFBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "VFBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UOBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "VOBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UVFOBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UVFFBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UVOOBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "F_SPEED_BAR",
-                    "type": "float"
-                },
-                {
-                    "name": "O_SPEED_BAR",
-                    "type": "float"
-                }
-            ]
-        },
-        {
-            "lineType": "VAL1L2",
-            "columns": [
-                {
-                    "name": "TOTAL",
-                    "type": "int"
-                },
-                {
-                    "name": "UFABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "VFABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UOABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "VOABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UVFOABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UVFFBAR",
-                    "type": "float"
-                },
-                {
-                    "name": "UVOOABAR",
-                    "type": "float"
-                },
-                {
-                    "name": "FA_SPEED_BAR",
-                    "type": "float"
-                },
-                {
-                    "name": "OA_SPEED_BAR",
-                    "type": "float"
-                }
-            ]
         }
     ]
 }

@@ -1,0 +1,45 @@
+{
+    "lineType": "VAL1L2",
+    "columns": [
+        {
+            "name": "TOTAL",
+            "type": "int"
+        },
+        {
+            "name": "UFABAR",
+            "type": "float"
+        },
+        {
+            "name": "VFABAR",
+            "type": "float"
+        },
+        {
+            "name": "UOABAR",
+            "type": "float"
+        },
+        {
+            "name": "VOABAR",
+            "type": "float"
+        },
+        {
+            "name": "UVFOABAR",
+            "type": "float"
+        },
+        {
+            "name": "UVFFBAR",
+            "type": "float"
+        },
+        {
+            "name": "UVOOABAR",
+            "type": "float"
+        },
+        {
+            "name": "FA_SPEED_BAR",
+            "type": "float"
+        },
+        {
+            "name": "OA_SPEED_BAR",
+            "type": "float"
+        }
+    ]
+}

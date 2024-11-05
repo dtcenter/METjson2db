@@ -39,6 +39,11 @@ type Column struct {
 	Type string `json:"type"`
 }
 
+type LineType struct {
+	LineType string   `json:"lineType"`
+	Columns  []Column `json:"columns"`
+}
+
 type ConfigJSON struct {
 	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
 	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
@@ -54,16 +59,15 @@ type ConfigJSON struct {
 	ThreadsDbUpload                int64    `json:"threadsDbUpload"`
 	ChannelBufferSizeNumberOfDocs  int64    `json:"channelBufferSizeNumberOfDocs"`
 	ChannelBufferSizeNumberOfFiles int64    `json:"channelBufferSizeNumberOfFiles"`
+	LineTypeDefs                   string   `json:"lineTypeDefs"`
 	IdColumns                      []string `json:"idColumns"`
 	HeaderColumns                  []string `json:"headerColumns"`
 	DataKeyColumns                 []string `jaon:"dataKeyColumns"`
 	IgnoreColumns                  []string `json:"ignoreColumns"`
 	IgnoreValues                   []string `json:"ignoreValues"`
 	CommonColumns                  []Column `json:"commonColumns"`
-	LineTypeColumns                []struct {
-		LineType string   `json:"lineType"`
-		Columns  []Column `json:"columns"`
-	} `json:"lineTypeColumns"`
+	LineTypeColumns                []LineType
+	// LineTypeColumns                []LineType `json:"lineTypeColumns"`
 }
 
 type TroubleShoot struct {

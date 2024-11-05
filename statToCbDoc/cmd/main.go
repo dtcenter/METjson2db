@@ -133,6 +133,12 @@ func main() {
 		return
 	}
 
+	err = loadTypeTypeDefs()
+	if err != nil {
+		log.Fatal("Error loading Line Type definitions ...", err)
+		return
+	}
+
 	log.Printf("MaxFilesInProcessChunk:%d", state.Conf.MaxFilesInProcessChunk)
 	log.Printf("maxLinesToLoad:%d", state.Conf.MaxLinesToLoad)
 	log.Printf("flushToDbDataSectionMaxCount:%d", state.Conf.FlushToDbDataSectionMaxCount)
@@ -248,6 +254,38 @@ func main() {
 	log.Printf("\tstatToCbDoc, files:%d, docs:%d, file-stats:[%d,%d], db-stats[%d,%d] finished in %v", len(inputFiles),
 		len(state.CbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
 	log.Printf("Line Type Stats:%v", utils.JsonPrettyPrintStruct(state.LineTypeStats))
+}
+
+func loadTypeTypeDefs() error {
+	files, err := os.ReadDir(state.Conf.LineTypeDefs)
+	if err != nil {
+		log.Printf("Error loading Line Type definitions from:%s", state.Conf.LineTypeDefs)
+		return err
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			ltFilePath := state.Conf.LineTypeDefs + "/" + file.Name()
+			// log.Printf("LineType:%s", )
+
+			lt := types.LineType{}
+			ltFile, err := os.Open(ltFilePath)
+			if err != nil {
+				log.Printf("Error opening Line Type definition file:%s,%v", ltFilePath, err.Error())
+				ltFile.Close()
+				return err
+			}
+			defer ltFile.Close()
+
+			jsonParser := json.NewDecoder(ltFile)
+			if err = jsonParser.Decode(&lt); err != nil {
+				log.Printf("Error parsing Line Type definition file:%s,%v", ltFilePath, err.Error())
+				return err
+			}
+			state.Conf.LineTypeColumns = append(state.Conf.LineTypeColumns, lt)
+		}
+	}
+	log.Printf("Conf:\n%s", utils.JsonPrettyPrintStruct(state.Conf))
+	return err
 }
 
 func parseLoadSpec(file string) (types.LoadSpec, error) {

@@ -27,21 +27,21 @@ cb_host: adb-cb2.gsd.esrl.noaa.gov,adb-cb3.gsd.esrl.noaa.gov,adb-cb4.gsd.esrl.no
 ## cd METdatacb/statToCbDoc
 go build .
 ## run using ~/credentials, ./settings.json , ./load_spec.json 
-go run ./cmd/main -c ~/credentials -s ./settings.json -l ./load_spec.json
+go run ./cmd -c ~/credentials -s ./settings.json -l ./load_spec.json
 # to test for race conditions, add "-race" as below
-go run -race . -c ~/credentials -s ./settings.json -l ./load_spec.json
+go run -race ./cmd -c ~/credentials -s ./settings.json -l ./load_spec.json
 ## run with specific credentials,settings, load_spec and/or for a specific stat file
-go run . -c ~/credentials -s ./settings.json -l ./load_spec.json -f /Users/gopa.padmanabhan/scratch/data/MET/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat
+go run ./cmd -c ~/credentials -s ./settings.json -l ./load_spec.json -f /Users/gopa.padmanabhan/scratch/data/MET/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat
 # if -f option is specified, ignores load_spec input files
 
-go run . -c ~/credentials -s ./settings.json -l ./load_spec.json -f ./test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_240000L_20240203_120000V.stat
+go run ./cmd -c ~/credentials -s ./settings.json -l ./load_spec.json -f ./test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_240000L_20240203_120000V.stat
 
 Output will be in ./outputs with file name with extension as json, like:
 grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
 
 ## run with specific credentials,settings and/or for all stat files in a folder
-go run . -c ~/credentials -s ./settings.json -l ./load_spec.json -i ./test_data/
-go run . -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
+go run ./cmd -c ~/credentials -s ./settings.json -l ./load_spec.json -i ./test_data/
+go run ./cmd -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 # if -f option is specified, ignores load_spec input files
 
 # Output location, configuration and logic
