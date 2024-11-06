@@ -1,6 +1,31 @@
-# METdatacb => statToCbDoc
-# GO lang converter for MET stat files to Couchbase document JSON 
+# METdatacb
 
+A MET stat file to Couchbase JSON document converter
+
+## Getting Started
+
+Currently the following works:
+
+```shell
+# Run all packages in `cmd/`
+go run ./cmd/...
+# Run all tests with a coverage report
+go test -cover ./...
+
+# And some tooling examples
+
+# Format code inplace, apply simplifications if possible, and show the diff
+gofmt -w -s -d .
+# Run static analysis
+go vet ./...
+# Tidy up dependencies
+go mod tidy
+# Build the "test" binary
+go build -o /tmp/test ./cmd/test
+# Run various Linters used in CI
+brew install golangci-lint # If not installed already
+golangci-lint run
+```
 
 # Runtime dependencies
 Make sure settings.json is in the same folder as the statToCbDoc executable
