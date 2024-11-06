@@ -30,7 +30,6 @@ func statToCbFlush(flushFinal bool) {
 	*/
 	flushCount := 0
 	if state.Conf.RunNonThreaded {
-
 		for id, doc := range state.CbDocs {
 			headerLen := len(doc.HeaderFields)
 			dataLen := len(maps.Keys(doc.Data))
@@ -98,7 +97,7 @@ func flushToFiles(id string) {
 
 	docStr := []byte(doc.ToJSONString())
 	fileName := state.Conf.OutputFolder + "/" + id + ".json"
-	err := os.WriteFile(fileName, docStr, 0644)
+	err := os.WriteFile(fileName, docStr, 0o644)
 	if err != nil {
 		log.Printf("Error writing output:%s", fileName)
 	}

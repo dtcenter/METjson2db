@@ -235,7 +235,6 @@ func main() {
 				fileTotalErrors += doc.HeaderFields["errors"].IntVal
 			} else {
 				log.Printf("\tflushToFilesAsync[%d], errors:", fi)
-
 			}
 		}
 
@@ -331,7 +330,6 @@ func parseConfig(file string) (types.ConfigJSON, error) {
 }
 
 func parseTroubleShoot(file string) (types.TroubleShoot, error) {
-
 	log.Println("parseTroubleShoot(" + file + ")")
 
 	ts := types.TroubleShoot{}

@@ -32,11 +32,11 @@ func FlushToFilesAsync(threadIdx int) {
 		}
 		docStr := []byte(doc.ToJSONString())
 		fileName := state.Conf.OutputFolder + "/" + doc.HeaderFields["ID"].StringVal + ".json"
-		err := os.WriteFile(fileName, docStr, 0644)
+		err := os.WriteFile(fileName, docStr, 0o644)
 		if err != nil {
 			log.Printf("Error writing output:%s", fileName)
 		}
-		//log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+		// log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 		doc.Mutex.Unlock()
 	}
 	log.Printf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)

@@ -6,24 +6,30 @@ import (
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
 )
 
-var Conf = types.ConfigJSON{}
-var TroubleShoot = types.TroubleShoot{}
-var CbLineTypeColDefs map[string]types.ColDefArray
-var TotalLinesProcessed = 0
-var CbDocs map[string]types.CbDataDocument
-var CbDocsMutex *sync.RWMutex
-var DataKeyIdx int
-var Credentials = types.Credentials{}
+var (
+	Conf                = types.ConfigJSON{}
+	TroubleShoot        = types.TroubleShoot{}
+	CbLineTypeColDefs   map[string]types.ColDefArray
+	TotalLinesProcessed = 0
+	CbDocs              map[string]types.CbDataDocument
+	CbDocsMutex         *sync.RWMutex
+	DataKeyIdx          int
+	Credentials         = types.Credentials{}
+)
 
-var AsyncFileProcessorChannels []chan string
-var AsyncFlushToFileChannels []chan types.CbDataDocument
-var AsyncFlushToDbChannels []chan types.CbDataDocument
-var AsyncWaitGroupFileProcessor sync.WaitGroup
-var AsyncWaitGroupFlushToFiles sync.WaitGroup
-var AsyncWaitGroupFlushToDb sync.WaitGroup
+var (
+	AsyncFileProcessorChannels  []chan string
+	AsyncFlushToFileChannels    []chan types.CbDataDocument
+	AsyncFlushToDbChannels      []chan types.CbDataDocument
+	AsyncWaitGroupFileProcessor sync.WaitGroup
+	AsyncWaitGroupFlushToFiles  sync.WaitGroup
+	AsyncWaitGroupFlushToDb     sync.WaitGroup
+)
 
-var LineTypeStats map[string]types.LineTypeStat
-var DocKeyCountMapMutex *sync.RWMutex
-var DocKeyCountMap map[string]types.DocKeyCounts
+var (
+	LineTypeStats       map[string]types.LineTypeStat
+	DocKeyCountMapMutex *sync.RWMutex
+	DocKeyCountMap      map[string]types.DocKeyCounts
+)
 
 var StatToCbRun = types.StatToCbRun{}

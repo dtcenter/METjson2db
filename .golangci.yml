@@ -49,7 +49,7 @@ linters:
     - errorlint
 
     # Checks for pointers to enclosing loop variables.
-    - exportloopref
+    - copyloopvar
 
     # TODO - enable
     # - gocritic
