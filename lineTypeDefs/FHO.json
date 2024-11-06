@@ -1,0 +1,21 @@
+{
+    "lineType": "FHO",
+    "columns": [
+        {
+            "name": "TOTAL",
+            "type": "int"
+        },
+        {
+            "name": "F_RATE",
+            "type": "float"
+        },
+        {
+            "name": "H_RATE",
+            "type": "float"
+        },
+        {
+            "name": "O_RATE",
+            "type": "float"
+        }
+    ]
+}

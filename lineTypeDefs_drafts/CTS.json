@@ -1,0 +1,138 @@
+{
+    "lineType": "CTS",
+    "columns": [
+        {
+            "name": "TOTAL",
+            "type": "int"
+        },
+        {
+        "name": "BASER",
+        },
+        {
+        "name": "BASER_NCL,
+        },
+        {
+        "name": "BASER_NCU,
+        },
+        {
+        "name": "BASER_BCL,
+        },
+        {}
+        "name": "BASER_BCU
+        "name": "FMEAN,
+        "name": "FMEAN_NCL,
+        "name": "FMEAN_NCU,
+        "name": "FMEAN_BCL,
+        "name": "FMEAN_BCU,
+        "name": "ACC,
+        "name": "ACC_NCL,
+        "name": "ACC_NCU,
+        "name": "ACC_BCL,
+        "name": "ACC_BCU,
+        "name": "FBIAS,
+        "name": "FBIAS_BCL,
+        "name": "FBIAS_BCU,
+        "name": "PODY,
+        "name": "PODY_NCL,
+        "name": "PODY_NCU,
+        "name": "PODY_BCL,
+        "name": "PODY_BCU,
+        "name": "PODN,
+        "name": "PODN_NCL,
+        "name": "PODN_NCU,
+        "name": "PODN_BCL,
+        "name": "PODN_BCU,
+        "name": "POFD,
+        "name": "POFD_NCL,
+        "name": "POFD_NCU,
+        "name": "POFD_BCL,
+        "name": "POFD_BCU,
+        "name": "FAR,
+        "name": "FAR_NCL,
+        "name": "FAR_NCU,
+        "name": "FAR_BCL,
+        "name": "FAR_BCU,
+        "name": "CSI,
+        "name": "CSI_NCL,
+        "name": "CSI_NCU,
+        "name": "CSI_BCL,
+        "name": "CSI_BCU,
+        "name": "GSS,
+        "name": "GSS_BCL,
+        "name": "GSS_BCU,
+        "name": "HK,
+        "name": "HK_NCL,
+        "name": "HK_NCU,
+        "name": "HK_BCL,
+        "name": "HK_BCU,
+        "name": "HSS,
+        "name": "HSS_BCL,
+        "name": "HSS_BCU,
+        "name": "ODDS,
+        "name": "ODDS_NCL,
+        "name": "ODDS_NCU,
+        "name": "ODDS_BCL,
+        "name": "ODDS_BCU,
+        "name": "LODDS,
+        "name": "LODDS_NCL,
+        "name": "LODDS_NCU,
+        "name": "LODDS_BCL,
+        "name": "LODDS_BCU,
+        "name": "ORSS,
+        "name": "ORSS_NCL,
+        "name": "ORSS_NCU,
+        "name": "ORSS_BCL,
+        "name": "ORSS_BCU,
+        "name": "EDS,
+        "name": "EDS_NCL,
+        "name": "EDS_NCU,
+        "name": "EDS_BCL,
+        "name": "EDS_BCU,
+        "name": "SEDS,
+        "name": "SEDS_NCL,
+        "name": "SEDS_NCU,
+        "name": "SEDS_BCL,
+        "name": "SEDS_BCU,
+        "name": "EDI,
+        "name": "EDI_NCL,
+        "name": "EDI_NCU,
+        "name": "EDI_BCL,
+        "name": "EDI_BCU,
+        "name": "SEDI,
+        "name": "SEDI_NCL,
+        "name": "SEDI_NCU,
+        "name": "SEDI_BCL,
+        "name": "SEDI_BCU,
+        "name": "BAGSS,
+        "name": "BAGSS_BCL,
+        "name": "BAGSS_BCU,
+        "name": "HSS_EC,
+        "name": "HSS_EC_BCL,
+        "name": "HSS_EC_BCU,
+        "name": "EC_VALUE
+        {
+            "name": "FABAR",
+            "type": "float"
+        },
+        {
+            "name": "OABAR",
+            "type": "float"
+        },
+        {
+            "name": "FOABAR",
+            "type": "float"
+        },
+        {
+            "name": "FFABAR",
+            "type": "float"
+        },
+        {
+            "name": "OOABAR",
+            "type": "float"
+        },
+        {
+            "name": "MAE",
+            "type": "float"
+        }
+    ]
+}

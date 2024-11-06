@@ -33,6 +33,7 @@ func StatFileToCbDoc(filepath string) error {
 	fileScanner := bufio.NewScanner(inputFile)
 	fileScanner.Split(bufio.ScanLines)
 	lineCount := 0
+	trackLineTypeCount := 0
 
 	for fileScanner.Scan() {
 		lineStr := fileScanner.Text()
@@ -53,6 +54,17 @@ func StatFileToCbDoc(filepath string) error {
 			log.Printf("NULL document[%s]", doc.HeaderFields["ID"].StringVal)
 			log.Printf("lineType:%s, filepath:%s, line:%d", lineType, filepath, lineCount)
 			continue
+		}
+
+		if state.TroubleShoot.EnableLineTypeTrack {
+			if slices.Contains(state.TroubleShoot.LineTypeTrack.Actions, "printSampleStatFileDataLinesAndTerminate") &&
+				slices.Contains(state.TroubleShoot.LineTypeTrack.LineTypeList, lineType) {
+				trackLineTypeCount++
+				log.Printf(">>>>>>>>>>>>> Tracking[LineTypeTrack]:%s stat-file-data-line:\n%s\n", lineType, lineStr)
+				if trackLineTypeCount > 10 {
+					log.Fatal("Exiting after track ....")
+				}
+			}
 		}
 
 		/* check if time to flush cbDocs to files and/or db

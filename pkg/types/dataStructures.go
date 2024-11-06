@@ -73,11 +73,16 @@ type ConfigJSON struct {
 type TroubleShoot struct {
 	EnableTrackContextFlushToFile bool `json:"enableTrackContextFlushToFile"`
 	EnableTrackContextFlushToDb   bool `json:"enableTrackContextFlushToDb"`
+	EnableLineTypeTrack           bool `json:"enableLineTypeTrack"`
 	TerminateAtFirstTrackError    bool `json:"terminateAtFirstTrackError"`
 	IdTrack                       struct {
 		IdList  []string `json:"idList"`
 		Actions []string `json:"actions"`
 	} `json:"idTrack"`
+	LineTypeTrack struct {
+		LineTypeList []string `json:"lineTypeList"`
+		Actions      []string `json:"actions"`
+	} `json:"lineTypeTrack"`
 }
 
 type Credentials struct {
