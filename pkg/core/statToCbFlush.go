@@ -9,9 +9,9 @@ import (
 	"golang.org/x/exp/maps"
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/utils"
+	"github.com/NOAA-GSL/METdatacb/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/pkg/types"
+	"github.com/NOAA-GSL/METdatacb/pkg/utils"
 )
 
 // init runs before main() is evaluated

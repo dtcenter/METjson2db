@@ -3,7 +3,7 @@ package state
 import (
 	"sync"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
+	"github.com/NOAA-GSL/METdatacb/pkg/types"
 )
 
 var Conf = types.ConfigJSON{}

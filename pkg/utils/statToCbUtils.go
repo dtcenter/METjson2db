@@ -11,7 +11,7 @@ import (
 
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/types"
+	"github.com/NOAA-GSL/METdatacb/pkg/types"
 )
 
 // init runs before main() is evaluated

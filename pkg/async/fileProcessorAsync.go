@@ -6,8 +6,8 @@ import (
 
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/core"
-	"github.com/NOAA-GSL/METdatacb/statToCbDoc/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/pkg/core"
+	"github.com/NOAA-GSL/METdatacb/pkg/state"
 )
 
 // init runs before main() is evaluated
