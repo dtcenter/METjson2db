@@ -1,6 +1,9 @@
 # METdatacb
 
-A MET stat file to Couchbase JSON document converter
+## MET stat file to Couchbase JSON document converter and uploader
+
+This project is a GO language command-line program to generate and/or upload MET
+stat file data to Couchbase JSON documents.  
 
 ## Getting Started
 
@@ -27,11 +30,8 @@ brew install golangci-lint # If not installed already
 golangci-lint run
 ```
 
-# Runtime dependencies
-Make sure settings.json is in the same folder as the statToCbDoc executable
-
-### configuration
-# Couchbase credentials file
+## Configuration
+### Couchbase credentials file
 NOTE: If no specific credentails file is given on the command-line, statToCbDoc
 will look for and use ~/credentials
 There is a sample credentials file at: METdatacb/credentials.template
@@ -43,33 +43,35 @@ cb_user: ***
 cb_password: ***
 cb_bucket: metdata
 cb_scope: _default
-# The target collection must be specified in load_spec.json => "target_collection": "MET_default"
+#### The target collection must be specified in load_spec.json => "target_collection": "MET_default"
 
 To point to cluster, use
 cb_host: adb-cb2.gsd.esrl.noaa.gov,adb-cb3.gsd.esrl.noaa.gov,adb-cb4.gsd.esrl.noaa.gov
 
 
-## cd METdatacb/statToCbDoc
+## Example run command-lines
+```shell
+cd METdatacb
 go build .
-## run using ~/credentials, ./settings.json , ./load_spec.json 
+# run using ~/credentials, ./settings.json , ./load_spec.json 
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json
 # to test for race conditions, add "-race" as below
 go run -race ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json
-## run with specific credentials,settings, load_spec and/or for a specific stat file
+# run with specific credentials,settings, load_spec and/or for a specific stat file
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -f /Users/gopa.padmanabhan/scratch/data/MET/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat
 # if -f option is specified, ignores load_spec input files
 
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -f ./test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_240000L_20240203_120000V.stat
 
-Output will be in ./outputs with file name with extension as json, like:
-grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
+# Output will be in ./outputs with file name with extension as json, like: grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
 
-## run with specific credentials,settings and/or for all stat files in a folder
+# run with specific credentials,settings and/or for all stat files in a folder
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i ./test_data/
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 # if -f option is specified, ignores load_spec input files
+```
 
-# Output location, configuration and logic
+## Output location, configuration and logic
 Output will be in settings.json[OutputFolder], defaults to "./outputs", one file for each doc-id.
 MET_cb_[docId].json.  It is important to note that if 
 a file with same doc-id extis prior to run, the data from
@@ -86,12 +88,12 @@ A flush(merge) and/or Db merge is trigerred when a doc data section count reache
 settings.json setting: flushToDbDataSectionMaxCount
 
 
-## log output to file
+## Log output to file
 By default, log is printed to stdout, but if you instead want to log to a file, add below at the end of above run commands:
 2> logfile (for overwriting)
 2>> logfile (for appending)
 
-# troubleshoot.json
+## Troubleshooting
 If a troubleshoot.json file exists in the working folder, it would be used to log specific troubleshooting information.
 For example, this file can be used to track extra logging for a document with a specific ID.
 For more detailed information on troubleshooting, please refer to the troubleshooting.txt document.

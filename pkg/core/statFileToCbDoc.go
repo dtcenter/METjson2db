@@ -57,12 +57,13 @@ func StatFileToCbDoc(filepath string) error {
 		}
 
 		if state.TroubleShoot.EnableLineTypeTrack {
-			if slices.Contains(state.TroubleShoot.LineTypeTrack.Actions, "printSampleStatFileDataLinesAndTerminate") &&
-				slices.Contains(state.TroubleShoot.LineTypeTrack.LineTypeList, lineType) {
-				trackLineTypeCount++
-				log.Printf(">>>>>>>>>>>>> Tracking[LineTypeTrack]:%s stat-file-data-line:\n%s\n", lineType, lineStr)
-				if trackLineTypeCount > 10 {
-					log.Fatal("Exiting after track ....")
+			if slices.Contains(state.TroubleShoot.LineTypeTrack.LineTypeList, lineType) {
+				if slices.Contains(state.TroubleShoot.LineTypeTrack.Actions, "printSampleStatFileDataLinesAndTerminate") {
+					trackLineTypeCount++
+					log.Printf(">>>>>>>>>>>>> Tracking[LineTypeTrack]:%s stat-file-data-line:\n%s\n", lineType, lineStr)
+					if trackLineTypeCount > 10 {
+						log.Fatal("Exiting after track ....")
+					}
 				}
 			}
 		}

@@ -67,7 +67,6 @@ type ConfigJSON struct {
 	IgnoreValues                   []string `json:"ignoreValues"`
 	CommonColumns                  []Column `json:"commonColumns"`
 	LineTypeColumns                []LineType
-	// LineTypeColumns                []LineType `json:"lineTypeColumns"`
 }
 
 type TroubleShoot struct {
