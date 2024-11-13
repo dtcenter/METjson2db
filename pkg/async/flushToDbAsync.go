@@ -38,7 +38,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		err := json.Unmarshal([]byte(doc.ToJSONString()), &anyJson)
 
 		if err != nil || anyJson["data"] == nil || len(anyJson["data"].(map[string]interface{})) == 0 {
-			log.Printf("NULL document[%s], err:%v", doc.HeaderFields["ID"].StringVal, err)
+			// log.Printf("NULL document[%s], err:%v", doc.HeaderFields["ID"].StringVal, err)
 			if err != nil {
 				log.Printf("err:%v, doc:\n%s", err, doc.ToJSONString())
 			}

@@ -48,11 +48,23 @@ func StatFileToCbDoc(filepath string) error {
 		// log.Printf("%d:%v:%d", lineCount, fields, len(fields))
 		// _ = fields // remove declared but not used errors
 		lineType := fields[23]
-		doc := statFieldsToCbDoc(lineType, fields)
+
+		coldef, ok := state.CbLineTypeColDefs[lineType]
+		if !ok {
+			if state.TroubleShoot.EnableLineTypeTrack {
+				if slices.Contains(state.TroubleShoot.LineTypeTrack.Actions, "printUnhandledLineTypesAndDataLines") {
+					log.Printf("no coldef for lineType:%s, file:%s, line#:%d", lineType, filepath, lineCount)
+					log.Printf("%s", lineStr)
+				}
+			}
+			state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: 0, Handled: false}
+			continue
+		}
+		doc := statFieldsToCbDoc(lineType, fields, coldef)
 
 		if len(doc.HeaderFields) < 2 || len(doc.Data) == 0 {
-			log.Printf("NULL document[%s]", doc.HeaderFields["ID"].StringVal)
-			log.Printf("lineType:%s, filepath:%s, line:%d", lineType, filepath, lineCount)
+			// log.Printf("NULL document[%s]", doc.HeaderFields["ID"].StringVal)
+			// log.Printf("lineType:%s, filepath:%s, line:%d", lineType, filepath, lineCount)
 			continue
 		}
 
@@ -90,15 +102,9 @@ func StatFileToCbDoc(filepath string) error {
 	return nil
 }
 
-func statFieldsToCbDoc(lineType string, fields []string) types.CbDataDocument {
+func statFieldsToCbDoc(lineType string, fields []string, coldef types.ColDefArray) types.CbDataDocument {
 	// log.Println("statFieldsToCbDoc(" + lineType + ")")
 
-	coldef, ok := state.CbLineTypeColDefs[lineType]
-	if !ok {
-		log.Printf("no coldef for lineType:%s", lineType)
-		state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: 0, Handled: false}
-		return types.CbDataDocument{}
-	}
 	lt, ok := state.LineTypeStats[lineType]
 	if !ok {
 		state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: 1, Handled: true}

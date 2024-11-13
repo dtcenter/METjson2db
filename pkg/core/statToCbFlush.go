@@ -119,7 +119,7 @@ func flushToDb(conn types.CbConnection, id string) {
 	err := json.Unmarshal([]byte(doc.ToJSONString()), &anyJson)
 
 	if err != nil || anyJson["data"] == nil || len(anyJson["data"].(map[string]interface{})) == 0 {
-		log.Printf("NULL document[%s]", id)
+		// log.Printf("NULL document[%s]", id)
 		return
 	}
 

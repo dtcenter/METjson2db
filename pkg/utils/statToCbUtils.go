@@ -52,7 +52,7 @@ func readCbDocument(file string) (types.CbDataDocument, error) {
 				log.Printf(key, "\t", val, "\t", "float64")
 				doc.HeaderFields[key] = types.MakeFloatCbDataValue(val.(float64))
 			default:
-				log.Printf("unknown type:", key, "\t", reflect.TypeOf(val), "\t", t)
+				log.Printf("unknown type:%s\tType:%v\tt:%v", key, reflect.TypeOf(val), t)
 			}
 		}
 	}

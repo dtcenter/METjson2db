@@ -3,7 +3,7 @@
     "maxFilesInProcessChunk": 10,
     "updateOnlyOnDocKeyCountChange": true,
     "flushToDbDataSectionMaxCount": 2,
-    "overWriteData" : false,
+    "overWriteData": false,
     "writeJSONsToFile": false,
     "uploadToDb": true,
     "outputFolder": "./output",
@@ -41,20 +41,29 @@
     "idColumns": [
         "VERSION",
         "MODEL",
+        "DESC",
         "LINE_TYPE",
-        "OBS_VAR",
-        "VX_MASK",
+        "FCST_VALID_BEG",
+        "FCST_VAR",
+        "FCST_UNITS",
         "FCST_LEV",
+        "FCST_THRESH",
+        "OBS_VAR",
+        "OBS_UNITS",
         "OBS_LEV",
-        "FCST_VALID_BEG"
+        "OBTYPE",
+        "OBS_THRESH",
+        "INTERP_MTHD",
+        "INTERP_PNTS",
+        "VX_MASK"
     ],
     "dataKeyColumns": [
         "FCST_LEAD"
     ],
-    "ignoreColumns":[
+    "ignoreColumns": [
         "OBS_LEAD"
     ],
-    "ignoreValues":[
+    "ignoreValues": [
         "NA"
     ],
     "commonColumns": [
