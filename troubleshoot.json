@@ -30,15 +30,18 @@
     },
     "lineTypeTrack": {
         "actions": [
+            "printLineTypeStatFileColumnMappingAndTerminate",
             "printSampleStatFileDataLinesAndTerminate",
             "printUnhandledLineTypesAndDataLines"
         ],
         "lineTypeList": [
-            "CTS"
+            "CTS",
+            "SL1L2"
         ]
     },
     "lineTypeTrack_documentation": {
         "actions": [
+            "printLineTypeStatFileColumnMappingAndTerminate",
             "printSampleStatFileDataLinesAndTerminate",
             "printUnhandledLineTypesAndDataLines"
         ],

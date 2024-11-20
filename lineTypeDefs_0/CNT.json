@@ -1,0 +1,409 @@
+{
+    "lineType": "CNT",
+    "columns": [
+        {
+            "names": ["TOTAL"],
+            "type": "int"
+        },
+        {
+            "names": ["FBAR","FBAR_NCL",
+            "FBAR_NCU","FBAR_BCL","FBAR_BCU","FSTDEV",
+            "FSTDEV_NCL","FSTDEV_NCU","FSTDEV_BCL",
+            "FSTDEV_BCU","OBAR_NCL","OBAR","OBAR_NCU"]
+        ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ",
+            "type": "float"
+        },
+        {
+            "name": ,
+            "type": "float"
+        },
+        {
+            "name": ",
+            "type": "float"
+        },
+        {
+            "name": "OBAR_BCL",
+            "type": "float"
+        },
+        {
+            "name": "OBAR_BCU",
+            "type": "float"
+        },
+        {
+            "name": "OSTDEV",
+            "type": "float"
+        },
+        {
+            "name": "OSTDEV_NCL",
+            "type": "float"
+        },
+        {
+            "name": "OSTDEV_NCU",
+            "type": "float"
+        },
+        {
+            "name": "OSTDEV_BCL",
+            "type": "float"
+        },
+        {
+            "name": "OSTDEV_BCU",
+            "type": "float"
+        },
+        {
+            "name": "PR_CORR",
+            "type": "float"
+        },
+        {
+            "name": "PR_CORR_NCL",
+            "type": "float"
+        },
+        {
+            "name": "PR_CORR_NCU",
+            "type": "float"
+        },
+        {
+            "name": "PR_CORR_BCL",
+            "type": "float"
+        },
+        {
+            "name": "PR_CORR_BCU",
+            "type": "float"
+        },
+        {
+            "name": "SP_CORR",
+            "type": "float"
+        },
+        {
+            "name": "KT_CORR",
+            "type": "float"
+        },
+        {
+            "name": "RANKS",
+            "type": "float"
+        },
+        {
+            "name": "FRANK_TIES",
+            "type": "float"
+        },
+        {
+            "name": "ORANK_TIES",
+            "type": "float"
+        },
+        {
+            "name": "ME",
+            "type": "float"
+        },
+        {
+            "name": "ME_NCL",
+            "type": "float"
+        },
+        {
+            "name": "ME_NCU",
+            "type": "float"
+        },
+        {
+            "name": "ME_BCL",
+            "type": "float"
+        },
+        {
+            "name": "ME_BCU",
+            "type": "float"
+        },
+        {
+            "name": "ESTDEV",
+            "type": "float"
+        },
+        {
+            "name": "ESTDEV_NCL",
+            "type": "float"
+        },
+        {
+            "name": "ESTDEV_NCU",
+            "type": "float"
+        },
+        {
+            "name": "ESTDEV_BCL",
+            "type": "float"
+        },
+        {
+            "name": "ESTDEV_BCU",
+            "type": "float"
+        },
+        {
+            "name": "MBIAS",
+            "type": "float"
+        },
+        {
+            "name": "MBIAS_BCL",
+            "type": "float"
+        },
+        {
+            "name": "MBIAS_BCU",
+            "type": "float"
+        },
+        {
+            "name": "MAE",
+            "type": "float"
+        },
+        {
+            "name": "MAE_BCL",
+            "type": "float"
+        },
+        {
+            "name": "MAE_BCU",
+            "type": "float"
+        },
+        {
+            "name": "MSE",
+            "type": "float"
+        },
+        {
+            "name": "MSE_BCL",
+            "type": "float"
+        },
+        {
+            "name": "MSE_BCU",
+            "type": "float"
+        },
+        {
+            "name": "BCMSE",
+            "type": "float"
+        },
+        {
+            "name": "BCMSE_BCL",
+            "type": "float"
+        },
+        {
+            "name": "BCMSE_BCU",
+            "type": "float"
+        },
+        {
+            "name": "RMSE",
+            "type": "float"
+        },
+        {
+            "name": "RMSE_BCL",
+            "type": "float"
+        },
+        {
+            "name": "RMSE_BCU",
+            "type": "float"
+        },
+        {
+            "name": "E10",
+            "type": "float"
+        },
+        {
+            "name": "E10_BCL",
+            "type": "float"
+        },
+        {
+            "name": "E10_BCU",
+            "type": "float"
+        },
+        {
+            "name": "E25",
+            "type": "float"
+        },
+        {
+            "name": "E25_BCL",
+            "type": "float"
+        },
+        {
+            "name": "E25_BCU",
+            "type": "float"
+        },
+        {
+            "name": "E50",
+            "type": "float"
+        },
+        {
+            "name": "E50_BCL",
+            "type": "float"
+        },
+        {
+            "name": "E50_BCU",
+            "type": "float"
+        },
+        {
+            "name": "E75",
+            "type": "float"
+        },
+        {
+            "name": "E75_BCL",
+            "type": "float"
+        },
+        {
+            "name": "E75_BCU",
+            "type": "float"
+        },
+        {
+            "name": "E90",
+            "type": "float"
+        },
+        {
+            "name": "E90_BCL",
+            "type": "float"
+        },
+        {
+            "name": "E90_BCU",
+            "type": "float"
+        },
+        {
+            "name": "EIQR",
+            "type": "float"
+        },
+        {
+            "name": "IQR _BCL",
+            "type": "float"
+        },
+        {
+            "name": "IQR _BCU",
+            "type": "float"
+        },
+        {
+            "name": "MAD",
+            "type": "float"
+        },
+        {
+            "name": "MAD_BCL",
+            "type": "float"
+        },
+        {
+            "name": "MAD_BCU",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_NCL",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_NCU",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_BCL",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_BCU",
+            "type": "float"
+        },
+        {
+            "name": "ME2",
+            "type": "float"
+        },
+        {
+            "name": "ME2_BCL",
+            "type": "float"
+        },
+        {
+            "name": "ME2_BCU",
+            "type": "float"
+        },
+        {
+            "name": "MSESS",
+            "type": "float"
+        },
+        {
+            "name": "MSESS_BCL",
+            "type": "float"
+        },
+        {
+            "name": "MSESS_BCU",
+            "type": "float"
+        },
+        {
+            "name": "RMSFA",
+            "type": "float"
+        },
+        {
+            "name": "RMSFA_BCL",
+            "type": "float"
+        },
+        {
+            "name": "RMSFA_BCU",
+            "type": "float"
+        },
+        {
+            "name": "RMSOA",
+            "type": "float"
+        },
+        {
+            "name": "RMSOA_BCL",
+            "type": "float"
+        },
+        {
+            "name": "RMSOA_BCU",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_UNCNTR",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_UNCNTR_BCL",
+            "type": "float"
+        },
+        {
+            "name": "ANOM_CORR_UNCNTR_BCU",
+            "type": "float"
+        },
+        {
+            "name": "SI",
+            "type": "float"
+        },
+        {
+            "name": "SI_BCL",
+            "type": "float"
+        },
+        {
+            "name": "SI_BCU",
+            "type": "float"
+        }
+    ]
+}

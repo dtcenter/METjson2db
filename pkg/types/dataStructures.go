@@ -35,13 +35,23 @@ type LoadSpec struct {
 }
 
 type Column struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name string
+	Type string
 }
 
 type LineType struct {
-	LineType string   `json:"lineType"`
-	Columns  []Column `json:"columns"`
+	LineType string
+	Columns  []Column
+}
+
+type DefSingleTypeColumns struct {
+	Names []string `json:"names"`
+	Type  string   `json:"type"`
+}
+
+type DefLineType struct {
+	LineType string                 `json:"lineType"`
+	Columns  []DefSingleTypeColumns `json:"columns"`
 }
 
 type ConfigJSON struct {

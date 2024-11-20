@@ -193,6 +193,8 @@ func main() {
 		}
 	}
 
+	// log.Fatal("Test exit!")
+
 	core.StartProcessing(inputFiles)
 
 	fileTotalCount := int64(0)
@@ -266,7 +268,7 @@ func loadTypeTypeDefs() error {
 			ltFilePath := state.Conf.LineTypeDefs + "/" + file.Name()
 			// log.Printf("LineType:%s", )
 
-			lt := types.LineType{}
+			deflt := types.DefLineType{}
 			ltFile, err := os.Open(ltFilePath)
 			if err != nil {
 				log.Printf("Error opening Line Type definition file:%s,%v", ltFilePath, err.Error())
@@ -276,11 +278,35 @@ func loadTypeTypeDefs() error {
 			defer ltFile.Close()
 
 			jsonParser := json.NewDecoder(ltFile)
-			if err = jsonParser.Decode(&lt); err != nil {
+			if err = jsonParser.Decode(&deflt); err != nil {
 				log.Printf("Error parsing Line Type definition file:%s,%v", ltFilePath, err.Error())
 				return err
 			}
+
+			lt := types.LineType{}
+
+			lt.LineType = deflt.LineType
+			for i := 0; i < len(deflt.Columns); i++ {
+				stnames := deflt.Columns[i].Names
+				sttype := deflt.Columns[i].Type
+				for j := 0; j < len(stnames); j++ {
+					lt.Columns = append(lt.Columns, types.Column{Name: stnames[j], Type: sttype})
+				}
+			}
 			state.Conf.LineTypeColumns = append(state.Conf.LineTypeColumns, lt)
+			if state.TroubleShoot.EnableLineTypeTrack {
+				if slices.Contains(state.TroubleShoot.LineTypeTrack.LineTypeList, lt.LineType) {
+					if slices.Contains(state.TroubleShoot.LineTypeTrack.Actions, "printLineTypeStatFileColumnMappingAndTerminate") {
+						log.Printf(">>>>>>>>>>>>> Tracking[LineTypeTrack]:printLineTypeStatFileColumnMappingAndTerminate:LineType:%s\n", lt.LineType)
+						for ti := 0; ti < len(lt.Columns); ti++ {
+							log.Printf("%d\t%s\t%s",
+								len(state.Conf.CommonColumns)+ti+1,
+								lt.Columns[ti].Name, lt.Columns[ti].Type)
+						}
+						log.Fatal("Terminating after track...")
+					}
+				}
+			}
 		}
 	}
 	log.Printf("Conf:\n%s", utils.JsonPrettyPrintStruct(state.Conf))

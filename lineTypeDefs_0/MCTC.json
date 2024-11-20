@@ -1,24 +1,16 @@
 {
-    "lineType": "CNT",
+    "lineType": "MCTC",
     "columns": [
         {
             "name": "TOTAL",
             "type": "int"
         },
         {
-            "name": "FY_OY",
+            "name": "N_CAT",
             "type": "int"
         },
         {
-            "name": "FY_ON",
-            "type": "int"
-        },
-        {
-            "name": "FN_OY",
-            "type": "int"
-        },
-        {
-            "name": "FN_ON",
+            "name": "Fi_Oj",
             "type": "int"
         },
         {

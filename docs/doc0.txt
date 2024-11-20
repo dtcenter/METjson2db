@@ -1,3 +1,23 @@
+metdata => 
+
+
+Couchbase ID generation
+
+@Id @GeneratedValue(strategy = USE_ATTRIBUTES)
+
+bucket.IncrementAsync
+
+https://medium.com/trendyol-tech/sequential-id-generation-on-couchbase-during-transition-sql-to-nosql-d097632f3fe4 
+The Solution: Counter Documents
+In Couchbase, a counter document is a special type of document used for storing and managing integer values that need to be incremented or decremented atomically. 
+This feature is particularly useful for scenarios where you need to maintain counts, statistics, or other numerical data that multiple clients might concurrently update.
+
+64 bit max value is 20 (string length)
+
+Verion[8]:LineType[8]:Model[80]:OBS_VAR[50]:COUNTR[20]   = Total 164
+
+
+
 MET data files from Hera in ~/scratch/data/MET/
 
 See document: 

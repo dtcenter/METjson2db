@@ -1,23 +1,23 @@
 {
 	"CNT": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"CTC": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"CTS": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"DMAP": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"ECLV": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"ECNT": {
 		"ProcessedCount": 0,
@@ -25,7 +25,7 @@
 	},
 	"FHO": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"GENMPR": {
 		"ProcessedCount": 0,
@@ -41,7 +41,7 @@
 	},
 	"MCTC": {
 		"ProcessedCount": 0,
-		"Handled": false
+		"Handled": true
 	},
 	"MCTS": {
 		"ProcessedCount": 0,

@@ -2,31 +2,20 @@
     "lineType": "SL1L2",
     "columns": [
         {
-            "name": "TOTAL",
+            "names": [
+                "TOTAL"
+            ],
             "type": "int"
         },
         {
-            "name": "FBAR",
-            "type": "float"
-        },
-        {
-            "name": "OBAR",
-            "type": "float"
-        },
-        {
-            "name": "FOBAR",
-            "type": "float"
-        },
-        {
-            "name": "FFBAR",
-            "type": "float"
-        },
-        {
-            "name": "OOBAR",
-            "type": "float"
-        },
-        {
-            "name": "MAE",
+            "names": [
+                "FBAR",
+                "OBAR",
+                "FOBAR",
+                "FFBAR",
+                "OOBAR",
+                "MAE"
+            ],
             "type": "float"
         }
     ]
