@@ -1,0 +1,22 @@
+{
+    "lineType": "MCTS",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_CAT"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "OBAR",
+                "FOBAR",
+                "FFBAR",
+                "OOBAR",
+                "MAE"
+            ],
+            "type": "float"
+        }
+    ]
+}

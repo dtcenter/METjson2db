@@ -35,8 +35,7 @@
             "printUnhandledLineTypesAndDataLines"
         ],
         "lineTypeList": [
-            "CTS",
-            "SL1L2"
+            "CTC"
         ]
     },
     "lineTypeTrack_documentation": {

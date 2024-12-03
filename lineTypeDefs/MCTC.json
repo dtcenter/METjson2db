@@ -1,0 +1,19 @@
+{
+    "lineType": "MCTC",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_CAT",
+                "Fi_Oj"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "EC_VALUE"
+            ],
+            "type": "float"
+        }
+    ]
+}

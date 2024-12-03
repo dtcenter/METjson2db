@@ -1,0 +1,21 @@
+{
+    "lineType": "ECLV",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "BASER",
+                "VALUE_BASER",
+                "N_PNT",
+                "CL_i"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "VALUE_i"
+            ],
+            "type": "float"
+        }
+    ]
+}

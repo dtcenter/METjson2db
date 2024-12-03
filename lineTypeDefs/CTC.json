@@ -1,0 +1,17 @@
+{
+    "lineType": "CTC",
+    "columns": [
+        {
+            "names": [
+                "TOTAL"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "FY_OY","FY_ON","FN_OY","FN_ON","EC_VALUE"
+            ],
+            "type": "float"
+        }
+    ]
+}
