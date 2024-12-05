@@ -60,6 +60,12 @@ func StatFileToCbDoc(filepath string) error {
 			state.LineTypeStats[lineType] = types.LineTypeStat{ProcessedCount: 0, Handled: false}
 			continue
 		}
+		if len(coldef) != len(fields) {
+			log.Printf("Column definition and data mismatch!, file:%s, linetype:%s, line:%d",
+				filepath, lineType, lineCount)
+			continue
+		}
+
 		doc := statFieldsToCbDoc(lineType, fields, coldef)
 
 		if len(doc.HeaderFields) < 2 || len(doc.Data) == 0 {

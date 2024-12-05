@@ -55,6 +55,8 @@ cd METdatacb
 go build .
 # run using ~/credentials, ./settings.json , ./load_spec.json 
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json
+# run on adb-cb1 (with non-default credentials file)
+go run ./cmd/... -c ~/credentials.MET
 # to test for race conditions, add "-race" as below
 go run -race ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json
 # run with specific credentials,settings, load_spec and/or for a specific stat file
