@@ -145,11 +145,15 @@ func statFieldsToCbDoc(lineType string, fields []string, coldef types.ColDefArra
 				case 0:
 					doc.HeaderFields[coldef[i].Name] = types.MakeStringCbDataValue(fields[i])
 				case 1:
-					intv, _ := strconv.Atoi(fields[i])
-					doc.HeaderFields[coldef[i].Name] = types.MakeIntCbDataValue(int64(intv))
+					intv, err := strconv.Atoi(fields[i])
+					if err == nil {
+						doc.HeaderFields[coldef[i].Name] = types.MakeIntCbDataValue(int64(intv))
+					}
 				case 2:
-					floatv, _ := strconv.ParseFloat(fields[i], 64)
-					doc.HeaderFields[coldef[i].Name] = types.MakeFloatCbDataValue(floatv)
+					floatv, err := strconv.ParseFloat(fields[i], 64)
+					if err == nil {
+						doc.HeaderFields[coldef[i].Name] = types.MakeFloatCbDataValue(floatv)
+					}
 				case 3:
 					doc.HeaderFields[coldef[i].Name] = types.MakeIntCbDataValue(utils.StatDateToEpoh(fields[i]))
 				}
