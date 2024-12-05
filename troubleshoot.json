@@ -2,7 +2,7 @@
     "documentation_0": "set enableXXXX options below to false in production",
     "enableTrackContextFlushToFile": false,
     "enableTrackContextFlushToDb": false,
-    "enableLineTypeTrack": true,
+    "enableLineTypeTrack": false,
     "terminateAtFirstTrackError": true,
     "idTrack": {
         "actions": [

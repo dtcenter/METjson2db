@@ -5,8 +5,8 @@
     "folder_tmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
     "folder_tmpl_1": "/home/amb-verif/MET_data/MET_test_data_0//{model}/20240801-00z/{data_type}",
     "folder_tmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
-    "folder_tmpl": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
-    "folder_tmpl_4": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
+    "folder_tmpl_3": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
+    "folder_tmpl": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
     "load_val": {
         "field": [
             {
