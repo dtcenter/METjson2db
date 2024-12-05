@@ -1,0 +1,28 @@
+{
+    "lineType": "MPR",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "INDEX"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "OBS_SID",
+                "OBS_LAT",
+                "OBS_LON",
+                "OBS_LVL",
+                "OBS_ELV",
+                "FCST",
+                "OBS",
+                "OBS_QC",
+                "CLIMO_MEAN",
+                "CLIMO_STDEV",
+                "CLIMO_CDF"
+            ],
+            "type": "float"
+        }
+    ]
+}
