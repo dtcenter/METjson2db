@@ -1,0 +1,33 @@
+{
+    "lineType": "PSTD",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_THRESH"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "BASER",
+                "BASER_NCL",
+                "BASER_NCU",
+                "RELIABILITY",
+                "RESOLUTION",
+                "UNCERTAINTY",
+                "ROC_AUC",
+                "BRIER",
+                "BRIER_NCL",
+                "BRIER_NCU",
+                "BRIERCL",
+                "BRIERCL_NCL",
+                "BRIERCL_NCU",
+                "BSS",
+                "BSS_SMPL",
+                "THRESH_i"
+            ],
+            "type": "float"
+        }
+    ]
+}
