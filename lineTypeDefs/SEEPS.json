@@ -1,0 +1,17 @@
+{
+    "lineType": "SEEPS",
+    "columns": [
+        {
+            "names": [
+                "TOTAL"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "S12","S13","S21","S23","S31","S32","PF1","PF2","PF3","PV1","PV2","PV3","SEEPS"
+            ],
+            "type": "float"
+        }
+    ]
+}
