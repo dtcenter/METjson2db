@@ -1,20 +1,16 @@
 {
-    "lineType": "MPR",
+    "lineType": "SEEPS_MPR",
     "columns": [
         {
             "names": [
-                "TOTAL",
-                "INDEX"
+                "OBS_SID"
             ],
-            "type": "int"
+            "type": "string"
         },
         {
             "names": [
-                "OBS_SID",
                 "OBS_LAT",
                 "OBS_LON",
-                "OBS_LVL",
-                "OBS_ELV",
                 "FCST",
                 "OBS"
             ],
@@ -28,9 +24,18 @@
         },
         {
             "names": [
-                "CLIMO_MEAN",
-                "CLIMO_STDEV",
-                "CLIMO_CDF"
+                "FCST_CAT",
+                "OBS_CAT"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "P1",
+                "P2",
+                "T1",
+                "T2",
+                "SEEPS"
             ],
             "type": "float"
         }
