@@ -25,7 +25,7 @@ func main() {
 	// gocb.SetLogger(gocb.VerboseStdioLogger())
 
 	start := time.Now()
-	log.Print("meta-update:main()")
+	log.Print("METdatacb:main()")
 
 	state.CbLineTypeColDefs = make(map[string]types.ColDefArray)
 	state.CbDocs = make(map[string]types.CbDataDocument)
@@ -48,7 +48,6 @@ func main() {
 	var inputFile string
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
 	var inputFiles []string
-	inputFiles = append(inputFiles, inputFile)
 
 	var inputFolder string
 	flag.StringVar(&inputFolder, "i", "", "input stat files folder")
@@ -60,9 +59,7 @@ func main() {
 		log.Fatal("Unable to parse config")
 		return
 	}
-	log.Printf("folder_tmpl:%d", len(loadSpec.FolderTmpl))
-	log.Printf("LoadVal.Field[0].Val length:%d", len(loadSpec.LoadVal.Field[0].Val))
-	fmt.Println("LoadSpec:\n" + utils.JsonPrettyPrintStruct(loadSpec))
+	// fmt.Println("LoadSpec:\n" + utils.JsonPrettyPrintStruct(loadSpec))
 
 	if len(inputFile) > 0 {
 		log.Println("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
@@ -157,7 +154,7 @@ func main() {
 
 	generateColDefsFromConfig(state.Conf, state.CbLineTypeColDefs)
 
-	// log.Printf("inputFiles:\n%v", inputFiles)
+	// log.Printf("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	log.Printf("inputFiles:%d", len(inputFiles))
 
 	if !state.Conf.RunNonThreaded {
@@ -309,7 +306,6 @@ func loadTypeTypeDefs() error {
 			}
 		}
 	}
-	log.Printf("Conf:\n%s", utils.JsonPrettyPrintStruct(state.Conf))
 	return err
 }
 
