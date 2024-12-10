@@ -1,0 +1,37 @@
+{
+    "lineType": "ORANK",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "INDEX"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "OBS_SID"
+            ],
+            "type": "string"
+        },
+        {
+            "names": [
+                "OBS_LAT","OBS_LON","OBS_LVL","OBS_ELV","OBS","PIT","RANK","N_ENS_VLD",
+            ],
+            "type": "float"
+        },
+        {
+            "names": [
+                "N_ENS_VLD",
+                "N_ENS"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "ENS_i","OBS_QC","ENS_MEAN","CLIMO_MEAN","SPREAD","ENS_MEAN_OERR","SPREAD_OERR","SPREAD_PLUS_OERR","CLIMO_STDEV"
+            ],
+            "type": "float"
+        }
+    ]
+}

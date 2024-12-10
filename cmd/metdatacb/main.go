@@ -18,7 +18,6 @@ import (
 	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
-	"github.com/NOAA-GSL/METdatacb/pkg/utils"
 )
 
 func main() {
@@ -274,9 +273,10 @@ func main() {
 		}
 	}
 
-	log.Printf("\tstatToCbDoc, files:%d, docs:%d, file-stats:[%d,%d], db-stats[%d,%d] finished in %v", len(inputFiles),
-		len(state.CbDocs), fileTotalCount, fileTotalErrors, dbTotalCount, dbTotalErrors, time.Since(start))
-	log.Printf("Line Type Stats:%v", utils.JsonPrettyPrintStruct(state.LineTypeStats))
+	slog.Info("Run stats", "files", len(inputFiles), "docs", len(state.CbDocs), "fileTotalCount", fileTotalCount,
+		"fileTotalErrors", fileTotalErrors, "dbTotalCount", dbTotalCount, "dbTotalErrors", dbTotalErrors,
+		"run-time(ms)", time.Since(start).Milliseconds())
+	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)
 }
 
 func loadTypeTypeDefs() error {

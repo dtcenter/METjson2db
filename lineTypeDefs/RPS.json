@@ -1,0 +1,23 @@
+{
+    "lineType": "RPS",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_PROB"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "RPS_REL",
+                "RPS_RES",
+                "RPS_UNC",
+                "RPS",
+                "RPSS",
+                "RPSS_SMPL"
+            ],
+            "type": "float"
+        }
+    ]
+}

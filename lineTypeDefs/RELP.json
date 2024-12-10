@@ -1,0 +1,13 @@
+{
+    "lineType": "RELP",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_ENS",
+                "RELP_i"
+            ],
+            "type": "int"
+        }
+    ]
+}

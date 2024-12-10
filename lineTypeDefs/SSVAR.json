@@ -1,0 +1,28 @@
+{
+    "lineType": "SSVAR",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_BIN",
+                "BIN_i",
+                "BIN_N"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "VAR_MIN","VAR_MAX","VAR_MEAN","FBAR","OBAR","FOBAR","FFBAR","OOBAR",
+                "FBAR_NCL","FBAR_NCU",
+                "FSTDEV","FSTDEV_NCL","FSTDEV_NCU",
+                "OBAR_NCL","OBAR_NCU",
+                "OSTDEV","OSTDEV_NCL","OSTDEV_NCU",
+                "PR_CORR","PR_CORR_NCL","PR_CORR_NCU",
+                "ME","ME_NCL","ME_NCU",
+                "ESTDEV","ESTDEV_NCL","ESTDEV_NCU",
+                "MBIAS","MSE","BCMSE","RMSE"
+            ],
+            "type": "float"
+        }
+    ]
+}

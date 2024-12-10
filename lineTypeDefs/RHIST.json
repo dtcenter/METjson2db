@@ -1,0 +1,13 @@
+{
+    "lineType": "RHIST",
+    "columns": [
+        {
+            "names": [
+                "TOTAL",
+                "N_RANK",
+                "RANK_i"
+            ],
+            "type": "int"
+        }
+    ]
+}
