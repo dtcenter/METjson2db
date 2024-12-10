@@ -16,7 +16,7 @@
         },
         {
             "names": [
-                "OBS_LAT","OBS_LON","OBS_LVL","OBS_ELV","OBS","PIT","RANK","N_ENS_VLD",
+                "OBS_LAT","OBS_LON","OBS_LVL","OBS_ELV","OBS","PIT","RANK","N_ENS_VLD"
             ],
             "type": "float"
         },
