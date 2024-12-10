@@ -31,11 +31,8 @@ tmp/
 *.env
 .idea
 .vscode
-main
-cmd/main
 _*
 *.csv
-*.sql
 *.txt
 logfile
 
