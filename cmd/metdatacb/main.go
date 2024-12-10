@@ -157,7 +157,7 @@ func main() {
 
 	err = loadTypeTypeDefs()
 	if err != nil {
-		log.Fatal("Error loading Line Type definitions ...", err)
+		log.Fatal("Error loading Line Type definitions!", err)
 		return
 	}
 
