@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -124,6 +125,30 @@ func main() {
 		return
 	}
 
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelError,
+	}
+	switch state.Conf.LogLevel {
+	case "DEBUG":
+		opts = &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}
+	case "INFO":
+		opts = &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		}
+	case "WARN":
+		opts = &slog.HandlerOptions{
+			Level: slog.LevelWarn,
+		}
+	case "ERROR":
+		opts = &slog.HandlerOptions{
+			Level: slog.LevelError,
+		}
+	}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	slog.SetDefault(logger)
+
 	state.TroubleShoot, err = parseTroubleShoot("troubleshoot.json")
 	if err != nil {
 		log.Fatal("No troubleshoot.json found, skipping trouble shooting ...")
@@ -136,14 +161,14 @@ func main() {
 		return
 	}
 
-	log.Printf("MaxFilesInProcessChunk:%d", state.Conf.MaxFilesInProcessChunk)
-	log.Printf("maxLinesToLoad:%d", state.Conf.MaxLinesToLoad)
-	log.Printf("flushToDbDataSectionMaxCount:%d", state.Conf.FlushToDbDataSectionMaxCount)
-	log.Printf("overWriteData:%t", state.Conf.OverWriteData)
-	log.Printf("writeJSONsToFile:%t", state.Conf.WriteJSONsToFile)
-	log.Printf("HeaderColumns length:%d", len(state.Conf.HeaderColumns))
-	log.Printf("CommonColumns length:%d", len(state.Conf.CommonColumns))
-	log.Printf("LineTypeColumns length:%d", len(state.Conf.LineTypeColumns))
+	slog.Debug("Conf", "MaxFilesInProcessChunk", state.Conf.MaxFilesInProcessChunk)
+	slog.Debug("Conf", "maxLinesToLoad", state.Conf.MaxLinesToLoad)
+	slog.Debug("Conf", "flushToDbDataSectionMaxCount", state.Conf.FlushToDbDataSectionMaxCount)
+	slog.Debug("Conf", "overWriteData", state.Conf.OverWriteData)
+	slog.Debug("Conf", "writeJSONsToFile", state.Conf.WriteJSONsToFile)
+	slog.Debug("Conf", "HeaderColumns length", len(state.Conf.HeaderColumns))
+	slog.Debug("Conf", "CommonColumns length", len(state.Conf.CommonColumns))
+	slog.Debug("Conf", "LineTypeColumns length", len(state.Conf.LineTypeColumns))
 
 	state.Credentials = getCredentials(credentialsFilePath)
 	if len(loadSpec.TargetCollection) > 0 {

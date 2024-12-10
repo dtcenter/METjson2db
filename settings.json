@@ -1,4 +1,6 @@
 {
+    "logLevel": "DEBUG",
+    "logLevel_doc": ["DEBUG", "INFO", "WARN", "ERROR"],
     "maxLinesToLoad": 150000,
     "maxFilesInProcessChunk": 10,
     "updateOnlyOnDocKeyCountChange": true,

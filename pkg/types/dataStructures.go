@@ -55,6 +55,7 @@ type DefLineType struct {
 }
 
 type ConfigJSON struct {
+	LogLevel                       string   `json:"LogLevel"`
 	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
 	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
 	UpdateOnlyOnDocKeyCountChange  bool     `json:"updateOnlyOnDocKeyCountChange"`
