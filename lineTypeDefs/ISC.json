@@ -1,0 +1,18 @@
+{
+    "lineType": "ISC",
+    "columns": [
+        {
+            "names": [
+                "TOTAL"
+            ],
+            "type": "int"
+        },
+        {
+            "names": [
+                "TILE_DIM","TILE_XLL","TILE_YLL","NSCALE","ISCALE","MSE","ISC","FENERGY",
+                "OENERGY","BASER","FBIAS"
+            ],
+            "type": "float"
+        }
+    ]
+}

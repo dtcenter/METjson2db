@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+
+	"github.com/google/uuid"
 )
 
 // init runs before main() is evaluated
@@ -80,4 +82,14 @@ func PrettyPrint(i interface{}) string {
 	s, _ := json.MarshalIndent(i, "", "\t")
 	fmt.Println(string(s))
 	return string(s)
+}
+
+/*
+GUID length - 36
+00b9bde7-7abd-451b-96f1-43d33a274eca
+deba6ae5-30d6-4876-8796-6685352995f4
+*/
+func GetGUID() string {
+	id := uuid.New()
+	return id.String()
 }
