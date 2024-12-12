@@ -121,14 +121,14 @@ func statFieldsToCbDoc(lineType string, fields []string, coldef types.ColDefArra
 
 	id := ""
 	for i := 0; i < len(coldef); i++ {
-		if i > 0 {
-			id = id + ":"
-		}
 		if coldef[i].IsID {
 			if coldef[i].DataType == 3 {
 				id = id + strconv.FormatInt(utils.StatDateToEpoh(fields[i]), 10)
 			} else {
 				id = id + strings.TrimSpace(fields[i])
+			}
+			if i < (len(coldef) - 1) {
+				id = id + ":"
 			}
 		}
 	}
