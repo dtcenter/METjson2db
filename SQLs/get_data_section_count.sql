@@ -3,7 +3,7 @@ SELECT
     ARRAY_LENGTH(object_pairs(c.data)) as data_length,
     object_pairs(c.data) [*].name as data_keys
 FROM
-    metdata._default.MET_default AS c
+    metplusdata._default.MET_default AS c
 GROUP BY
     c.ID,
     c.data

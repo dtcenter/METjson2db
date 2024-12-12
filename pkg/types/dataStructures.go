@@ -57,6 +57,8 @@ type DefLineType struct {
 type ConfigJSON struct {
 	LogLevel                       string   `json:"LogLevel"`
 	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
+	MaxDocIdLength                 int64    `json:"maxDocIdLength"`
+	ProgressiveLargeDocIdPolicies  []string `json:"progressiveLargeDocIdPolicies"`
 	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
 	UpdateOnlyOnDocKeyCountChange  bool     `json:"updateOnlyOnDocKeyCountChange"`
 	FlushToDbDataSectionMaxCount   int64    `json:"flushToDbDataSectionMaxCount"`
@@ -85,7 +87,10 @@ type TroubleShoot struct {
 	EnableTrackContextFlushToDb   bool `json:"enableTrackContextFlushToDb"`
 	EnableLineTypeTrack           bool `json:"enableLineTypeTrack"`
 	TerminateAtFirstTrackError    bool `json:"terminateAtFirstTrackError"`
-	IdTrack                       struct {
+	DocIdSizeTrack                struct {
+		Actions []string `json:"actions"`
+	} `json:"docIdSizeTrack"`
+	IdTrack struct {
 		IdList  []string `json:"idList"`
 		Actions []string `json:"actions"`
 	} `json:"idTrack"`

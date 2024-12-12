@@ -121,8 +121,20 @@ func statFieldsToCbDoc(lineType string, fields []string, coldef types.ColDefArra
 
 	id := ""
 	for i := 0; i < len(coldef); i++ {
+		if i > 0 {
+			id = id + ":"
+		}
 		if coldef[i].IsID {
-			id = id + ":" + fields[i]
+			if coldef[i].DataType == 3 {
+				id = id + strconv.FormatInt(utils.StatDateToEpoh(fields[i]), 10)
+			} else {
+				id = id + strings.TrimSpace(fields[i])
+			}
+		}
+	}
+	if len(state.TroubleShoot.DocIdSizeTrack.Actions) > 0 {
+		if len(id) > int(state.Conf.MaxDocIdLength) {
+			log.Printf(">>>>>>>>>>>>> Tracking[DocIdSizeTrack], ID:%s len:%d", id, len(id))
 		}
 	}
 

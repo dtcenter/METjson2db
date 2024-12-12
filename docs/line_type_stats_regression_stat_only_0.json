@@ -1,4 +1,4 @@
-{
+"Line Type Stats": {
     "CNT": {
         "ProcessedCount": 2560,
         "Handled": true
@@ -36,8 +36,8 @@
         "Handled": true
     },
     "ISC": {
-        "ProcessedCount": 0,
-        "Handled": false
+        "ProcessedCount": 231,
+        "Handled": true
     },
     "MCTC": {
         "ProcessedCount": 25,

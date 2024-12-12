@@ -4,6 +4,11 @@
     "enableTrackContextFlushToDb": false,
     "enableLineTypeTrack": false,
     "terminateAtFirstTrackError": true,
+    "docIdSizeTrack": {
+        "actions": [
+            "logLargeIds"
+        ]
+    },
     "idTrack": {
         "actions": [
             "verifyWithDbRead",

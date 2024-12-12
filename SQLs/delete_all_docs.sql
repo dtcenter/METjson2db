@@ -1,1 +1,1 @@
-DELETE FROM metdata._default.MET_default;
+DELETE FROM metplusdata._default.MET_default;

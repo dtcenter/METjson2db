@@ -2,6 +2,8 @@
     "logLevel": "DEBUG",
     "logLevel_doc": ["DEBUG", "INFO", "WARN", "ERROR"],
     "maxLinesToLoad": 150000,
+    "maxDocIdLength": 200,
+    "progressiveLargeDocIdPolicies": [ "SHA256", "REJECT_WIH_ERROR_LOG"],
     "maxFilesInProcessChunk": 10,
     "updateOnlyOnDocKeyCountChange": true,
     "flushToDbDataSectionMaxCount": 2,
