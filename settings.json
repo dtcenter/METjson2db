@@ -9,7 +9,7 @@
     "flushToDbDataSectionMaxCount": 2,
     "overWriteData": false,
     "writeJSONsToFile": false,
-    "uploadToDb": true,
+    "uploadToDb": false,
     "outputFolder": "./output",
     "runNonThreaded": false,
     "doc_threadsFileProcessor": "set to 1 to single thread file processor",

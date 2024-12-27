@@ -69,6 +69,7 @@ go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -f ./te
 
 # run with specific credentials,settings and/or for all stat files in a folder
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i ./test_data/
+go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/20241104-06z/grid_stat
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 # if -f option is specified, ignores load_spec input files
 ```

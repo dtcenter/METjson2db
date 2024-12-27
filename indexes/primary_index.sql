@@ -1,1 +1,1 @@
-CREATE PRIMARY INDEX idx_default_primary IF NOT EXISTS ON `metdata`;
+CREATE PRIMARY INDEX idx_default_primary IF NOT EXISTS ON `metplusdata`;

@@ -7,7 +7,8 @@
     "folder_tmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
     "folder_tmpl_3": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
     "folder_tmpl_4": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
-    "folder_tmpl": "/home/amb-verif/MET_data/met_regression_just_stat_files",
+    "folder_tmpl": "/Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/20241104-06z/grid_stat",
+    "folder_tmpl_5": "/home/amb-verif/MET_data/met_regression_just_stat_files",
     "load_val": {
         "field": [
             {

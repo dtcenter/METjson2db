@@ -18,6 +18,7 @@ import (
 	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
+	"github.com/NOAA-GSL/METdatacb/pkg/utils"
 )
 
 func main() {
@@ -83,16 +84,22 @@ func main() {
 
 		folders := []string{}
 
-		for vi := 0; vi < len(loadSpec.LoadVal.Field[0].Val); vi++ {
-			fname := "{" + loadSpec.LoadVal.Field[0].Name + "}"
-			folders = append(folders, strings.Replace(loadSpec.FolderTmpl, fname, loadSpec.LoadVal.Field[0].Val[vi], -1))
-		}
+		if !strings.Contains(loadSpec.FolderTmpl, "{") {
+			folders = append(folders, loadSpec.FolderTmpl)
+		} else {
+			for vi := 0; vi < len(loadSpec.LoadVal.Field[0].Val); vi++ {
+				fname := "{" + loadSpec.LoadVal.Field[0].Name + "}"
+				if strings.Contains(loadSpec.FolderTmpl, fname) {
+					folders = append(folders, strings.Replace(loadSpec.FolderTmpl, fname, loadSpec.LoadVal.Field[0].Val[vi], -1))
+				}
+			}
 
-		for fi := 1; fi < len(loadSpec.LoadVal.Field); fi++ {
-			fname := "{" + loadSpec.LoadVal.Field[fi].Name + "}"
-			for vi := 0; vi < len(loadSpec.LoadVal.Field[fi].Val); vi++ {
-				for i := 0; i < len(folders); i++ {
-					folders[i] = strings.Replace(folders[i], fname, loadSpec.LoadVal.Field[fi].Val[vi], -1)
+			for fi := 1; fi < len(loadSpec.LoadVal.Field); fi++ {
+				fname := "{" + loadSpec.LoadVal.Field[fi].Name + "}"
+				for vi := 0; vi < len(loadSpec.LoadVal.Field[fi].Val); vi++ {
+					for i := 0; i < len(folders); i++ {
+						folders[i] = strings.Replace(folders[i], fname, loadSpec.LoadVal.Field[fi].Val[vi], -1)
+					}
 				}
 			}
 		}
@@ -178,7 +185,7 @@ func main() {
 
 	generateColDefsFromConfig(state.Conf, state.CbLineTypeColDefs)
 
-	// log.Printf("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
+	slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	log.Printf("inputFiles:%d", len(inputFiles))
 
 	if !state.Conf.RunNonThreaded {
