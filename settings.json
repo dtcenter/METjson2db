@@ -6,7 +6,7 @@
     "progressiveLargeDocIdPolicies": [ "SHA256", "REJECT_WIH_ERROR_LOG"],
     "maxFilesInProcessChunk": 10,
     "updateOnlyOnDocKeyCountChange": true,
-    "flushToDbDataSectionMaxCount": 2,
+    "flushToDbDataSectionMaxCount": 5,
     "overWriteData": false,
     "writeJSONsToFile": false,
     "uploadToDb": true,
