@@ -7,10 +7,35 @@
     "folder_tmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
     "folder_tmpl_3": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
     "folder_tmpl_4": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
-    "folder_tmpl": "/Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/20241104-06z/grid_stat",
-    "folder_tmpl_5": "/home/amb-verif/MET_data/met_regression_just_stat_files",
+    "folder_tmpl_5": "/Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/{date_time}/grid_stat",
+    "folder_tmpl": "/home/amb-verif/MET_data/G2G_v12/{date_time}/grid_stat",
+    "folder_tmpl_7": "/home/amb-verif/MET_data/met_regression_just_stat_files",
     "load_val": {
         "field": [
+            {
+                "val": [
+                    "20241031-00z",
+                    "20241031-12z",
+                    "20241101-00z",
+                    "20241101-12z",
+                    "20241102-00z",
+                    "20241102-12z",
+                    "20241103-00z",
+                    "20241103-12z",
+                    "20241104-00z",
+                    "20241104-18z",
+                    "20241031-06z",
+                    "20241031-18z",
+                    "20241101-06z",
+                    "20241101-18z",
+                    "20241102-06z",
+                    "20241102-18z",
+                    "20241103-06z",
+                    "20241103-18z",
+                    "20241104-06z"
+                ],
+                "_name": "date_time"
+            },
             {
                 "val": [
                     "GFS",
@@ -22,6 +47,7 @@
                 ],
                 "_name": "model"
             },
+            
             {
                 "val": [
                     "grid_stat"

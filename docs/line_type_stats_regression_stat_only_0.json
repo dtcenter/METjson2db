@@ -1,4 +1,4 @@
-"Line Type Stats": {
+{
     "CNT": {
         "ProcessedCount": 2560,
         "Handled": true
@@ -135,4 +135,5 @@
         "ProcessedCount": 481,
         "Handled": true
     }
+}
 }

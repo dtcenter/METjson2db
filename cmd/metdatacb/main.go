@@ -187,6 +187,7 @@ func main() {
 
 	slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	log.Printf("inputFiles:%d", len(inputFiles))
+	// log.Fatal("Exit hard coded in main.go:190")
 
 	if !state.Conf.RunNonThreaded {
 		for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
