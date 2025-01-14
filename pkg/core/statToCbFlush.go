@@ -138,7 +138,12 @@ func flushToDb(conn types.CbConnection, id string) {
 				log.Fatal(err)
 			}
 		} else {
-			// TODO : Merge and then upsert
+			doc.Merge(dbReadDoc)
+			// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
+			_, err = conn.Collection.Upsert(doc.HeaderFields["ID"].StringVal, anyJson, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 

@@ -61,6 +61,15 @@ func (doc *CbDataDocument) InitReturn(count int64, errors int64) {
 	doc.HeaderFields["errors"] = MakeIntCbDataValue(errors)
 }
 
+func (doc *CbDataDocument) Merge(dbDoc map[string]interface{}) {
+	// TODO : merge not yet complete
+	ddkeys := dbDoc["data"].(map[string]interface{})
+	for di := 0; di < len(ddkeys); di++ {
+		// dkey := ddkeys[di]
+		// dsec := doc.Data[dkey]
+	}
+}
+
 func (doc *CbDataDocument) ToJSONString() string {
 	var sb strings.Builder
 	sb.WriteString("{\n")
