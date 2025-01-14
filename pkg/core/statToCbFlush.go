@@ -123,10 +123,23 @@ func flushToDb(conn types.CbConnection, id string) {
 		return
 	}
 
-	// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-	_, err = conn.Collection.Upsert(doc.HeaderFields["ID"].StringVal, anyJson, nil)
-	if err != nil {
-		log.Fatal(err)
+	if state.Conf.OverWriteData {
+		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
+		_, err = conn.Collection.Upsert(doc.HeaderFields["ID"].StringVal, anyJson, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		dbReadDoc := utils.GetDocWithId(conn.Collection, id)
+		if dbReadDoc == nil || dbReadDoc["data"] == nil || len(dbReadDoc["data"].(map[string]interface{})) == 0 {
+			// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
+			_, err = conn.Collection.Upsert(doc.HeaderFields["ID"].StringVal, anyJson, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			// TODO : Merge and then upsert
+		}
 	}
 
 	if state.TroubleShoot.EnableTrackContextFlushToDb {

@@ -7,6 +7,19 @@ stat file data to Couchbase JSON documents.
 
 ## Getting Started
 
+## Generating LINE_TYPE definitions
+# This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
+https://raw.githubusercontent.com/dtcenter/MET/refs/heads/main_v12.0/data/table_files/met_header_columns_V12.0.txt
+https://raw.githubusercontent.com/dtcenter/MET/refs/heads/main_v12.0/src/tools/core/stat_analysis/parse_stat_line.cc
+
+cd  <repo path>/pkg/buildHeaderLineTypes
+go run . > /tmp/types.go
+cp /tmp/types.go ../structColumnTypes/structColumnTypes.go
+
+Generated definitions are in: <repo path>/pkg/structColumnTypes/structColumnTypes.go
+
+## Running the MET data upload
+
 Currently the following works:
 
 ```shell
