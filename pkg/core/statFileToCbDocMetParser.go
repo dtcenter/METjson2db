@@ -1,4 +1,4 @@
-package structColumnDefs
+package core
 
 import (
 
@@ -50,16 +50,16 @@ func statFileToCbDocMetParser(filepath string) error {
 		dataLine := lines[line]
 		doc, err = ParseLine(headerLine, dataLine, &doc, filepath, getMissingExternalDocForId)
 		if err != nil {
-			t.Fatalf("Expected no error, got %v", err)
+			log.Fatalf("Expected no error, got %v", err)
 
 		}
 	}
 	if doc == nil {
-		t.Fatalf("Expected parsed document, got nil")
+		log.Fatalf("Expected parsed document, got nil")
 	}
 	err = WriteJsonToCompressedFile(doc, "/tmp/test_output.json.gz")
 	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
+		log.Fatalf("Expected no error, got %v", err)
 	}
 
 	// read the file back in
