@@ -1,4 +1,4 @@
-package core
+package structColumnDefs
 
 import (
 
@@ -9,9 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"pkg/structColumnTypes"
-
-	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
+	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 
 	"github.com/stretchr/testify/assert"
 )
