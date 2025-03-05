@@ -62,11 +62,25 @@ func (doc *CbDataDocument) InitReturn(count int64, errors int64) {
 }
 
 func (doc *CbDataDocument) Merge(dbDoc map[string]interface{}) {
-	// TODO : merge not yet complete
-	ddkeys := dbDoc["data"].(map[string]interface{})
-	for di := 0; di < len(ddkeys); di++ {
-		// dkey := ddkeys[di]
-		// dsec := doc.Data[dkey]
+	dbDataKeys := dbDoc["data"].(map[string]interface{})
+	for dbDataKey, dbDataVal := range dbDataKeys {
+		docDataVal := doc.Data[dbDataKey]
+		if nil == docDataVal {
+			dsec := DataSection{}
+			for valKey, valVal := range dbDataVal.(map[string]interface{}) {
+				switch v := valVal.(type) {
+				case int:
+				case int64:
+					dsec[valKey] = MakeIntCbDataValue(int64(v))
+				case float64:
+					dsec[valKey] = MakeFloatCbDataValue(float64(v))
+				case string:
+				default:
+				}
+			}
+			doc.Data[dbDataKey] = dsec
+		}
+		//fmt.Printf("key[%s] value[%s]\n", dbDataKey, dbDataKey)
 	}
 }
 

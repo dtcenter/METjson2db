@@ -4,6 +4,7 @@
     "enableTrackContextFlushToDb": false,
     "enableLineTypeTrack": false,
     "terminateAtFirstTrackError": true,
+    "terminateAterFirstValidMerge": true,
     "docIdSizeTrack": {
         "actions": [
             "logLargeIds"
