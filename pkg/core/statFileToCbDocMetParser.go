@@ -11,8 +11,6 @@ import (
 
 	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // init runs before main() is evaluated
@@ -48,7 +46,7 @@ func statFileToCbDocMetParser(filepath string) error {
 			continue
 		}
 		dataLine := lines[line]
-		doc, err = ParseLine(headerLine, dataLine, &doc, filepath, getMissingExternalDocForId)
+		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &doc, filepath, getMissingExternalDocForId)
 		if err != nil {
 			log.Fatalf("Expected no error, got %v", err)
 
@@ -57,17 +55,20 @@ func statFileToCbDocMetParser(filepath string) error {
 	if doc == nil {
 		log.Fatalf("Expected parsed document, got nil")
 	}
-	err = WriteJsonToCompressedFile(doc, "/tmp/test_output.json.gz")
+	err = structColumnDefs.WriteJsonToCompressedFile(doc, "/tmp/test_output.json.gz")
 	if err != nil {
 		log.Fatalf("Expected no error, got %v", err)
 	}
 
 	// read the file back in
-	parsedDoc, err := ReadJsonFromGzipFile("/tmp/test_output.json.gz")
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
+	/*
+		parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
+		if err != nil {
+			log.Fatalf("Expected no error, got %v", err)
+		}
 
-	assert.NotNil(t, parsedDoc)
-	// add other test assertions here
+		assert.NotNil(log, parsedDoc)
+		// add other test assertions here
+	*/
+	return err
 }
