@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 
 	"github.com/stretchr/testify/assert"

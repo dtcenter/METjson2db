@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"parser/pkg/buildHeaderLineTypeUtilities"
-	"parser/pkg/structColumnTypes"
 	"path/filepath"
+	"pkg/buildHeaderLineTypeUtilities"
+	"pkg/structColumnTypes"
 	"strings"
 )
 
