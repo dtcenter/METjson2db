@@ -11,7 +11,7 @@
     "writeJSONsToFile": false,
     "uploadToDb": true,
     "outputFolder": "./output",
-    "runNonThreaded": false,
+    "runNonThreaded": true,
     "doc_threadsFileProcessor": "set to 1 to single thread file processor",
     "threadsFileProcessor_NOTE": "for a future release, use only 1 for now",
     "threadsFileProcessor": 1,

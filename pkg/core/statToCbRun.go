@@ -36,7 +36,8 @@ func StartProcessing(files []string) bool {
 	if state.Conf.ThreadsFileProcessor <= 1 {
 		for file, status := range state.StatToCbRun.FileStatus {
 			log.Printf(file, status)
-			err := StatFileToCbDoc(file)
+			//err := StatFileToCbDoc(file)
+			err := statFileToCbDocMetParser(file)
 			if err != nil {
 				log.Println("Unable to process:" + file)
 				state.StatToCbRun.FileStatus[file] = "error"
