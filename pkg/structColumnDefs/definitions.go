@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"pkg/buildHeaderLineTypeUtilities"
-	"pkg/structColumnTypes"
+
+	"github.com/NOAA-GSL/METdatacb/pkg/buildHeaderLineTypeUtilities"
+	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
+
 	"strings"
 )
 

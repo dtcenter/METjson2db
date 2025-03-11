@@ -37,12 +37,46 @@ func StartProcessing(files []string) bool {
 		for file, status := range state.StatToCbRun.FileStatus {
 			log.Printf(file, status)
 			//err := StatFileToCbDoc(file)
-			err := statFileToCbDocMetParser(file)
+			docList, err := statFileToCbDocMetParser(file)
 			if err != nil {
 				log.Println("Unable to process:" + file)
 				state.StatToCbRun.FileStatus[file] = "error"
 			} else {
 				state.StatToCbRun.FileStatus[file] = "finished"
+
+				state.CbDocsMutex.RLock()
+
+				for _, docR := range docList {
+					doc := docR.(map[string]interface{})
+					id := doc["ID"].(string)
+
+					_, ok := state.CbDocs[id]
+					if !ok {
+						state.CbDocs[id] = doc
+					} else {
+
+					}
+				}
+				state.CbDocsMutex.RUnlock()
+
+				/*
+					home, _ := os.UserHomeDir()
+					err = structColumnDefs.WriteJsonToCompressedFile(docList, home+"/scratch/test_output.json.gz")
+					if err != nil {
+						log.Fatalf("Expected no error, got %v", err)
+					}
+				*/
+
+				// read the file back in
+				/*
+					parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
+					if err != nil {
+						log.Fatalf("Expected no error, got %v", err)
+					}
+
+					assert.NotNil(log, parsedDoc)
+					// add other test assertions here
+				*/
 			}
 		}
 	} else {

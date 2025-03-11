@@ -9,6 +9,9 @@ import (
 	"os"
 	"strings"
 
+	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
+	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
+
 	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 )
@@ -25,7 +28,7 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 	return nil, fmt.Errorf("%s: %s", structColumnTypes.DOC_NOT_FOUND, id)
 }
 
-func statFileToCbDocMetParser(filepath string) error {
+func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 	log.Println("statFileToCbDocMetParser(" + filepath + ")")
 	var doc map[string]interface{}
 	var err error
@@ -55,20 +58,6 @@ func statFileToCbDocMetParser(filepath string) error {
 	if doc == nil {
 		log.Fatalf("Expected parsed document, got nil")
 	}
-	err = structColumnDefs.WriteJsonToCompressedFile(doc, "/tmp/test_output.json.gz")
-	if err != nil {
-		log.Fatalf("Expected no error, got %v", err)
-	}
 
-	// read the file back in
-	/*
-		parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
-		if err != nil {
-			log.Fatalf("Expected no error, got %v", err)
-		}
-
-		assert.NotNil(log, parsedDoc)
-		// add other test assertions here
-	*/
-	return err
+	return doc, err
 }
