@@ -12,6 +12,7 @@ var (
 	CbLineTypeColDefs   map[string]types.ColDefArray
 	TotalLinesProcessed = 0
 	CbDocs              map[string]types.CbDataDocument
+	CbDocMutexMap       map[string]*sync.RWMutex
 	CbDocsMutex         *sync.RWMutex
 	DataKeyIdx          int
 	Credentials         = types.Credentials{}

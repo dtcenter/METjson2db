@@ -48,7 +48,7 @@ func StartProcessing(files []string) bool {
 
 				for _, docR := range docList {
 					doc := docR.(map[string]interface{})
-					id := doc["ID"].(string)
+					id := doc["id"].(string)
 
 					_, ok := state.CbDocs[id]
 					if !ok {

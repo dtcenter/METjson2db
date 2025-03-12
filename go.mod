@@ -1,19 +1,20 @@
 module github.com/NOAA-GSL/METdatacb
 
-go 1.23.0
+go 1.23.3
 
-toolchain go1.23.2
+toolchain go1.23.7
 
 require (
 	github.com/couchbase/gocb/v2 v2.9.2
 	github.com/google/uuid v1.6.0
 	github.com/relvacode/iso8601 v1.5.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
+	github.com/NOAA-GSL/MET-parser v1.0.3 // indirect
 	github.com/couchbase/gocbcore/v10 v10.5.2 // indirect
 	github.com/couchbase/gocbcoreps v0.1.3 // indirect
 	github.com/couchbase/goprotostellar v1.0.2 // indirect

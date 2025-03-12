@@ -4,6 +4,8 @@ import (
 	"github.com/couchbase/gocb/v2"
 )
 
+type CbDataDocument map[string]interface{}
+
 type CbConnection struct {
 	Cluster    *gocb.Cluster
 	Bucket     *gocb.Bucket

@@ -28,7 +28,17 @@ func printStringArray(in []string) {
 	}
 }
 
-func jsonPrettyPrint(in []interface{}) string {
+func DocPrettyPrint(in map[string]interface{}) string {
+	jsonText, err := json.Marshal(in)
+	if err != nil {
+		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
+	}
+	var out bytes.Buffer
+	json.Indent(&out, jsonText, "", "\t")
+	return out.String()
+}
+
+func JsonPrettyPrint(in []interface{}) string {
 	jsonText, err := json.Marshal(in)
 	if err != nil {
 		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)

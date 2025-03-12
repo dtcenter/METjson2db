@@ -9,11 +9,10 @@ import (
 	"os"
 	"strings"
 
-	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
-	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
-
-	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
-	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
+	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
+	"github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
+	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
+	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 )
 
 // init runs before main() is evaluated

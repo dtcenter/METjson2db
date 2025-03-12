@@ -1,6 +1,7 @@
 {
     "email": "molly.b.smith@noaa.gov",
-    "target_collection": "MET_default",
+    "target_collection": "MET_parser",
+    "target_collection0": "MET_default",
     "verbose": true,
     "folder_tmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
     "folder_tmpl_1": "/home/amb-verif/MET_data/MET_test_data_0//{model}/20240801-00z/{data_type}",

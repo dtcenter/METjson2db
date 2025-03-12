@@ -183,8 +183,6 @@ func main() {
 	}
 	log.Printf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 
-	generateColDefsFromConfig(state.Conf, state.CbLineTypeColDefs)
-
 	slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	log.Printf("inputFiles:%d", len(inputFiles))
 	// log.Fatal("Exit hard coded in main.go:190")
@@ -231,12 +229,13 @@ func main() {
 	dbTotalCount := int64(0)
 	dbTotalErrors := int64(0)
 
-	if !state.Conf.RunNonThreaded {
+	if state.Conf.RunNonThreaded {
+		core.StatToCbFlush(true)
+	} else {
 		log.Printf("Waiting for threads to finish ...")
 
 		// send end-marker doc to all channels
 		endMarkerDoc := types.CbDataDocument{}
-		endMarkerDoc.Init()
 
 		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
 			state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
@@ -258,27 +257,29 @@ func main() {
 		log.Printf("asyncWaitGroupFileProcessor finished!")
 
 		// get return info from threads
-		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-			doc, ok := <-state.AsyncFlushToFileChannels[fi]
-			if ok && len(doc.HeaderFields) > 0 {
-				log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-				fileTotalCount += doc.HeaderFields["count"].IntVal
-				fileTotalErrors += doc.HeaderFields["errors"].IntVal
-			} else {
-				log.Printf("\tflushToFilesAsync[%d], errors:", fi)
+		/*
+			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+				doc, ok := <-state.AsyncFlushToFileChannels[fi]
+				if ok && len(doc.HeaderFields) > 0 {
+					log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+					fileTotalCount += doc.HeaderFields["count"].IntVal
+					fileTotalErrors += doc.HeaderFields["errors"].IntVal
+				} else {
+					log.Printf("\tflushToFilesAsync[%d], errors:", fi)
+				}
 			}
-		}
 
-		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-			doc, ok := <-state.AsyncFlushToDbChannels[di]
-			if ok && len(doc.HeaderFields) > 0 {
-				log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-				dbTotalCount += doc.HeaderFields["count"].IntVal
-				dbTotalErrors += doc.HeaderFields["errors"].IntVal
-			} else {
-				log.Printf("\tflushToDbAsync[%d], errors:", di)
+			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+				doc, ok := <-state.AsyncFlushToDbChannels[di]
+				if ok && len(doc.HeaderFields) > 0 {
+					log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+					dbTotalCount += doc.HeaderFields["count"].IntVal
+					dbTotalErrors += doc.HeaderFields["errors"].IntVal
+				} else {
+					log.Printf("\tflushToDbAsync[%d], errors:", di)
+				}
 			}
-		}
+		*/
 	}
 
 	slog.Info("Run stats", "files", len(inputFiles), "docs", len(state.CbDocs), "fileTotalCount", fileTotalCount,
@@ -416,59 +417,4 @@ func getCredentials(credentialsFilePath string) types.Credentials {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 	return creds
-}
-
-func generateColDefsFromConfig(conf types.ConfigJSON, cbLineTypeColDefs map[string]types.ColDefArray) {
-	for i := 0; i < len(conf.LineTypeColumns); i++ {
-		lt := conf.LineTypeColumns[i].LineType
-		ltcols := conf.LineTypeColumns[i].Columns
-		doc := types.CbDataDocument{}
-		doc.Init()
-
-		// first add common columns
-		ccols := conf.CommonColumns
-		cbLineTypeColDefs[lt] = make(types.ColDefArray, len(ccols)+len(ltcols))
-
-		for cci := 0; cci < len(ccols); cci++ {
-			ccol := ccols[cci]
-			coldef := types.ColDef{}
-			coldef.Name = ccol.Name
-			switch {
-			case ccol.Type == "string":
-				coldef.DataType = 0
-			case ccol.Type == "int":
-				coldef.DataType = 1
-			case ccol.Type == "float":
-				coldef.DataType = 2
-			case ccol.Type == "epoch":
-				coldef.DataType = 3
-			}
-			coldef.IsID = slices.Contains(conf.IdColumns, coldef.Name)
-			coldef.IsHeader = slices.Contains(conf.HeaderColumns, coldef.Name)
-			coldef.IsDataKey = slices.Contains(conf.DataKeyColumns, coldef.Name)
-			if coldef.IsDataKey {
-				state.DataKeyIdx = cci
-			}
-			cbLineTypeColDefs[lt][cci] = coldef
-		}
-
-		// now add line type specific columns
-		for ltci := 0; ltci < len(ltcols); ltci++ {
-			ltcol := ltcols[ltci]
-			coldef := types.ColDef{}
-			coldef.Name = ltcol.Name
-			switch {
-			case ltcol.Type == "string":
-				coldef.DataType = 0
-			case ltcol.Type == "int":
-				coldef.DataType = 1
-			case ltcol.Type == "float":
-				coldef.DataType = 2
-			case ltcol.Type == "epoch":
-				coldef.DataType = 3
-			}
-			cbLineTypeColDefs[lt][len(ccols)+ltci] = coldef
-		}
-		// log.Printf("ColDefs for:", lt, ":\n", cbLineTypeColDefs[lt])
-	}
 }

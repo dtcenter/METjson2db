@@ -6,7 +6,6 @@ import (
 
 	// "github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
 )
 
@@ -29,15 +28,17 @@ func FileProcessorAsync(threadIdx int) {
 			break
 		}
 		log.Printf("fileProcessorAsync(%d), file:%s", threadIdx, file)
-		err := core.StatFileToCbDoc(file)
-		if err != nil {
-			log.Println("Unable to process:" + file)
-			state.StatToCbRun.FileStatus[file] = "error"
-			errors++
-		} else {
-			state.StatToCbRun.FileStatus[file] = "finished"
-			count++
-		}
+		/*
+			err := core.StatFileToCbDoc(file)
+			if err != nil {
+				log.Println("Unable to process:" + file)
+				state.StatToCbRun.FileStatus[file] = "error"
+				errors++
+			} else {
+				state.StatToCbRun.FileStatus[file] = "finished"
+				count++
+			}
+		*/
 	}
 	log.Printf("fileProcessorAsync(%d) file count:%d, errors:%d", threadIdx, count, errors)
 	state.AsyncFileProcessorChannels[threadIdx] <- fmt.Sprintf("endReturn:%d:%d", count, errors)

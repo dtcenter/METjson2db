@@ -2,7 +2,6 @@ package async
 
 import (
 	"log"
-	"os"
 
 	// "github.com/couchbase/gocb/v2"
 
@@ -20,27 +19,31 @@ func FlushToFilesAsync(threadIdx int) {
 	errors := 0
 	for {
 		doc, ok := <-state.AsyncFlushToFileChannels[threadIdx]
-		doc.Mutex.Lock()
-		if len(doc.HeaderFields) == 0 {
-			log.Printf("\tflushToFilesAsync(%d), end-marker received!", threadIdx)
-			doc.Mutex.Unlock()
-			break
-		}
 		if !ok {
 			log.Printf("\tflushToFilesAsync(%d), no documents in channel!", threadIdx)
 			break
 		}
-		docStr := []byte(doc.ToJSONString())
-		fileName := state.Conf.OutputFolder + "/" + doc.HeaderFields["ID"].StringVal + ".json"
-		err := os.WriteFile(fileName, docStr, 0o644)
-		if err != nil {
-			log.Printf("Error writing output:%s", fileName)
+		id := doc["ID"].(string)
+		state.CbDocMutexMap[id].Lock()
+		if len(doc) == 0 {
+			log.Printf("\tflushToFilesAsync(%d), end-marker received!", threadIdx)
+			state.CbDocMutexMap[id].Unlock()
+			break
 		}
-		// log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
-		doc.Mutex.Unlock()
+
+		/*
+			docStr := []byte(doc.ToJSONString())
+			fileName := state.Conf.OutputFolder + "/" + doc.HeaderFields["ID"].StringVal + ".json"
+			err := os.WriteFile(fileName, docStr, 0o644)
+			if err != nil {
+				log.Printf("Error writing output:%s", fileName)
+			}
+			// log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+		*/
+		state.CbDocMutexMap[id].Unlock()
 	}
 	log.Printf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
 	returnDoc := types.CbDataDocument{}
-	returnDoc.InitReturn(int64(count), int64(errors))
+	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToFileChannels[threadIdx] <- returnDoc
 }
