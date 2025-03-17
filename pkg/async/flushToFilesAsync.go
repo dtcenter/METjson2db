@@ -1,7 +1,9 @@
 package async
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 
 	// "github.com/couchbase/gocb/v2"
 
@@ -19,17 +21,19 @@ func FlushToFilesAsync(threadIdx int) {
 	errors := 0
 	for {
 		doc, ok := <-state.AsyncFlushToFileChannels[threadIdx]
-		if !ok {
-			log.Printf("\tflushToFilesAsync(%d), no documents in channel!", threadIdx)
+		if !ok || doc == nil {
+			slog.Debug(fmt.Sprintf("\tflushToFilesAsync(%d), no documents in channel!", threadIdx))
 			break
 		}
-		id := doc["ID"].(string)
-		state.CbDocMutexMap[id].Lock()
+		// slog.Info(fmt.Sprintf("FlushToFilesAsync(), doc:%v", doc))
+
 		if len(doc) == 0 {
-			log.Printf("\tflushToFilesAsync(%d), end-marker received!", threadIdx)
-			state.CbDocMutexMap[id].Unlock()
+			slog.Debug(fmt.Sprintf("\tflushToFilesAsync(%d), end-marker received!", threadIdx))
 			break
 		}
+
+		id := doc["id"].(string)
+		state.CbDocMutexMap[id].Lock()
 
 		/*
 			docStr := []byte(doc.ToJSONString())
@@ -42,7 +46,7 @@ func FlushToFilesAsync(threadIdx int) {
 		*/
 		state.CbDocMutexMap[id].Unlock()
 	}
-	log.Printf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
+	slog.Debug(fmt.Sprintf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors))
 	returnDoc := types.CbDataDocument{}
 	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToFileChannels[threadIdx] <- returnDoc

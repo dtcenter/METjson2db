@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -28,7 +29,7 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 }
 
 func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
-	log.Println("statFileToCbDocMetParser(" + filepath + ")")
+	slog.Debug(fmt.Sprintf("statFileToCbDocMetParser(" + filepath + ")"))
 	var doc map[string]interface{}
 	var err error
 

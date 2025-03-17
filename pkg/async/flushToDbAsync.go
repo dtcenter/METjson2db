@@ -1,7 +1,9 @@
 package async
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
@@ -20,23 +22,24 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 	for {
 		doc, ok := <-state.AsyncFlushToDbChannels[threadIdx]
 		if !ok {
-			log.Printf("\tflushToDbAsync(%d), no documents in channel!", threadIdx)
-			break
-		}
-		id := doc["ID"].(string)
-		state.CbDocMutexMap[id].Lock()
-		if len(doc) == 0 {
-			log.Printf("\tflushToDbAsync(%d), end-marker received!", threadIdx)
-			state.CbDocMutexMap[id].Unlock()
+			slog.Debug(fmt.Sprintf("\tflushToDbAsync(%d), no documents in channel!", threadIdx))
 			break
 		}
 
+		if len(doc) == 0 {
+			slog.Debug(fmt.Sprintf("\tflushToDbAsync(%d), end-marker received!", threadIdx))
+			break
+		}
+
+		// slog.Info(fmt.Sprintf("FlushToDbAsync(), doc:%v", doc))
+		id := doc["id"].(string)
+		state.CbDocMutexMap[id].Lock()
 		// log.Printf("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 
 		var anyJson = doc
 
-		if anyJson["data"] == nil || len(anyJson["data"].(map[string]interface{})) == 0 {
-			log.Printf("NULL document[%s], err:%v", doc["ID"])
+		if anyJson["data"] == nil {
+			slog.Debug(fmt.Sprintf("NULL document[%s], err:%v", doc["ID"]))
 			// log.Printf("err:%v, doc:\n%s", err, doc.ToJSONString())
 			errors++
 			state.CbDocMutexMap[id].Unlock()
@@ -53,8 +56,8 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 		_, err := conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {
-			log.Println(err)
-			log.Printf("******* Upsert error:ID:%s", id)
+			slog.Error(fmt.Sprintf("%v", err))
+			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
 			// doc.Flushed = false
 		} else {
 			count++
@@ -110,7 +113,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		}
 		state.CbDocMutexMap[id].Unlock()
 	}
-	log.Printf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors)
+	slog.Debug(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors))
 	returnDoc := types.CbDataDocument{}
 	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToDbChannels[threadIdx] <- returnDoc

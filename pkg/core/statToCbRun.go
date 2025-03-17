@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"log"
+	"log/slog"
+	"sync"
 	"time"
 
 	// "github.com/couchbase/gocb/v2"
@@ -19,7 +21,7 @@ func init() {
 }
 
 func StartProcessing(files []string) bool {
-	log.Printf("startProcessing(%d)", len(files))
+	slog.Info(fmt.Sprintf("startProcessing(%d)", len(files)))
 
 	// log.Printf("files:\n%v", files)
 
@@ -35,7 +37,7 @@ func StartProcessing(files []string) bool {
 
 	if state.Conf.ThreadsFileProcessor <= 1 {
 		for file, status := range state.StatToCbRun.FileStatus {
-			log.Printf(file, status)
+			slog.Debug(fmt.Sprintf("%s,%s", file, status))
 			//err := StatFileToCbDoc(file)
 			docList, err := statFileToCbDocMetParser(file)
 			if err != nil {
@@ -49,10 +51,11 @@ func StartProcessing(files []string) bool {
 				for _, docR := range docList {
 					doc := docR.(map[string]interface{})
 					id := doc["id"].(string)
-
+					// slog.Info("id:" + id)
 					_, ok := state.CbDocs[id]
 					if !ok {
 						state.CbDocs[id] = doc
+						state.CbDocMutexMap[id] = &sync.RWMutex{}
 					} else {
 
 					}

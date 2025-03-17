@@ -1,7 +1,9 @@
 package core
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 
 	// "github.com/couchbase/gocb/v2"
 
@@ -16,9 +18,9 @@ func init() {
 }
 
 func StatToCbFlush(flushFinal bool) {
-	log.Printf("statToCbFlush(flushFinal:%t, docs:%d, totalLinesProcessed:%d, FlushToDbDataSectionMaxCount:%d)",
+	slog.Info(fmt.Sprintf("statToCbFlush(flushFinal:%t, docs:%d, totalLinesProcessed:%d, FlushToDbDataSectionMaxCount:%d)",
 		flushFinal, len(state.CbDocs),
-		state.TotalLinesProcessed, state.Conf.FlushToDbDataSectionMaxCount)
+		state.TotalLinesProcessed, state.Conf.FlushToDbDataSectionMaxCount))
 
 	/*
 		See spec in readme, section:
@@ -27,6 +29,7 @@ func StatToCbFlush(flushFinal bool) {
 	flushCount := 0
 	if state.Conf.RunNonThreaded {
 		for id, _ := range state.CbDocs {
+			slog.Info("id:" + id)
 			//if flushFinal || int64(dataLen) >= int64(state.Conf.FlushToDbDataSectionMaxCount) {
 			if state.Conf.WriteJSONsToFile {
 				flushToFiles(id)
@@ -38,44 +41,26 @@ func StatToCbFlush(flushFinal bool) {
 			//}
 		}
 	} else {
-		/*
-			// distribute docs to channels, round-robin, for async processing
-			idxFiles := 0
-			idxDb := 0
-			// for id, doc
-			for _, doc := range state.CbDocs {
-				doc.Mutex.RLock()
-				state.DocKeyCountMapMutex.RLock()
-				headerLen := len(doc.HeaderFields)
-				dataLen := len(maps.Keys(doc.Data))
-				if state.Conf.UpdateOnlyOnDocKeyCountChange && headerLen == state.DocKeyCountMap[doc.HeaderFields["ID"].StringVal].HeaderLen &&
-					dataLen == state.DocKeyCountMap[doc.HeaderFields["ID"].StringVal].DataLen {
-					doc.Mutex.RUnlock()
-					state.DocKeyCountMapMutex.RUnlock()
-					continue
-				}
-				flushed := doc.Flushed
-				doc.Mutex.RUnlock()
-				state.DocKeyCountMapMutex.RUnlock()
-				if flushFinal || (int64(dataLen) >= state.Conf.FlushToDbDataSectionMaxCount && !flushed) {
-					flushCount++
-					if state.Conf.WriteJSONsToFile {
-						state.AsyncFlushToFileChannels[idxFiles] <- doc
-						idxFiles++
-						if idxFiles >= int(state.Conf.ThreadsWriteToDisk) {
-							idxFiles = 0
-						}
-					}
-					if state.Conf.UploadToDb {
-						state.AsyncFlushToDbChannels[idxDb] <- doc
-						idxDb++
-						if idxDb >= int(state.Conf.ThreadsDbUpload) {
-							idxDb = 0
-						}
-					}
+		// distribute docs to channels, round-robin, for async processing
+		idxFiles := 0
+		idxDb := 0
+		// for id, doc
+		for _, doc := range state.CbDocs {
+			if state.Conf.WriteJSONsToFile {
+				state.AsyncFlushToFileChannels[idxFiles] <- doc
+				idxFiles++
+				if idxFiles >= int(state.Conf.ThreadsWriteToDisk) {
+					idxFiles = 0
 				}
 			}
-		*/
+			if state.Conf.UploadToDb {
+				state.AsyncFlushToDbChannels[idxDb] <- doc
+				idxDb++
+				if idxDb >= int(state.Conf.ThreadsDbUpload) {
+					idxDb = 0
+				}
+			}
+		}
 	}
 	log.Printf("\tflushCount:%d", flushCount)
 }
@@ -98,10 +83,10 @@ func flushToFiles(id string) {
 }
 
 func flushToDb(conn types.CbConnection, id string) {
-	// log.Printf("flushToDb(%s)", id)
+	slog.Info("flushToDb(" + id + ")")
 
 	doc := state.CbDocs[id]
-	// log.Printf("data keys:%v", maps.Keys(doc.data))
+	slog.Debug(fmt.Sprintf("%v", doc))
 
 	/*
 		TODO:
@@ -118,9 +103,9 @@ func flushToDb(conn types.CbConnection, id string) {
 
 	if state.Conf.OverWriteData {
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-		_, err := conn.Collection.Upsert(doc["ID"].(string), anyJson, nil)
+		_, err := conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(err.Error())
 		}
 	} else {
 		dbReadDoc := utils.GetDocWithId(conn.Collection, id)

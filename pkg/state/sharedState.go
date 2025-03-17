@@ -33,4 +33,15 @@ var (
 	DocKeyCountMap      map[string]types.DocKeyCounts
 )
 
+// init runs before main() is evaluated
+func init() {
+	CbLineTypeColDefs = make(map[string]types.ColDefArray)
+	CbDocs = make(map[string]types.CbDataDocument)
+	CbDocMutexMap = make(map[string](*sync.RWMutex))
+	CbDocsMutex = &sync.RWMutex{}
+	DocKeyCountMapMutex = &sync.RWMutex{}
+	DocKeyCountMap = make(map[string]types.DocKeyCounts)
+	LineTypeStats = make(map[string]types.LineTypeStat)
+}
+
 var StatToCbRun = types.StatToCbRun{}

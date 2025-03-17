@@ -9,7 +9,6 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"sync"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -25,16 +24,9 @@ func main() {
 	// Uncomment following line to enable logging
 	// gocb.SetLogger(gocb.VerboseStdioLogger())
 
+	slog.Info("METdatacb:main()")
+
 	start := time.Now()
-	log.Print("METdatacb:main()")
-
-	state.CbLineTypeColDefs = make(map[string]types.ColDefArray)
-	state.CbDocs = make(map[string]types.CbDataDocument)
-	state.CbDocsMutex = &sync.RWMutex{}
-	state.DocKeyCountMapMutex = &sync.RWMutex{}
-	state.DocKeyCountMap = make(map[string]types.DocKeyCounts)
-
-	state.LineTypeStats = make(map[string]types.LineTypeStat)
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -131,27 +123,23 @@ func main() {
 		return
 	}
 
-	opts := &slog.HandlerOptions{
-		Level: slog.LevelError,
-	}
+	level := slog.LevelError
+
 	switch state.Conf.LogLevel {
 	case "DEBUG":
-		opts = &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		}
+		level = slog.LevelDebug
 	case "INFO":
-		opts = &slog.HandlerOptions{
-			Level: slog.LevelInfo,
-		}
+		level = slog.LevelInfo
 	case "WARN":
-		opts = &slog.HandlerOptions{
-			Level: slog.LevelWarn,
-		}
+		level = slog.LevelWarn
 	case "ERROR":
-		opts = &slog.HandlerOptions{
-			Level: slog.LevelError,
-		}
+		level = slog.LevelError
 	}
+	opts := &slog.HandlerOptions{
+		AddSource: true,
+		Level:     level,
+	}
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
 
@@ -229,9 +217,8 @@ func main() {
 	dbTotalCount := int64(0)
 	dbTotalErrors := int64(0)
 
-	if state.Conf.RunNonThreaded {
-		core.StatToCbFlush(true)
-	} else {
+	core.StatToCbFlush(true)
+	if !state.Conf.RunNonThreaded {
 		log.Printf("Waiting for threads to finish ...")
 
 		// send end-marker doc to all channels

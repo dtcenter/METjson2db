@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -17,7 +18,7 @@ func init() {
 }
 
 func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
-	log.Printf("getDbConnection(%s.%s.%s)", cred.Cb_bucket, cred.Cb_scope, cred.Cb_collection)
+	slog.Debug(fmt.Sprintf("getDbConnection(%s.%s.%s)", cred.Cb_bucket, cred.Cb_scope, cred.Cb_collection))
 
 	conn = types.CbConnection{}
 	connectionString := cred.Cb_host

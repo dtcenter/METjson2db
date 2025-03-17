@@ -3,6 +3,7 @@ package async
 import (
 	"fmt"
 	"log"
+	"log/slog"
 
 	// "github.com/couchbase/gocb/v2"
 
@@ -20,14 +21,14 @@ func FileProcessorAsync(threadIdx int) {
 	for {
 		file, ok := <-state.AsyncFileProcessorChannels[threadIdx]
 		if file == "end" {
-			log.Printf("\tfileProcessorAsync(%d), end-marker received!", threadIdx)
+			slog.Debug(fmt.Sprintf("\tfileProcessorAsync(%d), end-marker received!", threadIdx))
 			break
 		}
 		if !ok {
-			log.Printf("\tfileProcessorAsync(%d), no files in channel!", threadIdx)
+			slog.Debug(fmt.Sprintf("\tfileProcessorAsync(%d), no files in channel!", threadIdx))
 			break
 		}
-		log.Printf("fileProcessorAsync(%d), file:%s", threadIdx, file)
+		slog.Debug(fmt.Sprintf("fileProcessorAsync(%d), file:%s", threadIdx, file))
 		/*
 			err := core.StatFileToCbDoc(file)
 			if err != nil {
@@ -40,6 +41,6 @@ func FileProcessorAsync(threadIdx int) {
 			}
 		*/
 	}
-	log.Printf("fileProcessorAsync(%d) file count:%d, errors:%d", threadIdx, count, errors)
+	slog.Debug(fmt.Sprintf("fileProcessorAsync(%d) file count:%d, errors:%d", threadIdx, count, errors))
 	state.AsyncFileProcessorChannels[threadIdx] <- fmt.Sprintf("endReturn:%d:%d", count, errors)
 }
