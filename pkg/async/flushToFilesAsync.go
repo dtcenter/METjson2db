@@ -8,7 +8,6 @@ import (
 	// "github.com/couchbase/gocb/v2"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/pkg/types"
 )
 
 // init runs before main() is evaluated
@@ -47,7 +46,7 @@ func FlushToFilesAsync(threadIdx int) {
 		state.CbDocMutexMap[id].Unlock()
 	}
 	slog.Debug(fmt.Sprintf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors))
-	returnDoc := types.CbDataDocument{}
+	returnDoc := make(map[string]interface{})
 	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToFileChannels[threadIdx] <- returnDoc
 }

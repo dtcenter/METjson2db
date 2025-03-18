@@ -114,7 +114,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		state.CbDocMutexMap[id].Unlock()
 	}
 	slog.Debug(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors))
-	returnDoc := types.CbDataDocument{}
+	returnDoc := make(map[string]interface{})
 	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToDbChannels[threadIdx] <- returnDoc
 }

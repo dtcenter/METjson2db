@@ -16,6 +16,7 @@ import (
 	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
 	"github.com/NOAA-GSL/METdatacb/pkg/utils"
 )
@@ -175,36 +176,38 @@ func main() {
 	log.Printf("inputFiles:%d", len(inputFiles))
 	// log.Fatal("Exit hard coded in main.go:190")
 
-	if !state.Conf.RunNonThreaded {
-		for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
-			fi := fi
-			state.AsyncFileProcessorChannels = append(state.AsyncFileProcessorChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfFiles))
-			state.AsyncWaitGroupFileProcessor.Add(1)
-			go func() {
-				defer state.AsyncWaitGroupFileProcessor.Done()
-				async.FileProcessorAsync(fi)
-			}()
-		}
+	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+		if !state.Conf.RunNonThreaded {
+			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
+				fi := fi
+				state.AsyncFileProcessorChannels = append(state.AsyncFileProcessorChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfFiles))
+				state.AsyncWaitGroupFileProcessor.Add(1)
+				go func() {
+					defer state.AsyncWaitGroupFileProcessor.Done()
+					async.FileProcessorAsync(fi)
+				}()
+			}
 
-		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-			fi := fi
-			state.AsyncFlushToFileChannels = append(state.AsyncFlushToFileChannels, make(chan types.CbDataDocument, state.Conf.ChannelBufferSizeNumberOfDocs))
-			state.AsyncWaitGroupFlushToFiles.Add(1)
-			go func() {
-				defer state.AsyncWaitGroupFlushToFiles.Done()
-				async.FlushToFilesAsync(fi)
-			}()
-		}
+			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+				fi := fi
+				state.AsyncFlushToFileChannels = append(state.AsyncFlushToFileChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
+				state.AsyncWaitGroupFlushToFiles.Add(1)
+				go func() {
+					defer state.AsyncWaitGroupFlushToFiles.Done()
+					async.FlushToFilesAsync(fi)
+				}()
+			}
 
-		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-			di := di
-			state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan types.CbDataDocument, state.Conf.ChannelBufferSizeNumberOfDocs))
-			state.AsyncWaitGroupFlushToDb.Add(1)
-			go func() {
-				defer state.AsyncWaitGroupFlushToDb.Done()
-				// conn := getDbConnection(credentials)
-				async.FlushToDbAsync(di)
-			}()
+			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+				di := di
+				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
+				state.AsyncWaitGroupFlushToDb.Add(1)
+				go func() {
+					defer state.AsyncWaitGroupFlushToDb.Done()
+					// conn := getDbConnection(credentials)
+					async.FlushToDbAsync(di)
+				}()
+			}
 		}
 	}
 
@@ -217,55 +220,73 @@ func main() {
 	dbTotalCount := int64(0)
 	dbTotalErrors := int64(0)
 
-	core.StatToCbFlush(true)
-	if !state.Conf.RunNonThreaded {
-		log.Printf("Waiting for threads to finish ...")
+	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+		core.StatToCbFlush(true)
+		if !state.Conf.RunNonThreaded {
+			log.Printf("Waiting for threads to finish ...")
 
-		// send end-marker doc to all channels
-		endMarkerDoc := types.CbDataDocument{}
+			// send end-marker doc to all channels
+			endMarkerDoc := make(map[string]interface{})
 
-		for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-			state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
-		}
-
-		for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-			state.AsyncFlushToDbChannels[di] <- endMarkerDoc
-		}
-
-		state.AsyncWaitGroupFlushToFiles.Wait()
-		log.Printf("asyncWaitGroupFlushToFiles finished!")
-		state.AsyncWaitGroupFlushToDb.Wait()
-		log.Printf("asyncWaitGroupFlushToDb finished!")
-
-		for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
-			state.AsyncFileProcessorChannels[fi] <- "end"
-		}
-		state.AsyncWaitGroupFileProcessor.Wait()
-		log.Printf("asyncWaitGroupFileProcessor finished!")
-
-		// get return info from threads
-		/*
 			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-				doc, ok := <-state.AsyncFlushToFileChannels[fi]
-				if ok && len(doc.HeaderFields) > 0 {
-					log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-					fileTotalCount += doc.HeaderFields["count"].IntVal
-					fileTotalErrors += doc.HeaderFields["errors"].IntVal
-				} else {
-					log.Printf("\tflushToFilesAsync[%d], errors:", fi)
-				}
+				state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
 			}
 
 			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-				doc, ok := <-state.AsyncFlushToDbChannels[di]
-				if ok && len(doc.HeaderFields) > 0 {
-					log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-					dbTotalCount += doc.HeaderFields["count"].IntVal
-					dbTotalErrors += doc.HeaderFields["errors"].IntVal
-				} else {
-					log.Printf("\tflushToDbAsync[%d], errors:", di)
-				}
+				state.AsyncFlushToDbChannels[di] <- endMarkerDoc
 			}
+
+			state.AsyncWaitGroupFlushToFiles.Wait()
+			log.Printf("asyncWaitGroupFlushToFiles finished!")
+			state.AsyncWaitGroupFlushToDb.Wait()
+			log.Printf("asyncWaitGroupFlushToDb finished!")
+
+			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
+				state.AsyncFileProcessorChannels[fi] <- "end"
+			}
+			state.AsyncWaitGroupFileProcessor.Wait()
+			log.Printf("asyncWaitGroupFileProcessor finished!")
+
+			// get return info from threads
+			/*
+				for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+					doc, ok := <-state.AsyncFlushToFileChannels[fi]
+					if ok && len(doc.HeaderFields) > 0 {
+						log.Printf("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+						fileTotalCount += doc.HeaderFields["count"].IntVal
+						fileTotalErrors += doc.HeaderFields["errors"].IntVal
+					} else {
+						log.Printf("\tflushToFilesAsync[%d], errors:", fi)
+					}
+				}
+
+				for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+					doc, ok := <-state.AsyncFlushToDbChannels[di]
+					if ok && len(doc.HeaderFields) > 0 {
+						log.Printf("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+						dbTotalCount += doc.HeaderFields["count"].IntVal
+						dbTotalErrors += doc.HeaderFields["errors"].IntVal
+					} else {
+						log.Printf("\tflushToDbAsync[%d], errors:", di)
+					}
+				}
+			*/
+		}
+	} else if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
+		// home, _ := os.UserHomeDir()
+		err = structColumnDefs.WriteJsonToCompressedFile(state.CbDocs, state.Conf.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		if err != nil {
+			log.Fatalf("Expected no error, got %v", err)
+		}
+		// read the file back in
+		/*
+			parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
+			if err != nil {
+				log.Fatalf("Expected no error, got %v", err)
+			}
+
+			assert.NotNil(log, parsedDoc)
+			// add other test assertions here
 		*/
 	}
 

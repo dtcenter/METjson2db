@@ -4,7 +4,7 @@ import (
 	"github.com/couchbase/gocb/v2"
 )
 
-type CbDataDocument map[string]interface{}
+//type CbDataDocument map[string]interface{}
 
 type CbConnection struct {
 	Cluster    *gocb.Cluster
@@ -58,6 +58,8 @@ type DefLineType struct {
 
 type ConfigJSON struct {
 	LogLevel                       string   `json:"LogLevel"`
+	RunMode                        string   `json:"runMode"`
+	JsonArchiveFilePathAndPrefix   string   `json:"jsonArchiveFilePathAndPrefix"`
 	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
 	MaxDocIdLength                 int64    `json:"maxDocIdLength"`
 	ProgressiveLargeDocIdPolicies  []string `json:"progressiveLargeDocIdPolicies"`
@@ -133,6 +135,6 @@ type DocKeyCounts struct {
 }
 
 type StatToCbRun struct {
-	FileStatus map[string]string         // filename:status
-	Documents  map[string]CbDataDocument // id:doc
+	FileStatus map[string]string      // filename:status
+	Documents  map[string]interface{} // id:doc
 }

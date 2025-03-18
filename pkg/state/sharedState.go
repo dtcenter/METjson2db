@@ -11,17 +11,18 @@ var (
 	TroubleShoot        = types.TroubleShoot{}
 	CbLineTypeColDefs   map[string]types.ColDefArray
 	TotalLinesProcessed = 0
-	CbDocs              map[string]types.CbDataDocument
-	CbDocMutexMap       map[string]*sync.RWMutex
-	CbDocsMutex         *sync.RWMutex
-	DataKeyIdx          int
-	Credentials         = types.Credentials{}
+	//CbDocs              map[string]types.CbDataDocument
+	CbDocs        map[string]interface{}
+	CbDocMutexMap map[string]*sync.RWMutex
+	CbDocsMutex   *sync.RWMutex
+	DataKeyIdx    int
+	Credentials   = types.Credentials{}
 )
 
 var (
 	AsyncFileProcessorChannels  []chan string
-	AsyncFlushToFileChannels    []chan types.CbDataDocument
-	AsyncFlushToDbChannels      []chan types.CbDataDocument
+	AsyncFlushToFileChannels    []chan map[string]interface{}
+	AsyncFlushToDbChannels      []chan map[string]interface{}
 	AsyncWaitGroupFileProcessor sync.WaitGroup
 	AsyncWaitGroupFlushToFiles  sync.WaitGroup
 	AsyncWaitGroupFlushToDb     sync.WaitGroup
@@ -36,7 +37,7 @@ var (
 // init runs before main() is evaluated
 func init() {
 	CbLineTypeColDefs = make(map[string]types.ColDefArray)
-	CbDocs = make(map[string]types.CbDataDocument)
+	CbDocs = make(map[string]interface{})
 	CbDocMutexMap = make(map[string](*sync.RWMutex))
 	CbDocsMutex = &sync.RWMutex{}
 	DocKeyCountMapMutex = &sync.RWMutex{}

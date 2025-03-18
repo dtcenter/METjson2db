@@ -10,14 +10,13 @@ import (
 	// "github.com/couchbase/gocb/v2"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/pkg/types"
 )
 
 // init runs before main() is evaluated
 func init() {
 	log.Println("StatToCbRun:init()")
 	state.StatToCbRun.FileStatus = make(map[string]string)
-	state.StatToCbRun.Documents = make(map[string]types.CbDataDocument)
+	state.StatToCbRun.Documents = make(map[string]interface{})
 }
 
 func StartProcessing(files []string) bool {
@@ -52,34 +51,15 @@ func StartProcessing(files []string) bool {
 					doc := docR.(map[string]interface{})
 					id := doc["id"].(string)
 					// slog.Info("id:" + id)
-					_, ok := state.CbDocs[id]
+					_, ok := state.CbDocMutexMap[id]
 					if !ok {
-						state.CbDocs[id] = doc
+						// state.CbDocs[id] = doc
 						state.CbDocMutexMap[id] = &sync.RWMutex{}
 					} else {
 
 					}
 				}
 				state.CbDocsMutex.RUnlock()
-
-				/*
-					home, _ := os.UserHomeDir()
-					err = structColumnDefs.WriteJsonToCompressedFile(docList, home+"/scratch/test_output.json.gz")
-					if err != nil {
-						log.Fatalf("Expected no error, got %v", err)
-					}
-				*/
-
-				// read the file back in
-				/*
-					parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
-					if err != nil {
-						log.Fatalf("Expected no error, got %v", err)
-					}
-
-					assert.NotNil(log, parsedDoc)
-					// add other test assertions here
-				*/
 			}
 		}
 	} else {

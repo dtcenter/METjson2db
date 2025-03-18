@@ -12,6 +12,7 @@ import (
 
 	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
+	"github.com/NOAA-GSL/METdatacb/pkg/state"
 	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 )
@@ -49,7 +50,7 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 			continue
 		}
 		dataLine := lines[line]
-		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &doc, filepath, getMissingExternalDocForId)
+		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
 		if err != nil {
 			log.Fatalf("Expected no error, got %v", err)
 
