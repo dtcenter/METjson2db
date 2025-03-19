@@ -2,7 +2,6 @@ package async
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 
 	// "github.com/couchbase/gocb/v2"
@@ -12,7 +11,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("flushToFilesAsync:init()")
+	slog.Debug("flushToFilesAsync:init()")
 }
 
 func FlushToFilesAsync(threadIdx int) {
@@ -39,9 +38,9 @@ func FlushToFilesAsync(threadIdx int) {
 			fileName := state.Conf.OutputFolder + "/" + doc.HeaderFields["ID"].StringVal + ".json"
 			err := os.WriteFile(fileName, docStr, 0o644)
 			if err != nil {
-				log.Printf("Error writing output:%s", fileName)
+				slog.Debug("Error writing output:%s", fileName)
 			}
-			// log.Printf("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+			// slog.Debug("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 		*/
 		state.CbDocMutexMap[id].Unlock()
 	}

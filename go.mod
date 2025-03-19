@@ -5,26 +5,22 @@ go 1.23.3
 toolchain go1.23.7
 
 require (
+	github.com/NOAA-GSL/MET-parser v1.0.3
 	github.com/couchbase/gocb/v2 v2.9.2
 	github.com/google/uuid v1.6.0
 	github.com/relvacode/iso8601 v1.5.0
-	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/NOAA-GSL/MET-parser v1.0.3 // indirect
 	github.com/couchbase/gocbcore/v10 v10.5.2 // indirect
 	github.com/couchbase/gocbcoreps v0.1.3 // indirect
 	github.com/couchbase/goprotostellar v1.0.2 // indirect
 	github.com/couchbaselabs/gocbconnstr/v2 v2.0.0-20240607131231-fb385523de28 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.56.0 // indirect
 	go.opentelemetry.io/otel v1.31.0 // indirect
 	go.opentelemetry.io/otel/metric v1.31.0 // indirect

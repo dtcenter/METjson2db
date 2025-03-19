@@ -2,6 +2,7 @@ package utils
 
 import (
 	"log"
+	"log/slog"
 
 	"github.com/relvacode/iso8601"
 	// "github.com/couchbase/gocb/v2"
@@ -10,7 +11,7 @@ import (
 // init runs before main() is evaluated
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("StatToCbUtils:init()")
+	slog.Debug("StatToCbUtils:init()")
 }
 
 func StatDateToEpoh(dateStr string) int64 {

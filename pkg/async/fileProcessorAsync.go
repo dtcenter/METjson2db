@@ -2,7 +2,6 @@ package async
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 
 	// "github.com/couchbase/gocb/v2"
@@ -12,7 +11,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("fileProcessorAsync:init()")
+	slog.Debug("fileProcessorAsync:init()")
 }
 
 func FileProcessorAsync(threadIdx int) {
@@ -32,7 +31,7 @@ func FileProcessorAsync(threadIdx int) {
 		/*
 			err := core.StatFileToCbDoc(file)
 			if err != nil {
-				log.Println("Unable to process:" + file)
+				slog.Debug("Unable to process:" + file)
 				state.StatToCbRun.FileStatus[file] = "error"
 				errors++
 			} else {

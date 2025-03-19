@@ -2,7 +2,6 @@ package async
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
@@ -12,7 +11,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("flushToDbAsync:init()")
+	slog.Debug("flushToDbAsync:init()")
 }
 
 func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
@@ -34,13 +33,13 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		// slog.Info(fmt.Sprintf("FlushToDbAsync(), doc:%v", doc))
 		id := doc["id"].(string)
 		state.CbDocMutexMap[id].Lock()
-		// log.Printf("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
+		// slog.Debug("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 
 		var anyJson = doc
 
 		if anyJson["data"] == nil {
 			slog.Debug(fmt.Sprintf("NULL document[%s], err:%v", doc["ID"]))
-			// log.Printf("err:%v, doc:\n%s", err, doc.ToJSONString())
+			// slog.Debug("err:%v, doc:\n%s", err, doc.ToJSONString())
 			errors++
 			state.CbDocMutexMap[id].Unlock()
 			continue
@@ -71,38 +70,38 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 					for i := 0; i < len(state.TroubleShoot.IdTrack.IdList); i++ {
 						if id == state.TroubleShoot.IdTrack.IdList[i] || state.TroubleShoot.IdTrack.IdList[i] == "*" {
 							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "logJSON") {
-								log.Printf(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.ToJSONString())
+								slog.Debug(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.ToJSONString())
 							}
 							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "verifyWithDbRead") {
 								dbReadDoc := utils.GetDocWithId(conn.Collection, id)
 								if dbReadDoc == nil {
-									log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
+									slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
 									if state.TroubleShoot.TerminateAtFirstTrackError {
-										log.Fatal("Terminating due to track error ....")
+										slog.Error("Terminating due to track error ....")
 									}
 								} else {
-									log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+									slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 										len(doc.HeaderFields), len(dbReadDoc)-1, len(doc.Data), len(dbReadDoc["data"].(map[string]interface{})))
 									if len(doc.HeaderFields) != (len(dbReadDoc)-1) || len(doc.Data) != len(dbReadDoc["data"].(map[string]interface{})) {
-										log.Printf("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+										slog.Debug("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 											len(doc.HeaderFields), len(dbReadDoc)-1, len(doc.Data), len(dbReadDoc["data"].(map[string]interface{})))
 										if state.TroubleShoot.TerminateAtFirstTrackError {
-											log.Fatal("Terminating due to track error ....")
+											slog.Error("Terminating due to track error ....")
 										}
 									}
 								}
 							}
 
 							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "trackDataKeyCount") {
-								log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]",
+								slog.Debug(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]",
 									len(doc.HeaderFields), state.DocKeyCountMap[id].DataLen, len(doc.Data))
 							}
 
 							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
 								if len(doc.HeaderFields) == 0 {
-									log.Printf("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.HeaderFields), len(doc.Data))
+									slog.Debug("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.HeaderFields), len(doc.Data))
 									if state.TroubleShoot.TerminateAtFirstTrackError {
-										log.Fatal("Terminating due to track error ....")
+										slog.Error("Terminating due to track error ....")
 									}
 								}
 							}

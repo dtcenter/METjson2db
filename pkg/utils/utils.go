@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/google/uuid"
 )
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("utils:init()")
+	slog.Debug("utils:init()")
 }
 
 func getTabbedString(count int) (rv string) {

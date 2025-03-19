@@ -5,7 +5,6 @@ import (
 	//	"fmt"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"strings"
@@ -19,7 +18,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("statToJSON:init()")
+	slog.Debug("statToJSON:init()")
 }
 
 // dummy function to satisfy the function signature of getExternalDocForId
@@ -36,12 +35,12 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 
 	file, err := os.Open(filepath) // open the file
 	if err != nil {
-		log.Fatal("error opening file", err)
+		slog.Error("error opening file", err)
 	}
 	defer file.Close()
 	rawData, err := io.ReadAll(file)
 	if err != nil {
-		log.Fatal("error reading file", err)
+		slog.Error("error reading file", err)
 	}
 	lines := strings.Split(string(rawData), "\n")
 	headerLine := lines[0]
@@ -52,12 +51,12 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		dataLine := lines[line]
 		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
 		if err != nil {
-			log.Fatalf("Expected no error, got %v", err)
+			slog.Error("Expected no error, got %v", err)
 
 		}
 	}
 	if doc == nil {
-		log.Fatalf("Expected parsed document, got nil")
+		slog.Error("Expected parsed document, got nil")
 	}
 
 	return doc, err

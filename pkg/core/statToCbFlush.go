@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 
 	// "github.com/couchbase/gocb/v2"
@@ -14,7 +13,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("StatToCbFlush:init()")
+	slog.Debug("StatToCbFlush:init()")
 }
 
 func StatToCbFlush(flushFinal bool) {
@@ -62,22 +61,22 @@ func StatToCbFlush(flushFinal bool) {
 			}
 		}
 	}
-	log.Printf("\tflushCount:%d", flushCount)
+	slog.Debug("\tflushCount:%d", flushCount)
 }
 
 func flushToFiles(id string) {
-	// log.Printf("flushToFiles(%s)", id)
+	// slog.Debug("flushToFiles(%s)", id)
 
 	/*
 		doc := state.CbDocs[id]
-		// log.Printf("data keys:%v", maps.Keys(doc.data))
+		// slog.Debug("data keys:%v", maps.Keys(doc.data))
 
 
 		docStr := []byte(doc.ToJSONString())
 		fileName := state.Conf.OutputFolder + "/" + id + ".json"
 		err := os.WriteFile(fileName, docStr, 0o644)
 		if err != nil {
-			log.Printf("Error writing output:%s", fileName)
+			slog.Debug("Error writing output:%s", fileName)
 		}
 	*/
 }
@@ -97,7 +96,7 @@ func flushToDb(conn types.CbConnection, id string) {
 	var anyJson = doc
 
 	if anyJson["data"] == nil || len(anyJson) == 0 {
-		// log.Printf("NULL document[%s]", id)
+		// slog.Debug("NULL document[%s]", id)
 		return
 	}
 
@@ -113,7 +112,7 @@ func flushToDb(conn types.CbConnection, id string) {
 			// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 			_, err := conn.Collection.Upsert(doc["ID"].(string), anyJson, nil)
 			if err != nil {
-				log.Fatal(err)
+				slog.Error(fmt.Sprintf("%v", err))
 			}
 		} else {
 			/*
@@ -121,7 +120,7 @@ func flushToDb(conn types.CbConnection, id string) {
 				// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 				_, err = conn.Collection.Upsert(doc.HeaderFields["ID"].StringVal, anyJson, nil)
 				if err != nil {
-					log.Fatal(err)
+					slog.Error(fmt.Sprintf("%v", err))
 				}
 			*/
 		}
@@ -132,48 +131,48 @@ func flushToDb(conn types.CbConnection, id string) {
 			for i := 0; i < len(state.TroubleShoot.IdTrack.IdList); i++ {
 				if id == state.TroubleShoot.IdTrack.IdList[i] || state.TroubleShoot.IdTrack.IdList[i] == "*" {
 					if slices.Contains(state.TroubleShoot.IdTrack.Actions, "logJSON") {
-						log.Printf(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.ToJSONString())
+						slog.Debug(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.ToJSONString())
 					}
 					if slices.Contains(state.TroubleShoot.IdTrack.Actions, "verifyWithDbRead") {
 						dbReadDoc := utils.GetDocWithId(conn.Collection, id)
 						trackError := false
 						if dbReadDoc == nil || dbReadDoc["data"] == nil || len(dbReadDoc["data"].(map[string]interface{})) == 0 {
-							log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
+							slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
 							trackError = true
 						} else {
-							log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+							slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 								len(doc.HeaderFields), len(dbReadDoc)-1, len(doc.Data), len(dbReadDoc["data"].(map[string]interface{})))
 							if len(doc.HeaderFields) != (len(dbReadDoc)-1) || len(doc.Data) != len(dbReadDoc["data"].(map[string]interface{})) {
-								log.Printf("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
+								slog.Debug("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
 									len(doc.HeaderFields), len(dbReadDoc)-1, len(doc.Data), len(dbReadDoc["data"].(map[string]interface{})))
 								trackError = true
 							}
 						}
 						if trackError && state.TroubleShoot.TerminateAtFirstTrackError {
-							log.Fatal("Terminating due to track error ....")
+							slog.Error("Terminating due to track error ....")
 						}
 					}
 
 					if slices.Contains(state.TroubleShoot.IdTrack.Actions, "checkForEmptyDocsInDb") {
 						sqlStr := "SELECT META(d).id FROM metdata._default.MET_default AS d WHERE d IS null"
-						// log.Printf(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
+						// slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead], SQL:\n%s", sqlStr)
 						result := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
 						if len(result) > 0 {
-							log.Printf("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDocsInDb] empty docs[%d] found ion DB!!!", len(result))
-							log.Fatal("Terminating due to track error ....")
+							slog.Debug("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDocsInDb] empty docs[%d] found ion DB!!!", len(result))
+							slog.Error("Terminating due to track error ....")
 						}
 					}
 
 					if slices.Contains(state.TroubleShoot.IdTrack.Actions, "trackDataKeyCount") {
-						log.Printf(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]",
+						slog.Debug(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]",
 							len(doc.HeaderFields), state.DocKeyCountMap[id].DataLen, len(doc.Data))
 					}
 
 					if slices.Contains(state.TroubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
 						if len(doc.HeaderFields) == 0 {
-							log.Printf("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.HeaderFields), len(doc.Data))
+							slog.Debug("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.HeaderFields), len(doc.Data))
 							if state.TroubleShoot.TerminateAtFirstTrackError {
-								log.Fatal("Terminating due to track error ....")
+								slog.Error("Terminating due to track error ....")
 							}
 						}
 					}

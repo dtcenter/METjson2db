@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"time"
@@ -14,7 +13,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("db-utils:init()")
+	slog.Debug("db-utils:init()")
 }
 
 func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
@@ -36,7 +35,7 @@ func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 
 	cluster, err := gocb.Connect(connectionString, options)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 		return
 	}
 
@@ -44,11 +43,11 @@ func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 	conn.Bucket = conn.Cluster.Bucket(bucketName)
 	conn.Collection = conn.Bucket.Collection(collection)
 
-	// log.Println("vxDBTARGET:" + conn.vxDBTARGET)
+	// slog.Debug("vxDBTARGET:" + conn.vxDBTARGET)
 
 	err = conn.Bucket.WaitUntilReady(5*time.Second, nil)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 		return
 	}
 
@@ -59,7 +58,7 @@ func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 func queryWithSQLFile(scope *gocb.Scope, file string) (jsonOut []string) {
 	fileContent, err := os.ReadFile(file)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 
 	// Convert []byte to string
@@ -68,14 +67,14 @@ func queryWithSQLFile(scope *gocb.Scope, file string) (jsonOut []string) {
 }
 
 func queryWithSQLStringSA(scope *gocb.Scope, text string) (rv []string) {
-	log.Println("queryWithSQLStringSA(\n" + text + "\n)")
+	slog.Debug("queryWithSQLStringSA(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
 		fmt.Sprintf(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 
 	// Interfaces for handling streaming return values
@@ -87,7 +86,7 @@ func queryWithSQLStringSA(scope *gocb.Scope, text string) (rv []string) {
 		var row interface{}
 		err := queryResult.Row(&row)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(fmt.Sprintf("%v", err))
 		}
 		retValues = append(retValues, row.(string))
 	}
@@ -96,14 +95,14 @@ func queryWithSQLStringSA(scope *gocb.Scope, text string) (rv []string) {
 }
 
 func queryWithSQLStringFA(scope *gocb.Scope, text string) (rv []float64) {
-	log.Println("queryWithSQLStringFA(\n" + text + "\n)")
+	slog.Debug("queryWithSQLStringFA(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
 		fmt.Sprintf(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 
 	retValues := make([]float64, 0)
@@ -114,7 +113,7 @@ func queryWithSQLStringFA(scope *gocb.Scope, text string) (rv []float64) {
 		var row interface{}
 		err := queryResult.Row(&row)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(fmt.Sprintf("%v", err))
 		}
 		retValues = append(retValues, row.(float64))
 	}
@@ -123,14 +122,14 @@ func queryWithSQLStringFA(scope *gocb.Scope, text string) (rv []float64) {
 }
 
 func queryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
-	log.Println("queryWithSQLStringFA(\n" + text + "\n)")
+	slog.Debug("queryWithSQLStringFA(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
 		fmt.Sprintf(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 
 	retValues := make([]int, 0)
@@ -141,7 +140,7 @@ func queryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 		var row interface{}
 		err := queryResult.Row(&row)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(fmt.Sprintf("%v", err))
 		}
 		switch row.(type) {
 		case float64:
@@ -155,29 +154,29 @@ func queryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 }
 
 func GetDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface{}) {
-	log.Println("getDocWithId(\n" + id + "\n)")
+	slog.Debug("getDocWithId(\n" + id + "\n)")
 
 	queryResult, err := col.Get(id, nil)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 	var doc map[string]interface{}
 	err = queryResult.Content(&doc)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 	return doc
 }
 
 func QueryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{}) {
-	log.Println("queryWithSQLStringMAP(\n" + text + "\n)")
+	slog.Debug("queryWithSQLStringMAP(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
 		fmt.Sprintf(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 
 	rows := make([]interface{}, 0)
@@ -186,7 +185,7 @@ func QueryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{
 		var row interface{}
 		err := queryResult.Row(&row)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(fmt.Sprintf("%v", err))
 		}
 		m := row.(map[string]interface{})
 		rows = append(rows, m)
@@ -197,7 +196,7 @@ func QueryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{
 func queryWithSQLFileJustPrint(scope *gocb.Scope, file string) {
 	fileContent, err := os.ReadFile(file)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	}
 
 	// Convert []byte to string
@@ -208,7 +207,7 @@ func queryWithSQLFileJustPrint(scope *gocb.Scope, file string) {
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("%v", err))
 	} else {
 		printQueryResult(queryResult)
 	}
@@ -219,7 +218,7 @@ func printQueryResult(queryResult *gocb.QueryResult) {
 		var result interface{}
 		err := queryResult.Row(&result)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(fmt.Sprintf("%v", err))
 		} else {
 			fmt.Println(result)
 		}

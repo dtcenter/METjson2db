@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"log"
 	"log/slog"
 	"sync"
 	"time"
@@ -14,7 +13,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	log.Println("StatToCbRun:init()")
+	slog.Debug("StatToCbRun:init()")
 	state.StatToCbRun.FileStatus = make(map[string]string)
 	state.StatToCbRun.Documents = make(map[string]interface{})
 }
@@ -22,7 +21,7 @@ func init() {
 func StartProcessing(files []string) bool {
 	slog.Info(fmt.Sprintf("startProcessing(%d)", len(files)))
 
-	// log.Printf("files:\n%v", files)
+	// slog.Debug("files:\n%v", files)
 
 	for i := 0; i < len(files); i++ {
 		if len(files[i]) > 0 {
@@ -40,7 +39,7 @@ func StartProcessing(files []string) bool {
 			//err := StatFileToCbDoc(file)
 			docList, err := statFileToCbDocMetParser(file)
 			if err != nil {
-				log.Println("Unable to process:" + file)
+				slog.Debug("Unable to process:" + file)
 				state.StatToCbRun.FileStatus[file] = "error"
 			} else {
 				state.StatToCbRun.FileStatus[file] = "finished"
@@ -63,12 +62,12 @@ func StartProcessing(files []string) bool {
 			}
 		}
 	} else {
-		log.Fatal("Unimplemented feature, threadsFileProcessor > 1    (FOR A FUTURE RELEASE!!!!)")
+		slog.Error("Unimplemented feature, threadsFileProcessor > 1    (FOR A FUTURE RELEASE!!!!)")
 		/*
 			// distribute files to channels, round-robin, for async processing
 			idx := 0
 			for file, status := range statToCbRun.fileStatus {
-				log.Printf(file, status)
+				slog.Debug(file, status)
 				asyncFileProcessorChannels[idx] <- file
 				idx++
 				if idx >= int(conf.ThreadsFileProcessor) {
@@ -79,11 +78,11 @@ func StartProcessing(files []string) bool {
 				asyncFileProcessorChannels[fi] <- "end"
 			}
 			asyncWaitGroupFileProcessor.Wait()
-			log.Printf("asyncWaitGroupFileProcessor finished!")
+			slog.Debug("asyncWaitGroupFileProcessor finished!")
 		*/
 	}
 
-	log.Printf(fmt.Sprintf("%d", len(files)) + " files processed in:" + fmt.Sprintf("%d", time.Since(start).Milliseconds()) + " ms")
+	slog.Debug(fmt.Sprintf("%d", len(files)) + " files processed in:" + fmt.Sprintf("%d", time.Since(start).Milliseconds()) + " ms")
 
 	// TODO: update/create db file document
 
