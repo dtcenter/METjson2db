@@ -13,10 +13,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
 	"github.com/NOAA-GSL/METdatacb/pkg/utils"
 )

@@ -5,20 +5,26 @@
 This project is a GO language command-line program to generate and/or upload MET
 stat file data to Couchbase JSON documents.  
 
-## Getting Started
+## Overview 
+# Purpose
+The purpose of METdadacb is to generate and optionally upload JSON documents conforming to MET Couchbase schema
+frm MET stat files
+# The 2-step process
+STEP 1 : Generate line type definitions for a particular MET version
+STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
 
 ## Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
-https://raw.githubusercontent.com/dtcenter/MET/refs/heads/main_v12.0/data/table_files/met_header_columns_V12.0.txt
-https://raw.githubusercontent.com/dtcenter/MET/refs/heads/main_v12.0/src/tools/core/stat_analysis/parse_stat_line.cc
-
+git clone https://github.com/NOAA-GSL/MET-PARSER
+make sure you are in the main branch
 cd  <repo path>/pkg/buildHeaderLineTypes
 go run . > /tmp/types.go
 cp /tmp/types.go ../structColumnTypes/structColumnTypes.go
-
 Generated definitions are in: <repo path>/pkg/structColumnTypes/structColumnTypes.go
+Once the line type definitions are thus updated using the steps above, changes must be 
+checked into main branch, so that METdatacb will reference the right MET-parser source files
 
-## Running the MET data upload
+## Running the METdatacb to generate and/or upload JSON documents 
 
 Currently the following works:
 

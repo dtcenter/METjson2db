@@ -1,8 +1,8 @@
 {
     "logLevel": "INFO",
     "logLevel_doc": ["DEBUG", "INFO", "WARN", "ERROR"],
-    "runMode" : "CREATE_JSON_DOC_ARCHIVE",
-    "runMode0" : "DIRECT_LOAD_TO_DB",
+    "runMode0" : "CREATE_JSON_DOC_ARCHIVE",
+    "runMode" : "DIRECT_LOAD_TO_DB",
     "runMode_doc" : ["DIRECT_LOAD_TO_DB", "CREATE_JSON_DOC_ARCHIVE"],
     "jsonArchiveFilePathAndPrefix" :"/Users/gopa.padmanabhan/scratch/METdadacb_out_",
     "maxLinesToLoad": 150000,
