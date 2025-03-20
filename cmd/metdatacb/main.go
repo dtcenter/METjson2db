@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
-	"slices"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -45,6 +47,12 @@ func main() {
 	var inputFolder string
 	flag.StringVar(&inputFolder, "i", "", "input stat files folder")
 
+	var inputFolderRecursive string
+	flag.StringVar(&inputFolderRecursive, "I", "", "input stat files folder (recursive)")
+
+	var fileNameRegEx string
+	flag.StringVar(&fileNameRegEx, "r", "", "input filename match regex")
+
 	flag.Parse()
 
 	loadSpec, err := parseLoadSpec(loadSpecFilePath)
@@ -70,6 +78,28 @@ func main() {
 			}
 		}
 
+	} else if len(inputFolderRecursive) > 0 {
+		slog.Debug("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolderRecursive:" + inputFolderRecursive)
+		// add all files in folder
+		regEx := "(.*?)"
+		if len(fileNameRegEx) > 0 {
+			regEx = fileNameRegEx
+		}
+		libRegEx, e := regexp.Compile(regEx)
+		if e != nil {
+			log.Fatal(e)
+		}
+		err = filepath.Walk(inputFolderRecursive, func(path string, info os.FileInfo, err error) error {
+			if !info.IsDir() {
+				if err == nil && libRegEx.MatchString(info.Name()) {
+					inputFiles = append(inputFiles, path)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		// process load_spec, not a robust logic yet, but will work correctly if the template has all field markers, i.e. {name}s
 		// and len(field[0].val) is the largest.
@@ -149,12 +179,6 @@ func main() {
 		return
 	}
 
-	err = loadTypeTypeDefs()
-	if err != nil {
-		slog.Error("Error loading Line Type definitions!", err)
-		return
-	}
-
 	slog.Debug("Conf", "MaxFilesInProcessChunk", state.Conf.MaxFilesInProcessChunk)
 	slog.Debug("Conf", "maxLinesToLoad", state.Conf.MaxLinesToLoad)
 	slog.Debug("Conf", "flushToDbDataSectionMaxCount", state.Conf.FlushToDbDataSectionMaxCount)
@@ -162,7 +186,6 @@ func main() {
 	slog.Debug("Conf", "writeJSONsToFile", state.Conf.WriteJSONsToFile)
 	slog.Debug("Conf", "HeaderColumns length", len(state.Conf.HeaderColumns))
 	slog.Debug("Conf", "CommonColumns length", len(state.Conf.CommonColumns))
-	slog.Debug("Conf", "LineTypeColumns length", len(state.Conf.LineTypeColumns))
 
 	state.Credentials = getCredentials(credentialsFilePath)
 	if len(loadSpec.TargetCollection) > 0 {
@@ -293,61 +316,6 @@ func main() {
 		"fileTotalErrors", fileTotalErrors, "dbTotalCount", dbTotalCount, "dbTotalErrors", dbTotalErrors,
 		"run-time(ms)", time.Since(start).Milliseconds())
 	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)
-}
-
-func loadTypeTypeDefs() error {
-	files, err := os.ReadDir(state.Conf.LineTypeDefs)
-	if err != nil {
-		slog.Debug("Error loading Line Type definitions from:%s", state.Conf.LineTypeDefs)
-		return err
-	}
-	for _, file := range files {
-		if !file.IsDir() {
-			ltFilePath := state.Conf.LineTypeDefs + "/" + file.Name()
-			// slog.Debug("LineType:%s", )
-
-			deflt := types.DefLineType{}
-			ltFile, err := os.Open(ltFilePath)
-			if err != nil {
-				slog.Debug("Error opening Line Type definition file:%s,%v", ltFilePath, err.Error())
-				ltFile.Close()
-				return err
-			}
-			defer ltFile.Close()
-
-			jsonParser := json.NewDecoder(ltFile)
-			if err = jsonParser.Decode(&deflt); err != nil {
-				slog.Debug("Error parsing Line Type definition file:%s,%v", ltFilePath, err.Error())
-				return err
-			}
-
-			lt := types.LineType{}
-
-			lt.LineType = deflt.LineType
-			for i := 0; i < len(deflt.Columns); i++ {
-				stnames := deflt.Columns[i].Names
-				sttype := deflt.Columns[i].Type
-				for j := 0; j < len(stnames); j++ {
-					lt.Columns = append(lt.Columns, types.Column{Name: stnames[j], Type: sttype})
-				}
-			}
-			state.Conf.LineTypeColumns = append(state.Conf.LineTypeColumns, lt)
-			if state.TroubleShoot.EnableLineTypeTrack {
-				if slices.Contains(state.TroubleShoot.LineTypeTrack.LineTypeList, lt.LineType) {
-					if slices.Contains(state.TroubleShoot.LineTypeTrack.Actions, "printLineTypeStatFileColumnMappingAndTerminate") {
-						slog.Debug(">>>>>>>>>>>>> Tracking[LineTypeTrack]:printLineTypeStatFileColumnMappingAndTerminate:LineType:%s\n", lt.LineType)
-						for ti := 0; ti < len(lt.Columns); ti++ {
-							slog.Debug("%d\t%s\t%s",
-								len(state.Conf.CommonColumns)+ti+1,
-								lt.Columns[ti].Name, lt.Columns[ti].Type)
-						}
-						slog.Error("Terminating after track...")
-					}
-				}
-			}
-		}
-	}
-	return err
 }
 
 func parseLoadSpec(file string) (types.LoadSpec, error) {
