@@ -19,7 +19,6 @@ import (
 	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
-	"github.com/NOAA-GSL/METdatacb/pkg/utils"
 )
 
 func main() {
@@ -194,7 +193,7 @@ func main() {
 	}
 	slog.Debug("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 
-	slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
+	// slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	slog.Debug("inputFiles:%d", len(inputFiles))
 	// slog.Error("Exit hard coded in main.go:190")
 
@@ -230,6 +229,18 @@ func main() {
 					async.FlushToDbAsync(di)
 				}()
 			}
+
+			if false == state.Conf.OverWriteData {
+				for di := 0; di < int(state.Conf.ThreadsMergeDocFetch); di++ {
+					di := di
+					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfDocs))
+					state.AsyncWaitGroupMergeDocFetch.Add(1)
+					go func() {
+						defer state.AsyncWaitGroupMergeDocFetch.Done()
+						async.MergeDbDocFetchAsync(di)
+					}()
+				}
+			}
 		}
 	}
 
@@ -243,6 +254,14 @@ func main() {
 	dbTotalErrors := int64(0)
 
 	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+		if false == state.Conf.OverWriteData {
+			for fi := 0; fi < int(state.Conf.ThreadsMergeDocFetch); fi++ {
+				state.AsyncMergeDocFetchChannels[fi] <- ""
+			}
+			state.AsyncWaitGroupMergeDocFetch.Wait()
+			slog.Info("AsyncWaitGroupMergeDocFetch finished!")
+		}
+
 		core.StatToCbFlush(true)
 		if !state.Conf.RunNonThreaded {
 			slog.Debug("Waiting for threads to finish ...")

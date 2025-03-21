@@ -74,6 +74,7 @@ type ConfigJSON struct {
 	ThreadsFileProcessor           int64    `json:"threadsFileProcessor"`
 	ThreadsWriteToDisk             int64    `json:"threadsWriteToDisk"`
 	ThreadsDbUpload                int64    `json:"threadsDbUpload"`
+	ThreadsMergeDocFetch           int64    `json:"threadsMergeDocFetch"`
 	ChannelBufferSizeNumberOfDocs  int64    `json:"channelBufferSizeNumberOfDocs"`
 	ChannelBufferSizeNumberOfFiles int64    `json:"channelBufferSizeNumberOfFiles"`
 	LineTypeDefs                   string   `json:"lineTypeDefs"`

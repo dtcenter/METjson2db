@@ -12,20 +12,25 @@ var (
 	CbLineTypeColDefs   map[string]types.ColDefArray
 	TotalLinesProcessed = 0
 	//CbDocs              map[string]types.CbDataDocument
-	CbDocs        map[string]interface{}
-	CbDocMutexMap map[string]*sync.RWMutex
-	CbDocsMutex   *sync.RWMutex
-	DataKeyIdx    int
-	Credentials   = types.Credentials{}
+	CbDocs map[string]interface{}
+	// CbDocMutexMap      map[string]*sync.RWMutex
+	CbDocsMutex        *sync.RWMutex
+	CbMergeDbDocs      map[string]interface{}
+	CbMergeDbDocsMutex *sync.RWMutex
+	DataKeyIdx         int
+	Credentials        = types.Credentials{}
+	METParserNewDocId  string
 )
 
 var (
 	AsyncFileProcessorChannels  []chan string
 	AsyncFlushToFileChannels    []chan map[string]interface{}
 	AsyncFlushToDbChannels      []chan map[string]interface{}
+	AsyncMergeDocFetchChannels  []chan string
 	AsyncWaitGroupFileProcessor sync.WaitGroup
 	AsyncWaitGroupFlushToFiles  sync.WaitGroup
 	AsyncWaitGroupFlushToDb     sync.WaitGroup
+	AsyncWaitGroupMergeDocFetch sync.WaitGroup
 )
 
 var (
@@ -38,9 +43,11 @@ var (
 func init() {
 	CbLineTypeColDefs = make(map[string]types.ColDefArray)
 	CbDocs = make(map[string]interface{})
-	CbDocMutexMap = make(map[string](*sync.RWMutex))
+	// CbDocMutexMap = make(map[string](*sync.RWMutex))
 	CbDocsMutex = &sync.RWMutex{}
 	DocKeyCountMapMutex = &sync.RWMutex{}
+	CbMergeDbDocs = make(map[string]interface{})
+	CbMergeDbDocsMutex = &sync.RWMutex{}
 	DocKeyCountMap = make(map[string]types.DocKeyCounts)
 	LineTypeStats = make(map[string]types.LineTypeStat)
 }

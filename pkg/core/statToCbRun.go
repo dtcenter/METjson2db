@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"log/slog"
-	"sync"
 	"time"
 
 	// "github.com/couchbase/gocb/v2"
@@ -37,7 +36,7 @@ func StartProcessing(files []string) bool {
 		for file, status := range state.StatToCbRun.FileStatus {
 			slog.Debug(fmt.Sprintf("%s,%s", file, status))
 			//err := StatFileToCbDoc(file)
-			docList, err := statFileToCbDocMetParser(file)
+			_, err := statFileToCbDocMetParser(file)
 			if err != nil {
 				slog.Debug("Unable to process:" + file)
 				state.StatToCbRun.FileStatus[file] = "error"
@@ -46,18 +45,22 @@ func StartProcessing(files []string) bool {
 
 				state.CbDocsMutex.RLock()
 
-				for _, docR := range docList {
-					doc := docR.(map[string]interface{})
-					id := doc["id"].(string)
-					// slog.Info("id:" + id)
-					_, ok := state.CbDocMutexMap[id]
-					if !ok {
-						// state.CbDocs[id] = doc
-						state.CbDocMutexMap[id] = &sync.RWMutex{}
-					} else {
+				/*
+					for _, docR := range docList {
+						doc := docR.(map[string]interface{})
+						id := doc["id"].(string)
+						// slog.Info("id:" + id)
 
+						_, ok := state.CbDocMutexMap[id]
+						if !ok {
+							// state.CbDocs[id] = doc
+							state.CbDocMutexMap[id] = &sync.RWMutex{}
+						} else {
+
+						}
 					}
-				}
+				*/
+
 				state.CbDocsMutex.RUnlock()
 			}
 		}

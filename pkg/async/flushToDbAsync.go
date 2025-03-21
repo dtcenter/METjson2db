@@ -1,6 +1,7 @@
 package async
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -17,6 +18,7 @@ func init() {
 func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 	conn := utils.GetDbConnection(state.Credentials)
 	count := 0
+	mergeCount := 0
 	errors := 0
 	for {
 		doc, ok := <-state.AsyncFlushToDbChannels[threadIdx]
@@ -32,16 +34,44 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 
 		// slog.Info(fmt.Sprintf("FlushToDbAsync(), doc:%v", doc))
 		id := doc["id"].(string)
-		state.CbDocMutexMap[id].Lock()
+		//state.CbDocMutexMap[id].Lock()
 		// slog.Debug("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 
-		var anyJson = doc
+		if false == state.Conf.OverWriteData && state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+			state.CbMergeDbDocsMutex.RLock()
+			dbDoc := state.CbMergeDbDocs[id].(map[string]interface{})
+			state.CbMergeDbDocsMutex.RUnlock()
 
-		if anyJson["data"] == nil {
+			if dbDoc != nil {
+				// we need to merge
+				for dbKey, dbVal := range dbDoc {
+					if dbKey != "data" {
+						// header field
+						if doc[dbKey] == nil {
+							doc[dbKey] = dbVal
+						}
+					} else {
+						// data fields
+						var docData map[string]interface{}
+						inrec, _ := json.Marshal(doc["data"])
+						json.Unmarshal(inrec, &docData)
+						for dbDataKey, dbDataVal := range dbVal.(map[string]interface{}) {
+							docDataVal := docData[dbDataKey]
+							if docDataVal == nil {
+								docData[dbDataKey] = dbDataVal
+							}
+						}
+					}
+				}
+				mergeCount = mergeCount + 1
+			}
+		}
+
+		if doc["data"] == nil {
 			slog.Debug(fmt.Sprintf("NULL document[%s], err:%v", doc["ID"]))
 			// slog.Debug("err:%v, doc:\n%s", err, doc.ToJSONString())
 			errors++
-			state.CbDocMutexMap[id].Unlock()
+			//state.CbDocMutexMap[id].Unlock()
 			continue
 		}
 
@@ -53,7 +83,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		*/
 
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-		_, err := conn.Collection.Upsert(id, anyJson, nil)
+		_, err := conn.Collection.Upsert(id, doc, nil)
 		if err != nil {
 			slog.Error(fmt.Sprintf("%v", err))
 			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
@@ -110,9 +140,9 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 				}
 			*/
 		}
-		state.CbDocMutexMap[id].Unlock()
+		//state.CbDocMutexMap[id].Unlock()
 	}
-	slog.Debug(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors))
+	slog.Debug(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, doc merge count: errors:%d", threadIdx, count, mergeCount, errors))
 	returnDoc := make(map[string]interface{})
 	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToDbChannels[threadIdx] <- returnDoc

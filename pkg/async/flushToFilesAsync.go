@@ -30,8 +30,8 @@ func FlushToFilesAsync(threadIdx int) {
 			break
 		}
 
-		id := doc["id"].(string)
-		state.CbDocMutexMap[id].Lock()
+		//id := doc["id"].(string)
+		//state.CbDocMutexMap[id].Lock()
 
 		/*
 			docStr := []byte(doc.ToJSONString())
@@ -42,7 +42,7 @@ func FlushToFilesAsync(threadIdx int) {
 			}
 			// slog.Debug("flushToFilesAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 		*/
-		state.CbDocMutexMap[id].Unlock()
+		//state.CbDocMutexMap[id].Unlock()
 	}
 	slog.Debug(fmt.Sprintf("flushToFilesAsync(%d) doc count:%d, errors:%d", threadIdx, count, errors))
 	returnDoc := make(map[string]interface{})

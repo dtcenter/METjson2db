@@ -1,0 +1,51 @@
+package async
+
+import (
+	"fmt"
+	"log/slog"
+
+	"github.com/NOAA-GSL/METdatacb/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/pkg/utils"
+)
+
+// init runs before main() is evaluated
+func init() {
+	slog.Debug("flushToDbAsync:init()")
+}
+
+func MergeDbDocFetchAsync(threadIdx int /*, conn CbConnection*/) {
+	conn := utils.GetDbConnection(state.Credentials)
+	count := 0
+	errors := 0
+	for {
+		id, ok := <-state.AsyncMergeDocFetchChannels[threadIdx]
+		if !ok {
+			slog.Debug(fmt.Sprintf("\tMergeDbDocFetchAsync(%d), no documents in channel!", threadIdx))
+			break
+		}
+
+		if len(id) == 0 {
+			slog.Debug(fmt.Sprintf("\tMergeDbDocFetchAsync(%d), end-marker received!", threadIdx))
+			break
+		}
+
+		state.CbMergeDbDocsMutex.RLock()
+		if state.CbMergeDbDocs[id] != nil {
+			state.CbMergeDbDocsMutex.RUnlock()
+			continue
+		}
+		state.CbMergeDbDocsMutex.RUnlock()
+		count += 1
+
+		dbReadDoc := utils.GetDocWithId(conn.Collection, id)
+		if dbReadDoc != nil && len(dbReadDoc) > 0 && len(dbReadDoc["data"].(map[string]interface{})) > 0 {
+			state.CbMergeDbDocsMutex.Lock()
+			state.CbMergeDbDocs[id] = dbReadDoc
+			state.CbMergeDbDocsMutex.Unlock()
+		}
+	}
+
+	slog.Info(fmt.Sprintf("MergeDbDocFetchAsync(%d) doc count:[thread:%d,total:%d], errors:%d", threadIdx, count, len(state.CbMergeDbDocs), errors))
+	returnDoc := fmt.Sprintf("%d", count)
+	state.AsyncMergeDocFetchChannels[threadIdx] <- returnDoc
+}
