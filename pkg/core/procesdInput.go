@@ -1,0 +1,225 @@
+package core
+
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+	"time"
+
+	// "github.com/couchbase/gocb/v2"
+	"gopkg.in/yaml.v3"
+
+	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
+	"github.com/NOAA-GSL/METdatacb/pkg/async"
+	"github.com/NOAA-GSL/METdatacb/pkg/state"
+	"github.com/NOAA-GSL/METdatacb/pkg/types"
+)
+
+// init runs before main() is evaluated
+func init() {
+	slog.Debug("ProcessInput:init()")
+}
+
+func ProcessInputFiles(inputFiles []string, postProcessDocs func()) error {
+	slog.Info(fmt.Sprintf("ProcessInputFiles(%d)", len(inputFiles)))
+
+	start := time.Now()
+
+	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+		if !state.Conf.RunNonThreaded {
+			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
+				fi := fi
+				state.AsyncFileProcessorChannels = append(state.AsyncFileProcessorChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfFiles))
+				state.AsyncWaitGroupFileProcessor.Add(1)
+				go func() {
+					defer state.AsyncWaitGroupFileProcessor.Done()
+					async.FileProcessorAsync(fi)
+				}()
+			}
+
+			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+				fi := fi
+				state.AsyncFlushToFileChannels = append(state.AsyncFlushToFileChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
+				state.AsyncWaitGroupFlushToFiles.Add(1)
+				go func() {
+					defer state.AsyncWaitGroupFlushToFiles.Done()
+					async.FlushToFilesAsync(fi)
+				}()
+			}
+
+			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+				di := di
+				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
+				state.AsyncWaitGroupFlushToDb.Add(1)
+				go func() {
+					defer state.AsyncWaitGroupFlushToDb.Done()
+					// conn := getDbConnection(credentials)
+					async.FlushToDbAsync(di)
+				}()
+			}
+
+			if false == state.Conf.OverWriteData {
+				for di := 0; di < int(state.Conf.ThreadsMergeDocFetch); di++ {
+					di := di
+					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfDocs))
+					state.AsyncWaitGroupMergeDocFetch.Add(1)
+					go func() {
+						defer state.AsyncWaitGroupMergeDocFetch.Done()
+						async.MergeDbDocFetchAsync(di)
+					}()
+				}
+			}
+		}
+	}
+
+	// slog.Error("Test exit!")
+
+	StartProcessing(inputFiles)
+	postProcessDocs()
+
+	fileTotalCount := int64(0)
+	fileTotalErrors := int64(0)
+	dbTotalCount := int64(0)
+	dbTotalErrors := int64(0)
+
+	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+		if false == state.Conf.OverWriteData {
+			for fi := 0; fi < int(state.Conf.ThreadsMergeDocFetch); fi++ {
+				state.AsyncMergeDocFetchChannels[fi] <- ""
+			}
+			state.AsyncWaitGroupMergeDocFetch.Wait()
+			slog.Info("AsyncWaitGroupMergeDocFetch finished!")
+		}
+
+		StatToCbFlush(true)
+		if !state.Conf.RunNonThreaded {
+			slog.Debug("Waiting for threads to finish ...")
+
+			// send end-marker doc to all channels
+			endMarkerDoc := make(map[string]interface{})
+
+			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+				state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
+			}
+
+			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+				state.AsyncFlushToDbChannels[di] <- endMarkerDoc
+			}
+
+			state.AsyncWaitGroupFlushToFiles.Wait()
+			slog.Debug("asyncWaitGroupFlushToFiles finished!")
+			state.AsyncWaitGroupFlushToDb.Wait()
+			slog.Debug("asyncWaitGroupFlushToDb finished!")
+
+			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
+				state.AsyncFileProcessorChannels[fi] <- "end"
+			}
+			state.AsyncWaitGroupFileProcessor.Wait()
+			slog.Debug("asyncWaitGroupFileProcessor finished!")
+
+			// get return info from threads
+			/*
+				for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+					doc, ok := <-state.AsyncFlushToFileChannels[fi]
+					if ok && len(doc.HeaderFields) > 0 {
+						slog.Debug("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+						fileTotalCount += doc.HeaderFields["count"].IntVal
+						fileTotalErrors += doc.HeaderFields["errors"].IntVal
+					} else {
+						slog.Debug("\tflushToFilesAsync[%d], errors:", fi)
+					}
+				}
+
+				for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+					doc, ok := <-state.AsyncFlushToDbChannels[di]
+					if ok && len(doc.HeaderFields) > 0 {
+						slog.Debug("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
+						dbTotalCount += doc.HeaderFields["count"].IntVal
+						dbTotalErrors += doc.HeaderFields["errors"].IntVal
+					} else {
+						slog.Debug("\tflushToDbAsync[%d], errors:", di)
+					}
+				}
+			*/
+		}
+	} else if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
+		// home, _ := os.UserHomeDir()
+		err := structColumnDefs.WriteJsonToCompressedFile(state.CbDocs, state.Conf.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		if err != nil {
+			slog.Error("Expected no error, got:", slog.Any("error", err))
+		}
+		// read the file back in
+		/*
+			parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
+			if err != nil {
+				slog.Error("Expected no error, got %v", err)
+			}
+
+			assert.NotNil(log, parsedDoc)
+			// add other test assertions here
+		*/
+		return err
+	}
+
+	slog.Info("Run stats", "files", len(inputFiles), "docs", len(state.CbDocs), "fileTotalCount", fileTotalCount,
+		"fileTotalErrors", fileTotalErrors, "dbTotalCount", dbTotalCount, "dbTotalErrors", dbTotalErrors,
+		"run-time(ms)", time.Since(start).Milliseconds())
+	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)
+	return nil
+}
+
+func ParseConfig(file string) (types.ConfigJSON, error) {
+	slog.Debug("parseConfig(" + file + ")")
+
+	conf := types.ConfigJSON{}
+	configFile, err := os.Open(file)
+	if err != nil {
+		slog.Error("opening config file:" + err.Error())
+		configFile.Close()
+		return conf, err
+	}
+	defer configFile.Close()
+
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&conf); err != nil {
+		slog.Error("parsing config file:" + err.Error())
+		return conf, err
+	}
+
+	return conf, nil
+}
+
+func GetCredentials(credentialsFilePath string) types.Credentials {
+	creds := types.Credentials{}
+	yamlFile, err := os.ReadFile(credentialsFilePath)
+	if err != nil {
+		slog.Debug("yamlFile.Get err:" + err.Error())
+	}
+	err = yaml.Unmarshal(yamlFile, &creds)
+	if err != nil {
+		slog.Error("Unmarshal:" + err.Error())
+	}
+	return creds
+}
+
+func ParseLoadSpec(file string) (types.LoadSpec, error) {
+	slog.Debug("parseLoadSpec(" + file + ")")
+
+	ls := types.LoadSpec{}
+	configFile, err := os.Open(file)
+	if err != nil {
+		slog.Error("opening load_spec file:" + err.Error())
+		configFile.Close()
+		return ls, err
+	}
+	defer configFile.Close()
+
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&ls); err != nil {
+		slog.Error("parsing load_spec file:" + err.Error())
+		return ls, err
+	}
+
+	return ls, nil
+}

@@ -10,12 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
-	"gopkg.in/yaml.v3"
-
-	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
-	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/core"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
 	"github.com/NOAA-GSL/METdatacb/pkg/types"
@@ -26,8 +21,6 @@ func main() {
 	// gocb.SetLogger(gocb.VerboseStdioLogger())
 
 	slog.Info("METdatacb:main()")
-
-	start := time.Now()
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string
@@ -54,7 +47,7 @@ func main() {
 
 	flag.Parse()
 
-	loadSpec, err := parseLoadSpec(loadSpecFilePath)
+	loadSpec, err := core.ParseLoadSpec(loadSpecFilePath)
 	if err != nil {
 		slog.Error("Unable to parse config")
 		return
@@ -129,8 +122,8 @@ func main() {
 		for i := 0; i < len(folders); i++ {
 			files, err := os.ReadDir(folders[i])
 			if err != nil {
-				slog.Debug("Error opening folder:%s", folders[i])
-				slog.Error(fmt.Sprintf("%v", err))
+				slog.Debug("Error opening folder:" + folders[i])
+				slog.Error("Error:", slog.Any("error", err))
 			}
 			for _, file := range files {
 				if !file.IsDir() {
@@ -146,7 +139,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	state.Conf, err = parseConfig(settingsFilePath)
+	state.Conf, err = core.ParseConfig(settingsFilePath)
 	if err != nil {
 		slog.Error("Unable to parse config")
 		return
@@ -186,197 +179,25 @@ func main() {
 	slog.Debug("Conf", "HeaderColumns length", len(state.Conf.HeaderColumns))
 	slog.Debug("Conf", "CommonColumns length", len(state.Conf.CommonColumns))
 
-	state.Credentials = getCredentials(credentialsFilePath)
+	state.Credentials = core.GetCredentials(credentialsFilePath)
 	if len(loadSpec.TargetCollection) > 0 {
-		slog.Debug("Using load_spec target collection:%s", loadSpec.TargetCollection)
+		slog.Debug("Using load_spec target collection:" + loadSpec.TargetCollection)
 		state.Credentials.Cb_collection = loadSpec.TargetCollection
 	}
-	slog.Debug("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	slog.Debug(fmt.Sprintf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection))
 
 	// slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
-	slog.Debug("inputFiles:%d", len(inputFiles))
+	slog.Debug("inputFiles:", slog.Any("inputFiles", inputFiles))
 	// slog.Error("Exit hard coded in main.go:190")
 
-	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
-		if !state.Conf.RunNonThreaded {
-			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
-				fi := fi
-				state.AsyncFileProcessorChannels = append(state.AsyncFileProcessorChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfFiles))
-				state.AsyncWaitGroupFileProcessor.Add(1)
-				go func() {
-					defer state.AsyncWaitGroupFileProcessor.Done()
-					async.FileProcessorAsync(fi)
-				}()
-			}
-
-			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-				fi := fi
-				state.AsyncFlushToFileChannels = append(state.AsyncFlushToFileChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
-				state.AsyncWaitGroupFlushToFiles.Add(1)
-				go func() {
-					defer state.AsyncWaitGroupFlushToFiles.Done()
-					async.FlushToFilesAsync(fi)
-				}()
-			}
-
-			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-				di := di
-				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
-				state.AsyncWaitGroupFlushToDb.Add(1)
-				go func() {
-					defer state.AsyncWaitGroupFlushToDb.Done()
-					// conn := getDbConnection(credentials)
-					async.FlushToDbAsync(di)
-				}()
-			}
-
-			if false == state.Conf.OverWriteData {
-				for di := 0; di < int(state.Conf.ThreadsMergeDocFetch); di++ {
-					di := di
-					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfDocs))
-					state.AsyncWaitGroupMergeDocFetch.Add(1)
-					go func() {
-						defer state.AsyncWaitGroupMergeDocFetch.Done()
-						async.MergeDbDocFetchAsync(di)
-					}()
-				}
-			}
-		}
+	err = core.ProcessInputFiles(inputFiles, postProcessDocsDefault)
+	if err != nil {
+		slog.Error("Error processing input files:" + err.Error())
 	}
-
-	// slog.Error("Test exit!")
-
-	core.StartProcessing(inputFiles)
-
-	fileTotalCount := int64(0)
-	fileTotalErrors := int64(0)
-	dbTotalCount := int64(0)
-	dbTotalErrors := int64(0)
-
-	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
-		if false == state.Conf.OverWriteData {
-			for fi := 0; fi < int(state.Conf.ThreadsMergeDocFetch); fi++ {
-				state.AsyncMergeDocFetchChannels[fi] <- ""
-			}
-			state.AsyncWaitGroupMergeDocFetch.Wait()
-			slog.Info("AsyncWaitGroupMergeDocFetch finished!")
-		}
-
-		core.StatToCbFlush(true)
-		if !state.Conf.RunNonThreaded {
-			slog.Debug("Waiting for threads to finish ...")
-
-			// send end-marker doc to all channels
-			endMarkerDoc := make(map[string]interface{})
-
-			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-				state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
-			}
-
-			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-				state.AsyncFlushToDbChannels[di] <- endMarkerDoc
-			}
-
-			state.AsyncWaitGroupFlushToFiles.Wait()
-			slog.Debug("asyncWaitGroupFlushToFiles finished!")
-			state.AsyncWaitGroupFlushToDb.Wait()
-			slog.Debug("asyncWaitGroupFlushToDb finished!")
-
-			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
-				state.AsyncFileProcessorChannels[fi] <- "end"
-			}
-			state.AsyncWaitGroupFileProcessor.Wait()
-			slog.Debug("asyncWaitGroupFileProcessor finished!")
-
-			// get return info from threads
-			/*
-				for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-					doc, ok := <-state.AsyncFlushToFileChannels[fi]
-					if ok && len(doc.HeaderFields) > 0 {
-						slog.Debug("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-						fileTotalCount += doc.HeaderFields["count"].IntVal
-						fileTotalErrors += doc.HeaderFields["errors"].IntVal
-					} else {
-						slog.Debug("\tflushToFilesAsync[%d], errors:", fi)
-					}
-				}
-
-				for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
-					doc, ok := <-state.AsyncFlushToDbChannels[di]
-					if ok && len(doc.HeaderFields) > 0 {
-						slog.Debug("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-						dbTotalCount += doc.HeaderFields["count"].IntVal
-						dbTotalErrors += doc.HeaderFields["errors"].IntVal
-					} else {
-						slog.Debug("\tflushToDbAsync[%d], errors:", di)
-					}
-				}
-			*/
-		}
-	} else if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
-		// home, _ := os.UserHomeDir()
-		err = structColumnDefs.WriteJsonToCompressedFile(state.CbDocs, state.Conf.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
-		if err != nil {
-			slog.Error("Expected no error, got %v", err)
-		}
-		// read the file back in
-		/*
-			parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
-			if err != nil {
-				slog.Error("Expected no error, got %v", err)
-			}
-
-			assert.NotNil(log, parsedDoc)
-			// add other test assertions here
-		*/
-	}
-
-	slog.Info("Run stats", "files", len(inputFiles), "docs", len(state.CbDocs), "fileTotalCount", fileTotalCount,
-		"fileTotalErrors", fileTotalErrors, "dbTotalCount", dbTotalCount, "dbTotalErrors", dbTotalErrors,
-		"run-time(ms)", time.Since(start).Milliseconds())
-	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)
 }
 
-func parseLoadSpec(file string) (types.LoadSpec, error) {
-	slog.Debug("parseLoadSpec(" + file + ")")
+func postProcessDocsDefault() {
 
-	ls := types.LoadSpec{}
-	configFile, err := os.Open(file)
-	if err != nil {
-		slog.Error("opening load_spec file", err.Error())
-		configFile.Close()
-		return ls, err
-	}
-	defer configFile.Close()
-
-	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&ls); err != nil {
-		slog.Error("parsing load_spec file", err.Error())
-		return ls, err
-	}
-
-	return ls, nil
-}
-
-func parseConfig(file string) (types.ConfigJSON, error) {
-	slog.Debug("parseConfig(" + file + ")")
-
-	conf := types.ConfigJSON{}
-	configFile, err := os.Open(file)
-	if err != nil {
-		slog.Error("opening config file", err.Error())
-		configFile.Close()
-		return conf, err
-	}
-	defer configFile.Close()
-
-	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&conf); err != nil {
-		slog.Error("parsing config file", err.Error())
-		return conf, err
-	}
-
-	return conf, nil
 }
 
 func parseTroubleShoot(file string) (types.TroubleShoot, error) {
@@ -385,7 +206,7 @@ func parseTroubleShoot(file string) (types.TroubleShoot, error) {
 	ts := types.TroubleShoot{}
 	tsFile, err := os.Open(file)
 	if err != nil {
-		slog.Debug("opening troubleshoot.json file:%s", err.Error())
+		slog.Debug("opening troubleshoot.json file:" + err.Error())
 		tsFile.Close()
 		return ts, err
 	}
@@ -393,22 +214,9 @@ func parseTroubleShoot(file string) (types.TroubleShoot, error) {
 
 	jsonParser := json.NewDecoder(tsFile)
 	if err = jsonParser.Decode(&ts); err != nil {
-		slog.Error("parsing troubleshoot.json file", err.Error())
+		slog.Error("parsing troubleshoot.json file:" + err.Error())
 		return ts, err
 	}
 
 	return ts, nil
-}
-
-func getCredentials(credentialsFilePath string) types.Credentials {
-	creds := types.Credentials{}
-	yamlFile, err := os.ReadFile(credentialsFilePath)
-	if err != nil {
-		slog.Debug("yamlFile.Get err   #%v ", err)
-	}
-	err = yaml.Unmarshal(yamlFile, &creds)
-	if err != nil {
-		slog.Error("Unmarshal: %v", err)
-	}
-	return creds
 }

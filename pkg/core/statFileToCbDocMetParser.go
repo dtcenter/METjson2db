@@ -36,12 +36,12 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 
 	file, err := os.Open(filepath) // open the file
 	if err != nil {
-		slog.Error("error opening file", err)
+		slog.Error("error opening file:", slog.Any("error", err))
 	}
 	defer file.Close()
 	rawData, err := io.ReadAll(file)
 	if err != nil {
-		slog.Error("error reading file", err)
+		slog.Error("error reading file:", filepath, slog.Any("error", err))
 	}
 	lines := strings.Split(string(rawData), "\n")
 	headerLine := lines[0]
@@ -56,9 +56,9 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		state.METParserNewDocId = ""
 		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
 		if err != nil {
-			slog.Error("Expected no error, got %v", err)
+			slog.Error("Expected no error, got:", slog.Any("error", err))
 
-		} else if len(state.METParserNewDocId) > 0 {
+		} else if false == state.Conf.OverWriteData && len(state.METParserNewDocId) > 0 {
 			state.AsyncMergeDocFetchChannels[idxFetch] <- state.METParserNewDocId
 			idxFetch++
 			if idxFetch >= int(state.Conf.ThreadsMergeDocFetch) {

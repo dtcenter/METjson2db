@@ -158,7 +158,7 @@ func GetDocWithId(col *gocb.Collection, id string) (jsonOut map[string]interface
 
 	queryResult, err := col.Get(id, nil)
 	if err != nil {
-		slog.Error(fmt.Sprintf("%v", err))
+		return nil
 	}
 	var doc map[string]interface{}
 	err = queryResult.Content(&doc)

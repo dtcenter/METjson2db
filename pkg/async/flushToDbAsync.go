@@ -39,10 +39,11 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 
 		if false == state.Conf.OverWriteData && state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
 			state.CbMergeDbDocsMutex.RLock()
-			dbDoc := state.CbMergeDbDocs[id].(map[string]interface{})
+			tmpDbDoc := state.CbMergeDbDocs[id]
 			state.CbMergeDbDocsMutex.RUnlock()
 
-			if dbDoc != nil {
+			if tmpDbDoc != nil {
+				dbDoc := tmpDbDoc.(map[string]interface{})
 				// we need to merge
 				for dbKey, dbVal := range dbDoc {
 					if dbKey != "data" {
@@ -68,8 +69,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		}
 
 		if doc["data"] == nil {
-			slog.Debug(fmt.Sprintf("NULL document[%s], err:%v", doc["ID"]))
-			// slog.Debug("err:%v, doc:\n%s", err, doc.ToJSONString())
+			slog.Debug(fmt.Sprintf("NULL document[%s]", doc["ID"]))
 			errors++
 			//state.CbDocMutexMap[id].Unlock()
 			continue
@@ -142,7 +142,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		}
 		//state.CbDocMutexMap[id].Unlock()
 	}
-	slog.Debug(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, doc merge count: errors:%d", threadIdx, count, mergeCount, errors))
+	slog.Debug(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, doc merge count:%d, errors:%d", threadIdx, count, mergeCount, errors))
 	returnDoc := make(map[string]interface{})
 	// returnDoc.InitReturn(int64(count), int64(errors))
 	state.AsyncFlushToDbChannels[threadIdx] <- returnDoc

@@ -61,7 +61,7 @@ func StatToCbFlush(flushFinal bool) {
 			}
 		}
 	}
-	slog.Debug("\tflushCount:%d", flushCount)
+	slog.Debug("\tflushCount:", slog.Any("flushCount", flushCount))
 }
 
 func flushToFiles(id string) {
