@@ -3,6 +3,7 @@ package black_box_tests
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 	"testing"
@@ -13,8 +14,7 @@ import (
 )
 
 func TestMerge(t *testing.T) {
-	// path, _ := os.Getwd()
-	home, _ := os.UserHomeDir()
+	slog.Info("TestMerge")
 
 	var inputFiles []string
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_P1000_anom_120000L_20240203_120000V.stat")
@@ -23,60 +23,101 @@ func TestMerge(t *testing.T) {
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_360000L_20240203_120000V.stat")
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat")
 
+	err := testMerge_Init()
+
+	if err != nil {
+		t.Errorf("testMerge_Init error" + err.Error())
+	}
 	/*
-		infile := "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_P1000_anom_120000L_20240203_120000V.stat"
-		outfile := "../../test_data/MERGE_TEST_grid_stat_GFS_TMP_vs_ANLYS_TMP_P1000_anom_120000L_20240203_120000V.stat"
-		err := createTestDataFile(infile, outfile)
+		err = testMerge_CleanDb()
 		if err != nil {
-			t.Errorf("TestMerge error" + err.Error())
+			t.Errorf("testMerge_CleanDb error" + err.Error())
 		}
-		inputFiles = append(inputFiles, infile)
+
+		state.Conf.OverWriteData = true
+		err = testMerge_Upload(inputFiles)
+		if err != nil {
+			t.Errorf("testMerge_UploadNoMerge error" + err.Error())
+		}
+		// data_lengths 0:0 1:0, 2:224, 3:2940
 	*/
 
+	err = testMerge_CleanDb()
+	if err != nil {
+		t.Errorf("testMerge_CleanDb error" + err.Error())
+	}
+
+	state.Conf.OverWriteData = true
+	err = testMerge_UploadForMergeTest(inputFiles)
+	if err != nil {
+		t.Errorf("testMerge_UploadForMergeTest error" + err.Error())
+	}
+	// data_lengths 0:1582 1:0, 2:118, 3:1464
+
+	state.Conf.OverWriteData = false
+	err = testMerge_Upload(inputFiles)
+	if err != nil {
+		t.Errorf("testMerge_Upload error" + err.Error())
+	}
+	// data_lengths 0:0 1:0, 2:224, 3:2940
+}
+
+func testMerge_Init() error {
+	slog.Info("TestMerge_Init()")
+
+	home, _ := os.UserHomeDir()
 	state.Conf, _ = core.ParseConfig("../../settings.json")
 	state.Credentials = core.GetCredentials(home + "/credentials")
-	loadSpec, _ := core.ParseLoadSpec("../../load_spec.json")
+	loadSpec, err := core.ParseLoadSpec("../../load_spec.json")
 
 	if len(loadSpec.TargetCollection) > 0 {
 		state.Credentials.Cb_collection = loadSpec.TargetCollection
 	}
 
-	// TODO: delete merge test docs in DB
+	return err
+}
+
+func testMerge_CleanDb() error {
+	slog.Info("TestMerge_CleanDb()")
+
 	sqlStr := fmt.Sprintf("DELETE FROM %s.%s.%s WHERE MODEL = \"MERGE_TEST\"",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	conn := utils.GetDbConnection(state.Credentials)
-	conn.Scope.Query(sqlStr, nil)
+	_, err := conn.Scope.Query(sqlStr, nil)
 
-	// Upload merge test docs to db
-	// state.Conf.RunMode, state.Conf.RunNonThreaded, state.Conf.OverWriteData
-	err := core.ProcessInputFiles(inputFiles, postProcessDocsForMergeTest_markAsTest)
-
-	isErr := (err != nil)
-	if isErr {
-		t.Errorf("TestMerge error" + err.Error())
-	}
+	return err
 }
 
-func postProcessDocsForMergeTest_markAsTest() {
+func testMerge_UploadForMergeTest(inputFiles []string) error {
+	slog.Info("testMerge_UploadForMergeTest()")
+	err := core.ProcessInputFiles(inputFiles, postProcessDocsForMergeTest)
+	return err
+}
+
+func testMerge_Upload(inputFiles []string) error {
+	slog.Info("TestMerge_Upload()")
+	err := core.ProcessInputFiles(inputFiles, postProcessDocsForMergeTest_markDocs)
+	return err
+}
+
+func postProcessDocsForMergeTest_markDocs() {
 	for _, docTmp := range state.CbDocs {
 		doc := docTmp.(map[string]interface{})
 		doc["MODEL"] = "MERGE_TEST"
 	}
 }
 
-func postProcessDocsForMergeTest_deleteEvenDataSections() {
+func postProcessDocsForMergeTest() {
 	count := 0
-	mergeProcessCount := 0
 	for _, docTmp := range state.CbDocs {
 		doc := docTmp.(map[string]interface{})
+		doc["MODEL"] = "MERGE_TEST"
 		count = count + 1
 		if count%2 == 0 {
 			delete(doc, "data")
 			doc["data"] = make(map[string]interface{})
-			mergeProcessCount = mergeProcessCount + 1
 		}
 	}
-	// slog.Info(fmt.Sprintf("mergeProcessCount:%d", mergeProcessCount))
 }
 
 func createTestDataFile(infile string, outfile string) error {

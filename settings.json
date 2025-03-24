@@ -11,7 +11,7 @@
     "maxFilesInProcessChunk": 10,
     "updateOnlyOnDocKeyCountChange": true,
     "flushToDbDataSectionMaxCount": 5,
-    "overWriteData": true,
+    "overWriteData": false,
     "writeJSONsToFile": false,
     "uploadToDb": true,
     "outputFolder": "./output",
