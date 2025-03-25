@@ -53,6 +53,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 				dbDoc := tmpDbDoc.(map[string]interface{})
 				// slog.Info("dbDoc:\n" + utils.DocPrettyPrint(dbDoc))
 				// we need to merge
+				mergeCountIncrDone := false
 				for dbKey, dbVal := range dbDoc {
 					if dbKey != "data" {
 						// header field
@@ -68,12 +69,15 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 							docDataVal := docData[dbDataKey]
 							if docDataVal == nil {
 								docData[dbDataKey] = dbDataVal
+								if !mergeCountIncrDone {
+									mergeCount = mergeCount + 1
+									mergeCountIncrDone = true
+								}
 							}
 						}
 						doc["data"] = docData
 					}
 				}
-				mergeCount = mergeCount + 1
 			}
 		}
 

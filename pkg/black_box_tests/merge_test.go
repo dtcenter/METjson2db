@@ -49,13 +49,18 @@ func TestMerge(t *testing.T) {
 	if err != nil {
 		t.Errorf("testMerge_UploadForMergeTest error" + err.Error())
 	}
+	dataLengthsPre := getDataLengths()
 
 	state.Conf.OverWriteData = false
 	err = testMerge_Upload(inputFiles)
 	if err != nil {
 		t.Errorf("testMerge_Upload error" + err.Error())
 	}
-	printDataLengths()
+	dataLengthsPost := getDataLengths()
+	slog.Info(fmt.Sprintf("Merge test, dataLengthsPre:%v, dataLengthsPost:%v", dataLengthsPre, dataLengthsPost))
+	if dataLengthsPost[3] <= dataLengthsPre[3] {
+		t.Errorf("testMerge data lengths not as expected!")
+	}
 }
 
 func testMerge_Init() {
@@ -91,7 +96,6 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 	}
 
 	state.MergeTestDocs = make(map[string]interface{})
-	printDataLengths()
 
 	conn := utils.GetDbConnection(state.Credentials)
 	sqlStr := fmt.Sprintf("SELECT c.id as id FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
@@ -128,7 +132,6 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 		state.MergeTestDocs[id] = docPost
 	}
 	slog.Info(fmt.Sprintf("MergeTestDocs:%d", len(state.MergeTestDocs)))
-	printDataLengths()
 	return err
 }
 
@@ -156,29 +159,30 @@ func testMerge_Upload(inputFiles []string) error {
 	return err
 }
 
-func printDataLengths() {
+func getDataLengths() []float64 {
 	conn := utils.GetDbConnection(state.Credentials)
 	sqlStr := fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 0",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	// slog.Info(sqlStr)
+	slog.Debug(sqlStr)
 	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
 	count_0 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 1",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	// slog.Info(sqlStr)
+	slog.Debug(sqlStr)
 	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
 	count_1 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 2",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	// slog.Info(sqlStr)
+	slog.Debug(sqlStr)
 	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
 	count_2 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	// slog.Info(sqlStr)
+	slog.Debug(sqlStr)
 	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
 	count_3 := rv[0].(map[string]interface{})["count"]
 	slog.Info(fmt.Sprintf("data counts:%v,%v,%v,%v", count_0, count_1, count_2, count_3))
+	return []float64{count_0.(float64), count_1.(float64), count_2.(float64), count_3.(float64)}
 }
 
 func createTestDataFile(infile string, outfile string) error {

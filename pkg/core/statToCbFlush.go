@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"log/slog"
+	"os"
 
 	// "github.com/couchbase/gocb/v2"
 
@@ -57,20 +58,16 @@ func StatToCbFlush(flushFinal bool) {
 }
 
 func flushToFiles(id string) {
-	// slog.Debug("flushToFiles(%s)", id)
+	slog.Debug("flushToFiles(" + id + ")")
 
-	/*
-		doc := state.CbDocs[id]
-		// slog.Debug("data keys:%v", maps.Keys(doc.data))
+	doc := state.CbDocs[id]
 
-
-		docStr := []byte(doc.ToJSONString())
-		fileName := state.Conf.OutputFolder + "/" + id + ".json"
-		err := os.WriteFile(fileName, docStr, 0o644)
-		if err != nil {
-			slog.Debug("Error writing output:%s", fileName)
-		}
-	*/
+	docStr := utils.DocPrettyPrint(doc.(map[string]interface{}))
+	fileName := state.Conf.OutputFolder + "/" + id + ".json"
+	err := os.WriteFile(fileName, []byte(docStr), 0o644)
+	if err != nil {
+		slog.Debug("Error writing output:" + fileName)
+	}
 }
 
 func flushToDb(conn types.CbConnection, id string) {
@@ -79,16 +76,10 @@ func flushToDb(conn types.CbConnection, id string) {
 	doc := state.CbDocs[id].(map[string]interface{})
 	slog.Debug(fmt.Sprintf("%v", doc))
 
-	/*
-		TODO:
-		1. Merge if conf[overWriteData] == false otherwise ovewrite doc
-		2. Make flushToDb threaded and async
-	*/
-
 	var anyJson = doc
 
 	if anyJson["data"] == nil || len(anyJson) == 0 {
-		// slog.Debug("NULL document[%s]", id)
+		slog.Debug("NULL document:" + id)
 		return
 	}
 
@@ -99,23 +90,7 @@ func flushToDb(conn types.CbConnection, id string) {
 			slog.Error(err.Error())
 		}
 	} else {
-		dbReadDoc := utils.GetDocWithId(conn.Collection, id)
-		if dbReadDoc == nil || dbReadDoc["data"] == nil || len(dbReadDoc["data"].(map[string]interface{})) == 0 {
-			// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-			_, err := conn.Collection.Upsert(doc["ID"].(string), anyJson, nil)
-			if err != nil {
-				slog.Error(fmt.Sprintf("%v", err))
-			}
-		} else {
-			/*
-				doc.Merge(dbReadDoc)
-				// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
-				_, err = conn.Collection.Upsert(doc.HeaderFields["ID"].StringVal, anyJson, nil)
-				if err != nil {
-					slog.Error(fmt.Sprintf("%v", err))
-				}
-			*/
-		}
+		slog.Error("No merge supported in write to files mode!")
 	}
 
 	/*

@@ -59,6 +59,8 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.Conf.OverWriteData, state.METParserNewDocId))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
+		} else if doc == nil {
+			slog.Error("Expected parsed document, got nil, for line:" + dataLine)
 		} else if false == state.Conf.OverWriteData && len(state.METParserNewDocId) > 0 {
 			state.AsyncMergeDocFetchChannels[idxFetch] <- state.METParserNewDocId
 			idxFetch++
@@ -66,9 +68,6 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 				idxFetch = 0
 			}
 		}
-	}
-	if doc == nil {
-		slog.Error("Expected parsed document, got nil")
 	}
 
 	return doc, err
