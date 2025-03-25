@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	Conf                = types.ConfigJSON{}
-	TroubleShoot        = types.TroubleShoot{}
-	CbLineTypeColDefs   map[string]types.ColDefArray
+	Conf         = types.ConfigJSON{}
+	TroubleShoot = types.TroubleShoot{}
+	// CbLineTypeColDefs   map[string]types.ColDefArray
 	TotalLinesProcessed = 0
 	//CbDocs              map[string]types.CbDataDocument
 	CbDocs map[string]interface{}
@@ -47,7 +47,7 @@ func init() {
 }
 
 func StateReset() {
-	CbLineTypeColDefs = make(map[string]types.ColDefArray)
+	// CbLineTypeColDefs = make(map[string]types.ColDefArray)
 	CbDocs = make(map[string]interface{})
 	CbMergeDbDocs = make(map[string]interface{})
 	DocKeyCountMap = make(map[string]types.DocKeyCounts)

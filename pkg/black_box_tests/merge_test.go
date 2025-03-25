@@ -153,7 +153,6 @@ func preDbLoadCallback() {
 func testMerge_Upload(inputFiles []string) error {
 	slog.Info("TestMerge_Upload()")
 	err := core.ProcessInputFiles(inputFiles, preDbLoadCallback)
-	printDataLengths()
 	return err
 }
 
