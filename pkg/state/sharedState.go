@@ -20,15 +20,12 @@ var (
 	DataKeyIdx         int
 	Credentials        = types.Credentials{}
 	METParserNewDocId  string
+	MergeTestDocs      map[string]interface{}
 )
 
 var (
-	AsyncFileProcessorChannels  []chan string
-	AsyncFlushToFileChannels    []chan map[string]interface{}
 	AsyncFlushToDbChannels      []chan map[string]interface{}
 	AsyncMergeDocFetchChannels  []chan string
-	AsyncWaitGroupFileProcessor sync.WaitGroup
-	AsyncWaitGroupFlushToFiles  sync.WaitGroup
 	AsyncWaitGroupFlushToDb     sync.WaitGroup
 	AsyncWaitGroupMergeDocFetch sync.WaitGroup
 )
@@ -41,15 +38,22 @@ var (
 
 // init runs before main() is evaluated
 func init() {
-	CbLineTypeColDefs = make(map[string]types.ColDefArray)
-	CbDocs = make(map[string]interface{})
+
 	// CbDocMutexMap = make(map[string](*sync.RWMutex))
 	CbDocsMutex = &sync.RWMutex{}
 	DocKeyCountMapMutex = &sync.RWMutex{}
-	CbMergeDbDocs = make(map[string]interface{})
 	CbMergeDbDocsMutex = &sync.RWMutex{}
+	StateReset()
+}
+
+func StateReset() {
+	CbLineTypeColDefs = make(map[string]types.ColDefArray)
+	CbDocs = make(map[string]interface{})
+	CbMergeDbDocs = make(map[string]interface{})
 	DocKeyCountMap = make(map[string]types.DocKeyCounts)
 	LineTypeStats = make(map[string]types.LineTypeStat)
+	AsyncFlushToDbChannels = make([]chan map[string]interface{}, 0)
+	AsyncMergeDocFetchChannels = make([]chan string, 0)
 }
 
 var StatToCbRun = types.StatToCbRun{}

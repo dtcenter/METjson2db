@@ -1,6 +1,7 @@
 package black_box_tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -23,13 +24,10 @@ func TestMerge(t *testing.T) {
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_360000L_20240203_120000V.stat")
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat")
 
-	err := testMerge_Init()
+	testMerge_Init()
 
-	if err != nil {
-		t.Errorf("testMerge_Init error" + err.Error())
-	}
 	/*
-		err = testMerge_CleanDb()
+		err := testMerge_CleanDb()
 		if err != nil {
 			t.Errorf("testMerge_CleanDb error" + err.Error())
 		}
@@ -39,10 +37,9 @@ func TestMerge(t *testing.T) {
 		if err != nil {
 			t.Errorf("testMerge_UploadNoMerge error" + err.Error())
 		}
-		// data_lengths 0:0 1:0, 2:224, 3:2940
 	*/
 
-	err = testMerge_CleanDb()
+	err := testMerge_CleanDb()
 	if err != nil {
 		t.Errorf("testMerge_CleanDb error" + err.Error())
 	}
@@ -52,72 +49,137 @@ func TestMerge(t *testing.T) {
 	if err != nil {
 		t.Errorf("testMerge_UploadForMergeTest error" + err.Error())
 	}
-	// data_lengths 0:1582 1:0, 2:118, 3:1464
 
 	state.Conf.OverWriteData = false
 	err = testMerge_Upload(inputFiles)
 	if err != nil {
 		t.Errorf("testMerge_Upload error" + err.Error())
 	}
-	// data_lengths 0:0 1:0, 2:224, 3:2940
+	printDataLengths()
 }
 
-func testMerge_Init() error {
+func testMerge_Init() {
 	slog.Info("TestMerge_Init()")
 
 	home, _ := os.UserHomeDir()
 	state.Conf, _ = core.ParseConfig("../../settings.json")
 	state.Credentials = core.GetCredentials(home + "/credentials")
-	loadSpec, err := core.ParseLoadSpec("../../load_spec.json")
 
-	if len(loadSpec.TargetCollection) > 0 {
-		state.Credentials.Cb_collection = loadSpec.TargetCollection
-	}
-
-	return err
+	state.Credentials.Cb_collection = "MET_tests"
 }
 
 func testMerge_CleanDb() error {
 	slog.Info("TestMerge_CleanDb()")
 
-	sqlStr := fmt.Sprintf("DELETE FROM %s.%s.%s WHERE MODEL = \"MERGE_TEST\"",
+	sqlStr := fmt.Sprintf("DELETE FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	conn := utils.GetDbConnection(state.Credentials)
 	_, err := conn.Scope.Query(sqlStr, nil)
 
+	sqlStr = fmt.Sprintf("SELECT COUNT(*) as count FROM %s.%s.%s",
+		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	slog.Info(fmt.Sprintf("count after db clean:%d:", rv[0].(map[string]interface{})["count"]))
 	return err
 }
 
 func testMerge_UploadForMergeTest(inputFiles []string) error {
 	slog.Info("testMerge_UploadForMergeTest()")
-	err := core.ProcessInputFiles(inputFiles, postProcessDocsForMergeTest)
+	err := core.ProcessInputFiles(inputFiles, nil)
+	if err != nil {
+		return err
+	}
+
+	state.MergeTestDocs = make(map[string]interface{})
+	printDataLengths()
+
+	conn := utils.GetDbConnection(state.Credentials)
+	sqlStr := fmt.Sprintf("SELECT c.id as id FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
+		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	slog.Debug(sqlStr)
+	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	//slog.Info("id for data count=3:\n" + utils.JsonPrettyPrint(rv))
+	for i := 0; i < len(rv); i++ {
+		id := rv[i].(map[string]interface{})["id"].(string)
+		sqlStr = fmt.Sprintf("SELECT * FROM %s.%s.%s AS c USE KEYS \"%s\"",
+			state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection, id)
+		// slog.Info(sqlStr)
+		rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+		if rv == nil || len(rv) == 0 {
+			continue
+		}
+		docPre := rv[0].(map[string]interface{})["c"].(map[string]interface{})
+		docPost := make(map[string]interface{})
+		inrec, _ := json.Marshal(docPre)
+		json.Unmarshal(inrec, &docPost)
+		data := docPost["data"].(map[string]interface{})
+		ikey := 0
+		for k, _ := range data {
+			ikey = ikey + 1
+			if ikey == 2 {
+				delete(data, k)
+			}
+		}
+		_, err := conn.Collection.Upsert(id, docPost, nil)
+		if err != nil {
+			slog.Error(fmt.Sprintf("%v", err))
+			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
+		}
+		state.MergeTestDocs[id] = docPost
+	}
+	slog.Info(fmt.Sprintf("MergeTestDocs:%d", len(state.MergeTestDocs)))
+	printDataLengths()
 	return err
+}
+
+func preDbLoadCallback() {
+	count := 0
+	touchCount := 0
+	for id, doci := range state.CbDocs {
+		if (count % 2) == 0 {
+			dbDoci := state.MergeTestDocs[id]
+			if dbDoci != nil {
+				doc := doci.(map[string]interface{})
+				delete(doc, "data")
+				doc["data"] = make(map[string]interface{})
+				touchCount = touchCount + 1
+			}
+		}
+		count = count + 1
+	}
+	slog.Info(fmt.Sprintf("preDbLoadCallback(), count:%d, touchCount:%d", count, touchCount))
 }
 
 func testMerge_Upload(inputFiles []string) error {
 	slog.Info("TestMerge_Upload()")
-	err := core.ProcessInputFiles(inputFiles, postProcessDocsForMergeTest_markDocs)
+	err := core.ProcessInputFiles(inputFiles, preDbLoadCallback)
+	printDataLengths()
 	return err
 }
 
-func postProcessDocsForMergeTest_markDocs() {
-	for _, docTmp := range state.CbDocs {
-		doc := docTmp.(map[string]interface{})
-		doc["MODEL"] = "MERGE_TEST"
-	}
-}
-
-func postProcessDocsForMergeTest() {
-	count := 0
-	for _, docTmp := range state.CbDocs {
-		doc := docTmp.(map[string]interface{})
-		doc["MODEL"] = "MERGE_TEST"
-		count = count + 1
-		if count%2 == 0 {
-			delete(doc, "data")
-			doc["data"] = make(map[string]interface{})
-		}
-	}
+func printDataLengths() {
+	conn := utils.GetDbConnection(state.Credentials)
+	sqlStr := fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 0",
+		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	// slog.Info(sqlStr)
+	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	count_0 := rv[0].(map[string]interface{})["count"]
+	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 1",
+		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	// slog.Info(sqlStr)
+	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	count_1 := rv[0].(map[string]interface{})["count"]
+	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 2",
+		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	// slog.Info(sqlStr)
+	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	count_2 := rv[0].(map[string]interface{})["count"]
+	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
+		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
+	// slog.Info(sqlStr)
+	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	count_3 := rv[0].(map[string]interface{})["count"]
+	slog.Info(fmt.Sprintf("data counts:%v,%v,%v,%v", count_0, count_1, count_2, count_3))
 }
 
 func createTestDataFile(infile string, outfile string) error {

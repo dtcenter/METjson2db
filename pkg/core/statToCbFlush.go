@@ -41,17 +41,9 @@ func StatToCbFlush(flushFinal bool) {
 		}
 	} else {
 		// distribute docs to channels, round-robin, for async processing
-		idxFiles := 0
 		idxDb := 0
 		// for id, doc
 		for _, doc := range state.CbDocs {
-			if state.Conf.WriteJSONsToFile {
-				state.AsyncFlushToFileChannels[idxFiles] <- doc.(map[string]interface{})
-				idxFiles++
-				if idxFiles >= int(state.Conf.ThreadsWriteToDisk) {
-					idxFiles = 0
-				}
-			}
 			if state.Conf.UploadToDb {
 				state.AsyncFlushToDbChannels[idxDb] <- doc.(map[string]interface{})
 				idxDb++

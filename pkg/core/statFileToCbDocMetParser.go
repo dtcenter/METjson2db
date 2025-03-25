@@ -25,6 +25,7 @@ func init() {
 func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 	// fmt.Println("getExternalDocForId called with id:", id)
 	// Put your own code here in this method but always return this exact error if the document is not found
+	slog.Debug(fmt.Sprintf("getMissingExternalDocForId(%v)", state.METParserNewDocId))
 	state.METParserNewDocId = id
 	return nil, fmt.Errorf("%s: %s", structColumnTypes.DOC_NOT_FOUND, id)
 }
@@ -55,9 +56,9 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		dataLine := lines[line]
 		state.METParserNewDocId = ""
 		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
+		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.Conf.OverWriteData, state.METParserNewDocId))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
-
 		} else if false == state.Conf.OverWriteData && len(state.METParserNewDocId) > 0 {
 			state.AsyncMergeDocFetchChannels[idxFetch] <- state.METParserNewDocId
 			idxFetch++

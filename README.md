@@ -30,8 +30,10 @@ Currently the following works:
 
 ```shell
 # Run all packages in `cmd/`
+# THERE MUST BE A Collection named MET_tests
 go run ./cmd/...
 # Run all tests with a coverage report
+go clean -testcache
 go test -cover ./...
 go test -v ./...
 

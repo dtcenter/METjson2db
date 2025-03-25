@@ -19,12 +19,13 @@ func MergeDbDocFetchAsync(threadIdx int /*, conn CbConnection*/) {
 	errors := 0
 	for {
 		id, ok := <-state.AsyncMergeDocFetchChannels[threadIdx]
+		slog.Debug("MergeDbDocFetchAsync:" + id)
 		if !ok {
 			slog.Debug(fmt.Sprintf("\tMergeDbDocFetchAsync(%d), no documents in channel!", threadIdx))
 			break
 		}
 
-		if len(id) == 0 {
+		if id == "endMarker" {
 			slog.Debug(fmt.Sprintf("\tMergeDbDocFetchAsync(%d), end-marker received!", threadIdx))
 			break
 		}
@@ -35,13 +36,15 @@ func MergeDbDocFetchAsync(threadIdx int /*, conn CbConnection*/) {
 			continue
 		}
 		state.CbMergeDbDocsMutex.RUnlock()
-		count += 1
 
 		dbReadDoc := utils.GetDocWithId(conn.Collection, id)
 		if dbReadDoc != nil && len(dbReadDoc) > 0 && len(dbReadDoc["data"].(map[string]interface{})) > 0 {
 			state.CbMergeDbDocsMutex.Lock()
 			state.CbMergeDbDocs[id] = dbReadDoc
 			state.CbMergeDbDocsMutex.Unlock()
+			count += 1
+		} else {
+			slog.Info(fmt.Sprintf("error, dbReadDoc:%v", dbReadDoc))
 		}
 	}
 

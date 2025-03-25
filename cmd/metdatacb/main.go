@@ -190,14 +190,10 @@ func main() {
 	slog.Debug("inputFiles:", slog.Any("inputFiles", inputFiles))
 	// slog.Error("Exit hard coded in main.go:190")
 
-	err = core.ProcessInputFiles(inputFiles, postProcessDocsDefault)
+	err = core.ProcessInputFiles(inputFiles, nil)
 	if err != nil {
 		slog.Error("Error processing input files:" + err.Error())
 	}
-}
-
-func postProcessDocsDefault() {
-
 }
 
 func parseTroubleShoot(file string) (types.TroubleShoot, error) {

@@ -21,33 +21,14 @@ func init() {
 	slog.Debug("ProcessInput:init()")
 }
 
-func ProcessInputFiles(inputFiles []string, postProcessDocs func()) error {
+func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 	slog.Info(fmt.Sprintf("ProcessInputFiles(%d)", len(inputFiles)))
 
 	start := time.Now()
+	state.StateReset()
 
 	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
 		if !state.Conf.RunNonThreaded {
-			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
-				fi := fi
-				state.AsyncFileProcessorChannels = append(state.AsyncFileProcessorChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfFiles))
-				state.AsyncWaitGroupFileProcessor.Add(1)
-				go func() {
-					defer state.AsyncWaitGroupFileProcessor.Done()
-					async.FileProcessorAsync(fi)
-				}()
-			}
-
-			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-				fi := fi
-				state.AsyncFlushToFileChannels = append(state.AsyncFlushToFileChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
-				state.AsyncWaitGroupFlushToFiles.Add(1)
-				go func() {
-					defer state.AsyncWaitGroupFlushToFiles.Done()
-					async.FlushToFilesAsync(fi)
-				}()
-			}
-
 			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
 				di := di
 				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
@@ -76,7 +57,6 @@ func ProcessInputFiles(inputFiles []string, postProcessDocs func()) error {
 	// slog.Error("Test exit!")
 
 	StartProcessing(inputFiles)
-	postProcessDocs()
 
 	fileTotalCount := int64(0)
 	fileTotalErrors := int64(0)
@@ -86,37 +66,29 @@ func ProcessInputFiles(inputFiles []string, postProcessDocs func()) error {
 	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
 		if false == state.Conf.OverWriteData {
 			for fi := 0; fi < int(state.Conf.ThreadsMergeDocFetch); fi++ {
-				state.AsyncMergeDocFetchChannels[fi] <- ""
+				state.AsyncMergeDocFetchChannels[fi] <- "endMarker"
 			}
 			state.AsyncWaitGroupMergeDocFetch.Wait()
 			slog.Info("AsyncWaitGroupMergeDocFetch finished!")
 		}
 
+		if preDbLoadCallback != nil {
+			preDbLoadCallback()
+		}
 		StatToCbFlush(true)
 		if !state.Conf.RunNonThreaded {
 			slog.Debug("Waiting for threads to finish ...")
 
 			// send end-marker doc to all channels
 			endMarkerDoc := make(map[string]interface{})
-
-			for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
-				state.AsyncFlushToFileChannels[fi] <- endMarkerDoc
-			}
+			endMarkerDoc["endMarker"] = "endMarker"
 
 			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
 				state.AsyncFlushToDbChannels[di] <- endMarkerDoc
 			}
 
-			state.AsyncWaitGroupFlushToFiles.Wait()
-			slog.Debug("asyncWaitGroupFlushToFiles finished!")
 			state.AsyncWaitGroupFlushToDb.Wait()
 			slog.Debug("asyncWaitGroupFlushToDb finished!")
-
-			for fi := 0; fi < int(state.Conf.ThreadsFileProcessor); fi++ {
-				state.AsyncFileProcessorChannels[fi] <- "end"
-			}
-			state.AsyncWaitGroupFileProcessor.Wait()
-			slog.Debug("asyncWaitGroupFileProcessor finished!")
 
 			// get return info from threads
 			/*

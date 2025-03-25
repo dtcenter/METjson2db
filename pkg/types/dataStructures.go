@@ -71,8 +71,6 @@ type ConfigJSON struct {
 	UploadToDb                     bool     `json:"uploadToDb"`
 	OutputFolder                   string   `json:"outputFolder"`
 	RunNonThreaded                 bool     `json:"runNonThreaded"`
-	ThreadsFileProcessor           int64    `json:"threadsFileProcessor"`
-	ThreadsWriteToDisk             int64    `json:"threadsWriteToDisk"`
 	ThreadsDbUpload                int64    `json:"threadsDbUpload"`
 	ThreadsMergeDocFetch           int64    `json:"threadsMergeDocFetch"`
 	ChannelBufferSizeNumberOfDocs  int64    `json:"channelBufferSizeNumberOfDocs"`
