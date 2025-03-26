@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/buildHeaderLineTypeUtilities"
-	"github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
+	"github.com/NOAA-GSL/METdatacb/pkg/buildHeaderLineTypeUtilities"
+	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 )
 
 /*

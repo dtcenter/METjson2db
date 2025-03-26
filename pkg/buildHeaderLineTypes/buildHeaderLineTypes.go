@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/buildHeaderLineTypeUtilities"
+	"github.com/NOAA-GSL/METdatacb/pkg/buildHeaderLineTypeUtilities"
 )
 
 /*

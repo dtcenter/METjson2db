@@ -13,8 +13,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/NOAA-GSL/MET-parser v1.0.3
-
 require (
 	github.com/couchbase/gocbcore/v10 v10.6.0 // indirect
 	github.com/couchbase/gocbcoreps v0.1.3 // indirect
