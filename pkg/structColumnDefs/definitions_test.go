@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
+	"github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
 	"github.com/stretchr/testify/assert"
 )
 
