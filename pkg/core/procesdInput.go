@@ -10,10 +10,10 @@ import (
 	// "github.com/couchbase/gocb/v2"
 	"gopkg.in/yaml.v3"
 
-	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
+	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
 	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
+	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
