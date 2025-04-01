@@ -7,20 +7,16 @@ import (
 )
 
 var (
-	Conf         = types.ConfigJSON{}
-	TroubleShoot = types.TroubleShoot{}
-	// CbLineTypeColDefs   map[string]types.ColDefArray
+	Conf                = types.ConfigJSON{}
 	TotalLinesProcessed = 0
-	//CbDocs              map[string]types.CbDataDocument
-	CbDocs map[string]interface{}
-	// CbDocMutexMap      map[string]*sync.RWMutex
-	CbDocsMutex        *sync.RWMutex
-	CbMergeDbDocs      map[string]interface{}
-	CbMergeDbDocsMutex *sync.RWMutex
-	DataKeyIdx         int
-	Credentials        = types.Credentials{}
-	METParserNewDocId  string
-	MergeTestDocs      map[string]interface{}
+	CbDocs              map[string]interface{}
+	CbDocsMutex         *sync.RWMutex
+	CbMergeDbDocs       map[string]interface{}
+	CbMergeDbDocsMutex  *sync.RWMutex
+	DataKeyIdx          int
+	Credentials         = types.Credentials{}
+	METParserNewDocId   string
+	MergeTestDocs       map[string]interface{}
 )
 
 var (
@@ -39,7 +35,6 @@ var (
 // init runs before main() is evaluated
 func init() {
 
-	// CbDocMutexMap = make(map[string](*sync.RWMutex))
 	CbDocsMutex = &sync.RWMutex{}
 	DocKeyCountMapMutex = &sync.RWMutex{}
 	CbMergeDbDocsMutex = &sync.RWMutex{}
@@ -47,7 +42,6 @@ func init() {
 }
 
 func StateReset() {
-	// CbLineTypeColDefs = make(map[string]types.ColDefArray)
 	CbDocs = make(map[string]interface{})
 	CbMergeDbDocs = make(map[string]interface{})
 	DocKeyCountMap = make(map[string]types.DocKeyCounts)

@@ -7,13 +7,9 @@ import (
 	"os"
 	"time"
 
-	// "github.com/couchbase/gocb/v2"
 	"gopkg.in/yaml.v3"
 
 	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
-	// "github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
-
-	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
@@ -125,16 +121,6 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}
-		// read the file back in
-		/*
-			parsedDoc, err := structColumnDefs.ReadJsonFromGzipFile("/tmp/test_output.json.gz")
-			if err != nil {
-				slog.Error("Expected no error, got %v", err)
-			}
-
-			assert.NotNil(log, parsedDoc)
-			// add other test assertions here
-		*/
 		return err
 	}
 

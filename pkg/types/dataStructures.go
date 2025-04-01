@@ -84,24 +84,6 @@ type ConfigJSON struct {
 	CommonColumns                  []Column `json:"commonColumns"`
 }
 
-type TroubleShoot struct {
-	EnableTrackContextFlushToFile bool `json:"enableTrackContextFlushToFile"`
-	EnableTrackContextFlushToDb   bool `json:"enableTrackContextFlushToDb"`
-	EnableLineTypeTrack           bool `json:"enableLineTypeTrack"`
-	TerminateAtFirstTrackError    bool `json:"terminateAtFirstTrackError"`
-	DocIdSizeTrack                struct {
-		Actions []string `json:"actions"`
-	} `json:"docIdSizeTrack"`
-	IdTrack struct {
-		IdList  []string `json:"idList"`
-		Actions []string `json:"actions"`
-	} `json:"idTrack"`
-	LineTypeTrack struct {
-		LineTypeList []string `json:"lineTypeList"`
-		Actions      []string `json:"actions"`
-	} `json:"lineTypeTrack"`
-}
-
 type Credentials struct {
 	Cb_host       string `yaml:"cb_host"`
 	Cb_user       string `yaml:"cb_user"`

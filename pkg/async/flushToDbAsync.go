@@ -108,52 +108,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 			state.DocKeyCountMap[id] = types.DocKeyCounts{HeaderLen: len(doc) - 1, DataLen: len(doc)}
 			state.DocKeyCountMapMutex.Unlock()
 
-			/*
-				if state.TroubleShoot.EnableTrackContextFlushToDb {
-					for i := 0; i < len(state.TroubleShoot.IdTrack.IdList); i++ {
-						if id == state.TroubleShoot.IdTrack.IdList[i] || state.TroubleShoot.IdTrack.IdList[i] == "*" {
-							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "logJSON") {
-								slog.Debug(">>>>>>>>>>>>> Tracking[logJSON] doc:\n%s\n", doc.ToJSONString())
-							}
-							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "verifyWithDbRead") {
-								dbReadDoc := utils.GetDocWithId(conn.Collection, id)
-								if dbReadDoc == nil {
-									slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, null data!!!", id)
-									if state.TroubleShoot.TerminateAtFirstTrackError {
-										slog.Error("Terminating due to track error ....")
-									}
-								} else {
-									slog.Debug(">>>>>>>>>>>>> Tracking[verifyWithDbRead] ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
-										len(doc.HeaderFields), len(dbReadDoc)-1, len(doc.Data), len(dbReadDoc["data"].(map[string]interface{})))
-									if len(doc.HeaderFields) != (len(dbReadDoc)-1) || len(doc.Data) != len(dbReadDoc["data"].(map[string]interface{})) {
-										slog.Debug("******************** >>>>>>>>>>>>> Tracking[verifyWithDbRead], data mismatch: ID:%s, headerFields:[cur:%d, db:%d], data:[cur:%d, db:%d]", dbReadDoc["ID"],
-											len(doc.HeaderFields), len(dbReadDoc)-1, len(doc.Data), len(dbReadDoc["data"].(map[string]interface{})))
-										if state.TroubleShoot.TerminateAtFirstTrackError {
-											slog.Error("Terminating due to track error ....")
-										}
-									}
-								}
-							}
-
-							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "trackDataKeyCount") {
-								slog.Debug(">>>>>>>>>>>>> Tracking[trackDataKeyCount] doc.headerFields:%d, doc.data:[prev:%d, cur:%d]",
-									len(doc.HeaderFields), state.DocKeyCountMap[id].DataLen, len(doc.Data))
-							}
-
-							if slices.Contains(state.TroubleShoot.IdTrack.Actions, "checkForEmptyDoc") {
-								if len(doc.HeaderFields) == 0 {
-									slog.Debug("******************** >>>>>>>>>>>>> Tracking[checkForEmptyDoc] doc.headerFields:%d, doc.data:%d", len(doc.HeaderFields), len(doc.Data))
-									if state.TroubleShoot.TerminateAtFirstTrackError {
-										slog.Error("Terminating due to track error ....")
-									}
-								}
-							}
-						}
-					}
-				}
-			*/
 		}
-		//state.CbDocMutexMap[id].Unlock()
 	}
 	slog.Info(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, doc merge count:%d, errors:%d", threadIdx, count, mergeCount, errors))
 	returnDoc := make(map[string]interface{})
