@@ -1,11 +1,9 @@
 # METdatacb
 
-# MET stat file to Couchbase JSON document converter and uploader
+# MET stat files to Couchbase JSON document converter and uploader
 This project is a GO language command-line program to generate Couchbase JSON documents 
-and/or
-upload these documents to Couchbase database.
+and/or upload these documents to Couchbase database.
  
-
 ## Inline upload vs JSON archive generation
 There are two ways this program can be run. The run mode is specified in the settings.json file.
 Refer to documentation for a detailed description of settings.json 
@@ -19,12 +17,12 @@ which enables merge functionality, wherein incoming data is merged with data alr
 is only available in run mode:
 "runMode" : "DIRECT_LOAD_TO_DB"
 
-
 ## The 2-step process
 ### STEP 1 : Generate line type definitions for a particular MET version
 This step needs to be done once for each MET version, and the genrerated code checked in to MET-parser git repo:main
 Refer to documentation section "Generating LINE_TYPE definitions" for details on how to do this
 ### STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
+See section "Running the METdatacb to generate and/or upload JSON documents"
 
 # Couchbase
 Unlike relational databases like MySQL, PostGres etc, Couchbase is a JSON document based database where
@@ -55,20 +53,17 @@ Indexes serve similar purpose that in relational databases, namely, to speed up 
 SQL++ statements for creating the required indexes are in : METdatacb/indexes
 See see section installing and configuring Couchbase for more information on creating indexes
 
-
 ## MET Couchbase Document format (data model)
 Describe in brief about header & data sections, data key used
 
-
 # Installing and configuring Couchbase for METdatacb
+1. Have your system administrator install Couchbase Enterperise, Community or the Cloud managed service Capella
+2. Obtain the Web UI to Couchbase from them and admin credentials
+3. Log into Couchbase Web UI using admin credentials
+The following examples will be referencing a local Couchbase server at GSL, and its web UI.
 ## Create Bucket, Scope and Collection(s)
 ## Create required indexes
 ## Couchbase index adviser
-
-
-
-
-
 
 # Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
@@ -82,6 +77,11 @@ Once the line type definitions are thus updated using the steps above, changes m
 checked into main branch, so that METdatacb will reference the right MET-parser source files
 
 ## Running the METdatacb to generate and/or upload JSON documents 
+Make sure of the following:
+1. METdatacb is configured as detailed in section "Configuration "settings.json"
+2. A default credential file exists in your home folder ~/credentials or provide one on command line
+3. Modify load_spec.json to match your input data files, or use "recursive with file pattern regex match", as given
+in examples below.
 
 
 Currently the following works:
