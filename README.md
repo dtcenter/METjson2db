@@ -21,8 +21,10 @@ is only available in run mode:
 
 
 ## The 2-step process
-STEP 1 : Generate line type definitions for a particular MET version
-STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
+### STEP 1 : Generate line type definitions for a particular MET version
+This step needs to be done once for each MET version, and the genrerated code checked in to MET-parser git repo:main
+Refer to documentation section "Generating LINE_TYPE definitions" for details on how to do this
+### STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
 
 # Couchbase
 Unlike relational databases like MySQL, PostGres etc, Couchbase is a JSON document based database where
@@ -33,24 +35,42 @@ kept in sync with data.
 
 ## Couchbase data organisation
 ### Buckets, Scopes, Collections
-### Queries and indexes
+Unlike relational databases, Couchbase follows a simple hierarchical model of
+Buckets=>Scopes=>Collections
+See this link for a detailed descrion:
+https://docs.couchbase.com/cloud/clusters/data-service/about-buckets-scopes-collections.html 
 
-# MET for Couchbase 
-## Document format (data model)
+For MET data, once this hierrarchy is created in the database server (see section installing and configuring Couchbase)
+the information needs to be configured in a credentials file, that lives external to github repository for security reasons.
+The MET data uploader defaults to ~/credentials for this file, but can be overridden in the command line.
+See METdatacb/credentials.template for the content and syntax of this creadentials file.
+The Collection itself can be overridden in the load_spec.json file, thus allowing for data to be stored in separate collections
+for research and comparison purposes.
+
+### Queries and indexes
+Couchbase queries are similar to SQL with some additional sematics for dealing with JSON data,and is called SQL++
+See this link for SQL++ documentation:
+https://docs.couchbase.com/server/current/n1ql/query.html 
+Indexes serve similar purpose that in relational databases, namely, to speed up specific queries.
+SQL++ statements for creating the required indexes are in : METdatacb/indexes
+See see section installing and configuring Couchbase for more information on creating indexes
+
+
+## MET Couchbase Document format (data model)
 Describe in brief about header & data sections, data key used
 
-## Bucket, scope, collection configuration for METdatacb
-Credentials and load_spec
 
-# Installing and configuring Couchbase community edition for METdatacb
-
-
-
+# Installing and configuring Couchbase for METdatacb
+## Create Bucket, Scope and Collection(s)
+## Create required indexes
+## Couchbase index adviser
 
 
 
 
-## Generating LINE_TYPE definitions
+
+
+# Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
 git clone https://github.com/NOAA-GSL/MET-PARSER
 make sure you are in the main branch
@@ -90,23 +110,8 @@ brew install golangci-lint # If not installed already
 golangci-lint run
 ```
 
-## Configuration
-### Couchbase credentials file
-NOTE: If no specific credentails file is given on the command-line, statToCbDoc
-will look for and use ~/credentials
-There is a sample credentials file at: METdatacb/credentials.template
-
-statToCbDoc picks up Couchbase conection information from this file, example below
-Please note that the cb_user and cb_password values should be replaced with actual values
-cb_host: couchbase://adb-cb1.gsd.esrl.noaa.gov
-cb_user: ***
-cb_password: ***
-cb_bucket: metdata
-cb_scope: _default
-#### The target collection must be specified in load_spec.json => "target_collection": "MET_default"
-
-To point to cluster, use
-cb_host: adb-cb2.gsd.esrl.noaa.gov,adb-cb3.gsd.esrl.noaa.gov,adb-cb4.gsd.esrl.noaa.gov
+## Configuration "settings.json"
+TODO - document settings.json 
 
 
 ## Example run command-lines
@@ -136,29 +141,9 @@ go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -I /Use
 # if -f,-F,-i OR -I options are specified, ignores load_spec input files
 ```
 
-## Output location, configuration and logic
-Output will be in settings.json[OutputFolder], defaults to "./outputs", one file for each doc-id.
-MET_cb_[docId].json.  It is important to note that if 
-a file with same doc-id extis prior to run, the data from
-current run will be merged with existing contents of that file.
-
-On the Db side, the merge/overwrite logic is as below:
-
-if settings.json (overWriteData == true)
-    no merge is performed, current run will overwrite docs with same ids
-if settings.json (overWriteData == false)
-    merge is performed, current run will merge docs with same ids
-
-A flush(merge) and/or Db merge is trigerred when a doc data section count reaches
-settings.json setting: flushToDbDataSectionMaxCount
-
 
 ## Log output to file
 By default, log is printed to stdout, but if you instead want to log to a file, add below at the end of above run commands:
 2> logfile (for overwriting)
 2>> logfile (for appending)
 
-## Troubleshooting
-If a troubleshoot.json file exists in the working folder, it would be used to log specific troubleshooting information.
-For example, this file can be used to track extra logging for a document with a specific ID.
-For more detailed information on troubleshooting, please refer to the troubleshooting.txt document.
