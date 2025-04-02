@@ -79,17 +79,6 @@ type Credentials struct {
 	Cb_collection string `yaml:"cb_collection"`
 }
 
-// the map below holds template docs created from settings.json
-type ColDef struct {
-	Name      string
-	DataType  int // 0-string, 1-int64, 2-float64, 3-epoch
-	IsHeader  bool
-	IsID      bool
-	IsDataKey bool
-}
-
-type ColDefArray []ColDef
-
 type LineTypeStat struct {
 	ProcessedCount int  `json:"ProcessedCount"`
 	Handled        bool `json:"Handled"`
