@@ -57,31 +57,17 @@ type DefLineType struct {
 }
 
 type ConfigJSON struct {
-	LogLevel                       string   `json:"LogLevel"`
-	RunMode                        string   `json:"runMode"`
-	JsonArchiveFilePathAndPrefix   string   `json:"jsonArchiveFilePathAndPrefix"`
-	MaxLinesToLoad                 int64    `json:"maxLinesToLoad"`
-	MaxDocIdLength                 int64    `json:"maxDocIdLength"`
-	ProgressiveLargeDocIdPolicies  []string `json:"progressiveLargeDocIdPolicies"`
-	MaxFilesInProcessChunk         int64    `json:"maxFilesInProcessChunk"`
-	UpdateOnlyOnDocKeyCountChange  bool     `json:"updateOnlyOnDocKeyCountChange"`
-	FlushToDbDataSectionMaxCount   int64    `json:"flushToDbDataSectionMaxCount"`
-	OverWriteData                  bool     `json:"overWriteData"`
-	WriteJSONsToFile               bool     `json:"writeJSONsToFile"`
-	UploadToDb                     bool     `json:"uploadToDb"`
-	OutputFolder                   string   `json:"outputFolder"`
-	RunNonThreaded                 bool     `json:"runNonThreaded"`
-	ThreadsDbUpload                int64    `json:"threadsDbUpload"`
-	ThreadsMergeDocFetch           int64    `json:"threadsMergeDocFetch"`
-	ChannelBufferSizeNumberOfDocs  int64    `json:"channelBufferSizeNumberOfDocs"`
-	ChannelBufferSizeNumberOfFiles int64    `json:"channelBufferSizeNumberOfFiles"`
-	LineTypeDefs                   string   `json:"lineTypeDefs"`
-	IdColumns                      []string `json:"idColumns"`
-	HeaderColumns                  []string `json:"headerColumns"`
-	DataKeyColumns                 []string `jaon:"dataKeyColumns"`
-	IgnoreColumns                  []string `json:"ignoreColumns"`
-	IgnoreValues                   []string `json:"ignoreValues"`
-	CommonColumns                  []Column `json:"commonColumns"`
+	LogLevel                      string   `json:"LogLevel"`
+	RunMode                       string   `json:"runMode"`
+	JsonArchiveFilePathAndPrefix  string   `json:"jsonArchiveFilePathAndPrefix"`
+	MaxLinesToLoad                int64    `json:"maxLinesToLoad"`
+	MaxDocIdLength                int64    `json:"maxDocIdLength"`
+	ProgressiveLargeDocIdPolicies []string `json:"progressiveLargeDocIdPolicies"`
+	OverWriteData                 bool     `json:"overWriteData"`
+	RunNonThreaded                bool     `json:"runNonThreaded"`
+	ThreadsDbUpload               int64    `json:"threadsDbUpload"`
+	ThreadsMergeDocFetch          int64    `json:"threadsMergeDocFetch"`
+	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
 }
 
 type Credentials struct {

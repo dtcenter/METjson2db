@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	// "github.com/couchbase/gocb/v2"
 
@@ -18,9 +19,8 @@ func init() {
 }
 
 func StatToCbFlush(flushFinal bool) {
-	slog.Info(fmt.Sprintf("statToCbFlush(flushFinal:%t, docs:%d, totalLinesProcessed:%d, FlushToDbDataSectionMaxCount:%d)",
-		flushFinal, len(state.CbDocs),
-		state.TotalLinesProcessed, state.Conf.FlushToDbDataSectionMaxCount))
+	slog.Info(fmt.Sprintf("statToCbFlush(flushFinal:%t, docs:%d, totalLinesProcessed:%d)",
+		flushFinal, len(state.CbDocs), state.TotalLinesProcessed))
 
 	/*
 		See spec in readme, section:
@@ -31,10 +31,10 @@ func StatToCbFlush(flushFinal bool) {
 		for id, _ := range state.CbDocs {
 			slog.Info("id:" + id)
 			//if flushFinal || int64(dataLen) >= int64(state.Conf.FlushToDbDataSectionMaxCount) {
-			if state.Conf.WriteJSONsToFile {
+			if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
 				flushToFiles(id)
 			}
-			if state.Conf.UploadToDb {
+			if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
 				conn := utils.GetDbConnection(state.Credentials)
 				flushToDb(conn, id)
 			}
@@ -45,7 +45,7 @@ func StatToCbFlush(flushFinal bool) {
 		idxDb := 0
 		// for id, doc
 		for _, doc := range state.CbDocs {
-			if state.Conf.UploadToDb {
+			if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
 				state.AsyncFlushToDbChannels[idxDb] <- doc.(map[string]interface{})
 				idxDb++
 				if idxDb >= int(state.Conf.ThreadsDbUpload) {
@@ -63,7 +63,7 @@ func flushToFiles(id string) {
 	doc := state.CbDocs[id]
 
 	docStr := utils.DocPrettyPrint(doc.(map[string]interface{}))
-	fileName := state.Conf.OutputFolder + "/" + id + ".json"
+	fileName := state.Conf.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + id + ".json"
 	err := os.WriteFile(fileName, []byte(docStr), 0o644)
 	if err != nil {
 		slog.Debug("Error writing output:" + fileName)

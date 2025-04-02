@@ -8,16 +8,9 @@
     "maxLinesToLoad": 150000,
     "maxDocIdLength": 200,
     "progressiveLargeDocIdPolicies": [ "SHA256", "REJECT_WIH_ERROR_LOG"],
-    "maxFilesInProcessChunk": 10,
-    "updateOnlyOnDocKeyCountChange": true,
-    "flushToDbDataSectionMaxCount": 5,
     "overWriteData": true,
-    "writeJSONsToFile": false,
-    "uploadToDb": true,
-    "outputFolder": "./output",
     "runNonThreaded": false,
     "threadsDbUpload": 32,
     "threadsMergeDocFetch": 4,
-    "channelBufferSizeNumberOfDocs": 1024,
-    "channelBufferSizeNumberOfFiles": 48 
+    "channelBufferSizeNumberOfDocs": 1024
 }
