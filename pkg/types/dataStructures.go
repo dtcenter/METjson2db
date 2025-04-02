@@ -36,26 +36,6 @@ type LoadSpec struct {
 	LoadNote string `json:"load_note"`
 }
 
-type Column struct {
-	Name string
-	Type string
-}
-
-type LineType struct {
-	LineType string
-	Columns  []Column
-}
-
-type DefSingleTypeColumns struct {
-	Names []string `json:"names"`
-	Type  string   `json:"type"`
-}
-
-type DefLineType struct {
-	LineType string                 `json:"lineType"`
-	Columns  []DefSingleTypeColumns `json:"columns"`
-}
-
 type ConfigJSON struct {
 	LogLevel                      string   `json:"LogLevel"`
 	RunMode                       string   `json:"runMode"`
