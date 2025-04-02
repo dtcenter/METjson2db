@@ -1,15 +1,26 @@
 # METdatacb
 
-## MET stat file to Couchbase JSON document converter and uploader
+# MET stat file to Couchbase JSON document converter and uploader
+This project is a GO language command-line program to generate Couchbase JSON documents 
+and/or
+upload these documents to Couchbase database.
+ 
 
-This project is a GO language command-line program to generate and/or upload MET
-stat file data to Couchbase JSON documents.  
+## Inline upload vs JSON archive generation
+There are two ways this program can be run. The run mode is specified in the settings.json file.
+Refer to documentation for a detailed description of settings.json 
+The 2 run modes are: 
+"runMode" : "DIRECT_LOAD_TO_DB"
+OR
+"runMode" : "CREATE_JSON_DOC_ARCHIVE"
+Please note that the setting:
+"overWriteData": false
+which enables merge functionality, wherein incoming data is merged with data already in the database
+is only available in run mode:
+"runMode" : "DIRECT_LOAD_TO_DB"
 
-# Purpose
-The purpose of METdadacb is to generate and optionally upload JSON documents conforming to MET Couchbase schema
-frm MET stat files
 
-# The 2-step process
+## The 2-step process
 STEP 1 : Generate line type definitions for a particular MET version
 STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
 
