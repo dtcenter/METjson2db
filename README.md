@@ -54,14 +54,45 @@ SQL++ statements for creating the required indexes are in : METdatacb/indexes
 See see section installing and configuring Couchbase for more information on creating indexes
 
 ## MET Couchbase Document format (data model)
-Describe in brief about header & data sections, data key used
+METplus output can generally be split into “header” fields, which describe the context of the statistics being generated, and
+“data” fields, which provide the actual statistics. For example, header fields could include parameters such as model, threshold, 
+region mask, etc, while data fields would include partial sums, contingency table counts, etc. In this couchbase METplus document 
+design, header fields are stored at the top level of the document, while data fields are stored in a “data” section, keyed by 
+forecast lead or some other delimiting value, like object ID for MODE data.
+### Indexes
+Depending on what kind of queries are required, one or more of the header field can be used to create an index.
+See .sql files in METdatacb/indexes for examples of index creation SQL scripts.
 
 # Installing and configuring Couchbase for METdatacb
 1. Have your system administrator install Couchbase Enterperise, Community or the Cloud managed service Capella
 2. Obtain the Web UI to Couchbase from them and admin credentials
 3. Log into Couchbase Web UI using admin credentials
-The following examples will be referencing a local Couchbase server at GSL, and its web UI.
+The following examples will be referencing a local Couchbase server at GSL (Enterprise Edition 7.6.2), and its web UI.
+Please note that instructions may be different for another Couchbase version. Please refer to Couchbase documentation
+for the correct instructions for your version.
+https://docs.couchbase.com/server/current/introduction/whats-new.html 
+Web UI URL for GSL on-prem Couchbase: 
+http://adb-cb1.gsd.esrl.noaa.gov:8091/ui/index.html
+## Create a non-admin user
+1. Open Couchbase Web UI using URL you obtained from your sys admin, in your browser of choice.
+NOTE: You may have to open this in an incognito window in some certificate issue situations.
+2. Login as Administrator.
+The main URL takes you to the dashboard
 ## Create Bucket, Scope and Collection(s)
+1. Open Couchbase Web UI using URL you obtained from your sys admin, in your browser of choice.
+NOTE: You may have to open this in an incognito window in some certificate issue situations.
+2. Login as Administrator.
+The main URL takes you to the dashboard
+3. On the left controls, click on "Buckets"
+4. On the top-right corner, click on "ADD BUCKET"
+5. Give bucket name, example: "metplusdata" (accept defaults for everyting else)
+6. Click on "Scopes and Collections" 
+7. Click on "_default" scope and then click on "Add Collection"
+8. Give collection a name, example: MET_default
+9. Edit your ~/credentials file and put the newly created bucket name,collection name, non-admin username and password in it.
+10. Edit your load_spec.json, and put collection name in it. NOTE: Collection name specified in ~/credentials can be 
+overridden in the load_spec.json file
+
 ## Create required indexes
 ## Couchbase index adviser
 

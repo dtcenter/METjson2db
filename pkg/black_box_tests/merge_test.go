@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package black_box_tests
 
 import (

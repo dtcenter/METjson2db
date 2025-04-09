@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
+	"github.com/NOAA-GSL/MET-parser/pkg/metLineTypeParser"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
@@ -117,7 +117,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		}
 	} else if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
 		// home, _ := os.UserHomeDir()
-		err := structColumnDefs.WriteJsonToCompressedFile(state.CbDocs, state.Conf.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		err := metLineTypeParser.WriteJsonToCompressedFile(state.CbDocs, state.Conf.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}

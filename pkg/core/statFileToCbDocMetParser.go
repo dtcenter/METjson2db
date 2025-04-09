@@ -9,8 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/structColumnDefs"
-	"github.com/NOAA-GSL/MET-parser/pkg/structColumnTypes"
+	"github.com/NOAA-GSL/MET-parser/pkg/metLineTypeParser"
 
 	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
@@ -29,7 +28,7 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 	// Put your own code here in this method but always return this exact error if the document is not found
 	slog.Debug(fmt.Sprintf("getMissingExternalDocForId(%v)", state.METParserNewDocId))
 	state.METParserNewDocId = id
-	return nil, fmt.Errorf("%s: %s", structColumnTypes.DOC_NOT_FOUND, id)
+	return nil, fmt.Errorf("%s: %s", metLineTypeParser.DOC_NOT_FOUND, id)
 }
 
 func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
@@ -57,7 +56,8 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		}
 		dataLine := lines[line]
 		state.METParserNewDocId = ""
-		doc, err = structColumnDefs.ParseLine(headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
+		// TODO: from command line, document it
+		doc, err = metLineTypeParser.ParseLine("Dataset000", headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
 		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.Conf.OverWriteData, state.METParserNewDocId))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
