@@ -117,7 +117,44 @@ Make sure of the following:
 3. Modify load_spec.json to match your input data files, or use "recursive with file pattern regex match", as given
 in examples below.
 
+### METdatacb runtime state setup
+METdatacb runtime state is controlled by the following:
+1. Credentials file, which defaults to ~/credentials
+This file sets the following:
+1.a Couchbase URL, bucket, scope and default collection
+1.b Connection username and password 
+A sample credentials file is available in: METdatacb/credentials.template
 
+2. Configuration file, which defaults to "./settings.json"
+Unless overridden in the command line, the default file is 'settings.json' in the METdadacb run folder.
+
+2.a logLevel   
+Options are: ["DEBUG", "INFO", "WARN", "ERROR"]
+This sets the METdadacb log level. Please set to ERROR for production
+
+2.b runMode
+Options are:
+
+DIRECT_LOAD_TO_DB - METdadacb will load input stat files in-line, at run time, to the Couchbase database.
+Please note that the merge mode, when set using [overWriteData: false], is only available in DIRECT_LOAD_TO_DB mode.
+
+CREATE_JSON_DOC_ARCHIVE - METdadacb will create a gzip archive of Couchbase json documents from input stat files,
+which can then be uploaded to Couchbase later using a cbimport command line tool.
+Please note that the merge mode, when set using [overWriteData: false], is NOT available in CREATE_JSON_DOC_ARCHIVE mode,
+since the cbimport tool will overwrite existing documents in the database that has same ID as incoming documents.
+In this mode, the setting:
+"jsonArchiveFilePathAndPrefix" :"/scratch/METdatacb_out_"
+sets the folder and file prefix for the generated archive file.  At the end of a succesfull run, the output file name 
+will looks like below (prefix + timestamp):
+/scratch/METdatacb_out_2025-04-09T14:40:11-06:00
+
+
+
+
+
+
+
+### METdatacb run sample commands
 Currently the following works:
 
 ```shell
@@ -144,11 +181,6 @@ brew install golangci-lint # If not installed already
 golangci-lint run
 ```
 
-## Configuration "settings.json"
-TODO - document settings.json 
-
-
-## Example run command-lines
 ```shell
 cd METdatacb
 go build .
