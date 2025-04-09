@@ -94,7 +94,10 @@ The main URL takes you to the dashboard
 overridden in the load_spec.json file
 
 ## Create required indexes
+All the index creation SQL scripts are in METdatacb/indexes
+Most, if not all, of these index scripts are required by specific MET apps, so this list will grow as more MET Couchbase apps are added.
 ## Couchbase index adviser
+Couchbase has an index adviser.  The best way to use this is to run a query in the web UI. When a query is run, Couchbase will generate an index advice which will list, new indexes, if any, that may be needed to speed up the query.
 
 # Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
