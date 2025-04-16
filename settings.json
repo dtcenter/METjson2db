@@ -5,7 +5,6 @@
     "runMode0" : "DIRECT_LOAD_TO_DB",
     "runMode_doc" : ["DIRECT_LOAD_TO_DB", "CREATE_JSON_DOC_ARCHIVE"],
     "jsonArchiveFilePathAndPrefix" :"/scratch/METdatacb_out_",
-    "maxLinesToLoad": 150000,
     "maxDocIdLength": 200,
     "progressiveLargeDocIdPolicies": [ "SHA256", "REJECT_WIH_ERROR_LOG"],
     "overWriteData": true,

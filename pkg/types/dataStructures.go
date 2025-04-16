@@ -40,7 +40,6 @@ type ConfigJSON struct {
 	LogLevel                      string   `json:"LogLevel"`
 	RunMode                       string   `json:"runMode"`
 	JsonArchiveFilePathAndPrefix  string   `json:"jsonArchiveFilePathAndPrefix"`
-	MaxLinesToLoad                int64    `json:"maxLinesToLoad"`
 	MaxDocIdLength                int64    `json:"maxDocIdLength"`
 	ProgressiveLargeDocIdPolicies []string `json:"progressiveLargeDocIdPolicies"`
 	OverWriteData                 bool     `json:"overWriteData"`

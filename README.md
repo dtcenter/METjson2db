@@ -97,7 +97,8 @@ overridden in the load_spec.json file
 All the index creation SQL scripts are in METdatacb/indexes
 Most, if not all, of these index scripts are required by specific MET apps, so this list will grow as more MET Couchbase apps are added.
 ## Couchbase index adviser
-Couchbase has an index adviser.  The best way to use this is to run a query in the web UI. When a query is run, Couchbase will generate an index advice which will list, new indexes, if any, that may be needed to speed up the query.
+Couchbase has an index adviser.  The best way to use this is to run a query in the web UI. When a query is run, Couchbase will 
+generate an index advice which will list, new indexes, if any, that may be needed to speed up the query.
 
 # Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
@@ -148,7 +149,34 @@ sets the folder and file prefix for the generated archive file.  At the end of a
 will looks like below (prefix + timestamp):
 /scratch/METdatacb_out_2025-04-09T14:40:11-06:00
 
+2.c maxDocIdLength
+As of Couchbase version 7.6.2, the max length of document ID is 250 characters.
+The document IDs are generated from the header fields of a document, so this will
+cause an error to be flagged in any ID exceeds this setting.
 
+2.d overWriteData
+NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB
+If overWriteData = false, this will trigger a database merge mode.
+In merge mode, before a document is uploaded to the database, if a document exists in the database with the same ID,
+that document is fetched from the database, the a merged with the incoming document as per logic below:
+a) Header fields which exist in the database document, but missing from incoming document, it is added to incoming document
+b) If a data section key exists in the database document, but missing from incoming document, it is added to incoming documentß
+
+2.c runNonThreaded
+NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB
+The default run mode is multi-threaded, where multiple concurrent database connections are used for inserting documents to the databse
+If  runNonThreaded is set to true, the runtime will be single threaded.  This is mainly only useful in debugging the code.
+
+2.d threadsDbUpload
+NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB and runNonThreaded = false
+Specifies the number of database upload threads
+
+2.e threadsMergeDocFetch
+NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB and runNonThreaded = false and overWriteData = false
+Specifies the number of concurrent threads used to fetch existing documents from database for merge
+
+2.f channelBufferSizeNumberOfDocs
+GO uses channels to ficilitate data transfer to threads.  This sets the max buffer size for each such channel.
 
 
 
