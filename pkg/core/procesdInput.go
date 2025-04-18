@@ -11,9 +11,9 @@ import (
 
 	"github.com/NOAA-GSL/METstat2json/pkg/metLineTypeParser"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/async"
-	"github.com/NOAA-GSL/METdatacb/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/pkg/types"
+	"github.com/NOAA-GSL/METjson2db/pkg/async"
+	"github.com/NOAA-GSL/METjson2db/pkg/state"
+	"github.com/NOAA-GSL/METjson2db/pkg/types"
 )
 
 // init runs before main() is evaluated

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/core"
+	"github.com/NOAA-GSL/METjson2db/pkg/core"
 )
 
 func TestParseLoadSpec(t *testing.T) {

@@ -11,10 +11,10 @@ import (
 
 	"github.com/NOAA-GSL/METstat2json/pkg/metLineTypeParser"
 
-	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
-	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"
+	// "github.com/NOAA-GSL/METjson2db/pkg/structColumnDefs"
+	// "github.com/NOAA-GSL/METjson2db/pkg/structColumnTypes"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/state"
+	"github.com/NOAA-GSL/METjson2db/pkg/state"
 )
 
 // init runs before main() is evaluated

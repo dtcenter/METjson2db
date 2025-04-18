@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/core"
-	"github.com/NOAA-GSL/METdatacb/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/pkg/utils"
+	"github.com/NOAA-GSL/METjson2db/pkg/core"
+	"github.com/NOAA-GSL/METjson2db/pkg/state"
+	"github.com/NOAA-GSL/METjson2db/pkg/utils"
 )
 
 func TestMerge(t *testing.T) {

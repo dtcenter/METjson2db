@@ -1,4 +1,4 @@
-module github.com/NOAA-GSL/METdatacb
+module github.com/NOAA-GSL/METjson2db
 
 go 1.23.7
 

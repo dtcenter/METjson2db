@@ -10,15 +10,15 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/core"
-	"github.com/NOAA-GSL/METdatacb/pkg/state"
+	"github.com/NOAA-GSL/METjson2db/pkg/core"
+	"github.com/NOAA-GSL/METjson2db/pkg/state"
 )
 
 func main() {
 	// Uncomment following line to enable logging
 	// gocb.SetLogger(gocb.VerboseStdioLogger())
 
-	slog.Info("METdatacb:main()")
+	slog.Info("METjson2db:main()")
 
 	home, _ := os.UserHomeDir()
 	var credentialsFilePath string

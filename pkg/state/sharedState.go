@@ -3,7 +3,7 @@ package state
 import (
 	"sync"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/types"
+	"github.com/NOAA-GSL/METjson2db/pkg/types"
 )
 
 var (
