@@ -19,7 +19,7 @@ is only available in run mode:
 
 ## The 2-step process
 ### STEP 1 : Generate line type definitions for a particular MET version
-This step needs to be done once for each MET version, and the genrerated code checked in to MET-parser git repo:main
+This step needs to be done once for each MET version, and the genrerated code checked in to METstat2json git repo:main
 Refer to documentation section "Generating LINE_TYPE definitions" for details on how to do this
 ### STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
 See section "Running the METdatacb to generate and/or upload JSON documents"
@@ -102,14 +102,14 @@ generate an index advice which will list, new indexes, if any, that may be neede
 
 # Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
-git clone https://github.com/NOAA-GSL/MET-PARSER
+git clone https://github.com/NOAA-GSL/METstat2json
 make sure you are in the main branch
 cd  <repo path>/pkg/buildHeaderLineTypes
 go run . > /tmp/types.go
 cp /tmp/types.go ../structColumnTypes/structColumnTypes.go
 Generated definitions are in: <repo path>/pkg/structColumnTypes/structColumnTypes.go
 Once the line type definitions are thus updated using the steps above, changes must be 
-checked into main branch, so that METdatacb will reference the right MET-parser source files
+checked into main branch, so that METdatacb will reference the right METstat2json source files
 
 ## Running the METdatacb to generate and/or upload JSON documents 
 Make sure of the following:

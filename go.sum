@@ -1,7 +1,7 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/NOAA-GSL/MET-parser v0.1.9 h1:+Cyf8WQd6evBahyn9+VcFp8uwj1ISDn/fbab9po1eng=
-github.com/NOAA-GSL/MET-parser v0.1.9/go.mod h1:OZVbYSWvEoRAaHyqQ67+sWfqW5vqd3kP32Zi7dMqwZg=
+github.com/NOAA-GSL/METstat2json v0.1.11 h1:FwtcrxhJPmvDzfa0hCi6c8drj112vcaq1pGz63y2Z68=
+github.com/NOAA-GSL/METstat2json v0.1.11/go.mod h1:On55cHsapSSb8UMX0ZMrP8BoKJiZ3+AfHAUiWDFzQbM=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

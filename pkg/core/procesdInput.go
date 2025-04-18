@@ -9,7 +9,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/metLineTypeParser"
+	"github.com/NOAA-GSL/METstat2json/pkg/metLineTypeParser"
 
 	"github.com/NOAA-GSL/METdatacb/pkg/async"
 	"github.com/NOAA-GSL/METdatacb/pkg/state"
