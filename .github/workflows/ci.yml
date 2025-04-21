@@ -49,7 +49,7 @@ jobs:
         id: meta
         with:
           images: |
-            ghcr.io/noaa-gsl/METdatacb
+            ghcr.io/noaa-gsl/METjson2db
           tags: |
             type=ref,event=branch
             type=ref,event=pr

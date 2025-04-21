@@ -1,4 +1,4 @@
-# METdatacb
+# METjson2db
 
 # Version v0.1.0
 
@@ -21,10 +21,10 @@ is only available in run mode:
 
 ## The 2-step process
 ### STEP 1 : Generate line type definitions for a particular MET version
-This step needs to be done once for each MET version, and the genrerated code checked in to MET-parser git repo:main
+This step needs to be done once for each MET version, and the genrerated code checked in to METstat2json git repo:main
 Refer to documentation section "Generating LINE_TYPE definitions" for details on how to do this
 ### STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
-See section "Running the METdatacb to generate and/or upload JSON documents"
+See section "Running the METjson2db to generate and/or upload JSON documents"
 
 # Couchbase
 Unlike relational databases like MySQL, PostGres etc, Couchbase is a JSON document based database where
@@ -43,7 +43,7 @@ https://docs.couchbase.com/cloud/clusters/data-service/about-buckets-scopes-coll
 For MET data, once this hierrarchy is created in the database server (see section installing and configuring Couchbase)
 the information needs to be configured in a credentials file, that lives external to github repository for security reasons.
 The MET data uploader defaults to ~/credentials for this file, but can be overridden in the command line.
-See METdatacb/credentials.template for the content and syntax of this creadentials file.
+See METjson2db/credentials.template for the content and syntax of this creadentials file.
 The Collection itself can be overridden in the load_spec.json file, thus allowing for data to be stored in separate collections
 for research and comparison purposes.
 
@@ -52,7 +52,7 @@ Couchbase queries are similar to SQL with some additional sematics for dealing w
 See this link for SQL++ documentation:
 https://docs.couchbase.com/server/current/n1ql/query.html 
 Indexes serve similar purpose that in relational databases, namely, to speed up specific queries.
-SQL++ statements for creating the required indexes are in : METdatacb/indexes
+SQL++ statements for creating the required indexes are in : METjson2db/indexes
 See see section installing and configuring Couchbase for more information on creating indexes
 
 ## MET Couchbase Document format (data model)
@@ -63,9 +63,9 @@ design, header fields are stored at the top level of the document, while data fi
 forecast lead or some other delimiting value, like object ID for MODE data.
 ### Indexes
 Depending on what kind of queries are required, one or more of the header field can be used to create an index.
-See .sql files in METdatacb/indexes for examples of index creation SQL scripts.
+See .sql files in METjson2db/indexes for examples of index creation SQL scripts.
 
-# Installing and configuring Couchbase for METdatacb
+# Installing and configuring Couchbase for METjson2db
 1. Have your system administrator install Couchbase Enterperise, Community or the Cloud managed service Capella
 2. Obtain the Web UI to Couchbase from them and admin credentials
 3. Log into Couchbase Web UI using admin credentials
@@ -96,7 +96,7 @@ The main URL takes you to the dashboard
 overridden in the load_spec.json file
 
 ## Create required indexes
-All the index creation SQL scripts are in METdatacb/indexes
+All the index creation SQL scripts are in METjson2db/indexes
 Most, if not all, of these index scripts are required by specific MET apps, so this list will grow as more MET Couchbase apps are added.
 ## Couchbase index adviser
 Couchbase has an index adviser.  The best way to use this is to run a query in the web UI. When a query is run, Couchbase will 
@@ -104,29 +104,29 @@ generate an index advice which will list, new indexes, if any, that may be neede
 
 # Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
-git clone https://github.com/NOAA-GSL/MET-PARSER
+git clone https://github.com/NOAA-GSL/METstat2json
 make sure you are in the main branch
 cd  <repo path>/pkg/buildHeaderLineTypes
 go run . > /tmp/types.go
 cp /tmp/types.go ../structColumnTypes/structColumnTypes.go
 Generated definitions are in: <repo path>/pkg/structColumnTypes/structColumnTypes.go
 Once the line type definitions are thus updated using the steps above, changes must be 
-checked into main branch, so that METdatacb will reference the right MET-parser source files
+checked into main branch, so that METjson2db will reference the right METstat2json source files
 
-## Running the METdatacb to generate and/or upload JSON documents 
+## Running the METjson2db to generate and/or upload JSON documents 
 Make sure of the following:
-1. METdatacb is configured as detailed in section "Configuration "settings.json"
+1. METjson2db is configured as detailed in section "Configuration "settings.json"
 2. A default credential file exists in your home folder ~/credentials or provide one on command line
 3. Modify load_spec.json to match your input data files, or use "recursive with file pattern regex match", as given
 in examples below.
 
-### METdatacb runtime state setup
-METdatacb runtime state is controlled by the following:
+### METjson2db runtime state setup
+METjson2db runtime state is controlled by the following:
 1. Credentials file, which defaults to ~/credentials
 This file sets the following:
 1.a Couchbase URL, bucket, scope and default collection
 1.b Connection username and password 
-A sample credentials file is available in: METdatacb/credentials.template
+A sample credentials file is available in: METjson2db/credentials.template
 
 2. Configuration file, which defaults to "./settings.json"
 Unless overridden in the command line, the default file is 'settings.json' in the METdadacb run folder.
@@ -146,10 +146,10 @@ which can then be uploaded to Couchbase later using a cbimport command line tool
 Please note that the merge mode, when set using [overWriteData: false], is NOT available in CREATE_JSON_DOC_ARCHIVE mode,
 since the cbimport tool will overwrite existing documents in the database that has same ID as incoming documents.
 In this mode, the setting:
-"jsonArchiveFilePathAndPrefix" :"/scratch/METdatacb_out_"
+"jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out_"
 sets the folder and file prefix for the generated archive file.  At the end of a succesfull run, the output file name 
 will looks like below (prefix + timestamp):
-/scratch/METdatacb_out_2025-04-09T14:40:11-06:00
+/scratch/METjson2db_out_2025-04-09T14:40:11-06:00
 
 2.c maxDocIdLength
 As of Couchbase version 7.6.2, the max length of document ID is 250 characters.
@@ -184,7 +184,7 @@ GO uses channels to ficilitate data transfer to threads.  This sets the max buff
 
 
 
-### METdatacb run sample commands
+### METjson2db run sample commands
 Currently the following works:
 
 ```shell
@@ -212,7 +212,7 @@ golangci-lint run
 ```
 
 ```shell
-cd METdatacb
+cd METjson2db
 go build .
 # run using ~/credentials, ./settings.json , ./load_spec.json 
 go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json

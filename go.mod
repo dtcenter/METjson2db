@@ -1,8 +1,9 @@
-module github.com/NOAA-GSL/METdatacb
+module github.com/NOAA-GSL/METjson2db
 
 go 1.23.7
 
 require (
+	github.com/NOAA-GSL/METstat2json v0.1.11
 	github.com/couchbase/gocb/v2 v2.9.4
 	github.com/google/uuid v1.6.0
 	github.com/relvacode/iso8601 v1.6.0

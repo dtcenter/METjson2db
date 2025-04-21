@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/NOAA-GSL/METdatacb/pkg/state"
-	"github.com/NOAA-GSL/METdatacb/pkg/types"
-	"github.com/NOAA-GSL/METdatacb/pkg/utils"
+	"github.com/NOAA-GSL/METjson2db/pkg/state"
+	"github.com/NOAA-GSL/METjson2db/pkg/types"
+	"github.com/NOAA-GSL/METjson2db/pkg/utils"
 )
 
 // init runs before main() is evaluated
