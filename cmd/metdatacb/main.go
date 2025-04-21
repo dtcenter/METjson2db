@@ -43,6 +43,9 @@ func main() {
 	var fileNameRegEx string
 	flag.StringVar(&fileNameRegEx, "r", "", "input filename match regex")
 
+	var datasetName string
+	flag.StringVar(&datasetName, "d", "", "dataset name")
+
 	flag.Parse()
 
 	loadSpec, err := core.ParseLoadSpec(loadSpecFilePath)

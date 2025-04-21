@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/NOAA-GSL/MET-parser/pkg/metLineTypeParser"
+	"github.com/NOAA-GSL/METparser/pkg/metLineTypeParser"
 
 	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnDefs"
 	// "github.com/NOAA-GSL/METdatacb/pkg/structColumnTypes"

@@ -1,5 +1,7 @@
 # METdatacb
 
+# Version v0.1.0
+
 # MET stat files to Couchbase JSON document converter and uploader
 This project is a GO language command-line program to generate Couchbase JSON documents 
 and/or upload these documents to Couchbase database.
