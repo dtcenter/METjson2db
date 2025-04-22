@@ -27,11 +27,11 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 	start := time.Now()
 	state.StateReset()
 
-	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
-		if !state.Conf.RunNonThreaded {
-			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
+		if !state.LoadSpec.RunNonThreaded {
+			for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
 				di := di
-				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.Conf.ChannelBufferSizeNumberOfDocs))
+				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
 				state.AsyncWaitGroupFlushToDb.Add(1)
 				go func() {
 					defer state.AsyncWaitGroupFlushToDb.Done()
@@ -40,10 +40,10 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 				}()
 			}
 
-			if false == state.Conf.OverWriteData {
-				for di := 0; di < int(state.Conf.ThreadsMergeDocFetch); di++ {
+			if false == state.LoadSpec.OverWriteData {
+				for di := 0; di < int(state.LoadSpec.ThreadsMergeDocFetch); di++ {
 					di := di
-					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.Conf.ChannelBufferSizeNumberOfDocs))
+					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
 					go func() {
 						defer state.AsyncWaitGroupMergeDocFetch.Done()
@@ -63,9 +63,9 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 	dbTotalCount := int64(0)
 	dbTotalErrors := int64(0)
 
-	if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
-		if false == state.Conf.OverWriteData {
-			for fi := 0; fi < int(state.Conf.ThreadsMergeDocFetch); fi++ {
+	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
+		if false == state.LoadSpec.OverWriteData {
+			for fi := 0; fi < int(state.LoadSpec.ThreadsMergeDocFetch); fi++ {
 				state.AsyncMergeDocFetchChannels[fi] <- "endMarker"
 			}
 			state.AsyncWaitGroupMergeDocFetch.Wait()
@@ -76,14 +76,14 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 			preDbLoadCallback()
 		}
 		StatToCbFlush(true)
-		if !state.Conf.RunNonThreaded {
+		if !state.LoadSpec.RunNonThreaded {
 			slog.Debug("Waiting for threads to finish ...")
 
 			// send end-marker doc to all channels
 			endMarkerDoc := make(map[string]interface{})
 			endMarkerDoc["endMarker"] = "endMarker"
 
-			for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+			for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
 				state.AsyncFlushToDbChannels[di] <- endMarkerDoc
 			}
 
@@ -92,7 +92,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 
 			// get return info from threads
 			/*
-				for fi := 0; fi < int(state.Conf.ThreadsWriteToDisk); fi++ {
+				for fi := 0; fi < int(state.LoadSpec.ThreadsWriteToDisk); fi++ {
 					doc, ok := <-state.AsyncFlushToFileChannels[fi]
 					if ok && len(doc.HeaderFields) > 0 {
 						slog.Debug("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
@@ -103,7 +103,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 					}
 				}
 
-				for di := 0; di < int(state.Conf.ThreadsDbUpload); di++ {
+				for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
 					doc, ok := <-state.AsyncFlushToDbChannels[di]
 					if ok && len(doc.HeaderFields) > 0 {
 						slog.Debug("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
@@ -115,9 +115,9 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 				}
 			*/
 		}
-	} else if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
+	} else if state.LoadSpec.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
 		// home, _ := os.UserHomeDir()
-		err := metLineTypeParser.WriteJsonToCompressedFile(state.CbDocs, state.Conf.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		err := metLineTypeParser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}
@@ -129,27 +129,6 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		"run-time(ms)", time.Since(start).Milliseconds())
 	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)
 	return nil
-}
-
-func ParseConfig(file string) (types.ConfigJSON, error) {
-	slog.Debug("parseConfig(" + file + ")")
-
-	conf := types.ConfigJSON{}
-	configFile, err := os.Open(file)
-	if err != nil {
-		slog.Error("opening config file:" + err.Error())
-		configFile.Close()
-		return conf, err
-	}
-	defer configFile.Close()
-
-	jsonParser := json.NewDecoder(configFile)
-	if err = jsonParser.Decode(&conf); err != nil {
-		slog.Error("parsing config file:" + err.Error())
-		return conf, err
-	}
-
-	return conf, nil
 }
 
 func GetCredentials(credentialsFilePath string) types.Credentials {

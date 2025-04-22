@@ -42,7 +42,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		//state.CbDocMutexMap[id].Lock()
 		// slog.Debug("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 
-		if false == state.Conf.OverWriteData && state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+		if false == state.LoadSpec.OverWriteData && state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 			state.CbMergeDbDocsMutex.RLock()
 			tmpDbDoc := state.CbMergeDbDocs[id]
 			state.CbMergeDbDocsMutex.RUnlock()

@@ -115,7 +115,7 @@ checked into main branch, so that METjson2db will reference the right METstat2js
 
 ## Running the METjson2db to generate and/or upload JSON documents 
 Make sure of the following:
-1. METjson2db is configured as detailed in section "Configuration "settings.json"
+1. METjson2db is configured as detailed in section "Configuration "load_spec.json"
 2. A default credential file exists in your home folder ~/credentials or provide one on command line
 3. Modify load_spec.json to match your input data files, or use "recursive with file pattern regex match", as given
 in examples below.
@@ -128,8 +128,8 @@ This file sets the following:
 1.b Connection username and password 
 A sample credentials file is available in: METjson2db/credentials.template
 
-2. Configuration file, which defaults to "./settings.json"
-Unless overridden in the command line, the default file is 'settings.json' in the METdadacb run folder.
+2. load_spec file, which defaults to "./load_spec.json"
+Unless overridden in the command line, the default file is 'load_spec.json' in the METdadacb run folder.
 
 2.a logLevel   
 Options are: ["DEBUG", "INFO", "WARN", "ERROR"]
@@ -214,26 +214,26 @@ golangci-lint run
 ```shell
 cd METjson2db
 go build .
-# run using ~/credentials, ./settings.json , ./load_spec.json 
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json
+# run using ~/credentials, ./load_spec.json 
+go run ./cmd/... -c ~/credentials -l ./load_spec.json
 # run on adb-cb1 (with non-default credentials file)
 go run ./cmd/... -c ~/credentials.MET
 # to test for race conditions, add "-race" as below
-go run -race ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json
-# run with specific credentials,settings, load_spec and/or for a specific stat file
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -f /Users/gopa.padmanabhan/scratch/data/MET/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat
+go run -race ./cmd/... -c ~/credentials -l ./load_spec.json
+# run with specific credentials, load_spec and/or for a specific stat file
+go run ./cmd/... -c ~/credentials -l ./load_spec.json -f /Users/gopa.padmanabhan/scratch/data/MET/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat
 # if -f option is specified, ignores load_spec input files
 
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -f ./test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_240000L_20240203_120000V.stat
+go run ./cmd/... -c ~/credentials -l ./load_spec.json -f ./test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_240000L_20240203_120000V.stat
 
 # Output will be in ./outputs with file name with extension as json, like: grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
 
 # run with specific credentials,settings and/or for all stat files in a folder
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i ./test_data/
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/20241104-06z/grid_stat
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
+go run ./cmd/... -c ~/credentials -l ./load_spec.json -i ./test_data/
+go run ./cmd/... -c ~/credentials -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/20241104-06z/grid_stat
+go run ./cmd/... -c ~/credentials -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 # recursive with file pattern regex match
-go run ./cmd/... -c ~/credentials -s ./settings.json -l ./load_spec.json -I /Users/gopa.padmanabhan/scratch/data/MET/tc_data/tc_data/ -r ".tcst"
+go run ./cmd/... -c ~/credentials -l ./load_spec.json -I /Users/gopa.padmanabhan/scratch/data/MET/tc_data/tc_data/ -r ".tcst"
 # if -f,-F,-i OR -I options are specified, ignores load_spec input files
 ```
 

@@ -24,9 +24,6 @@ func main() {
 	var credentialsFilePath string
 	flag.StringVar(&credentialsFilePath, "c", home+"/credentials", "path to credentials file")
 
-	var settingsFilePath string
-	flag.StringVar(&settingsFilePath, "s", "./settings.json", "path to settings.json")
-
 	var loadSpecFilePath string
 	flag.StringVar(&loadSpecFilePath, "l", "./load_spec.json", "path to load_spec.json")
 
@@ -65,10 +62,8 @@ func main() {
 	}
 
 	if len(inputFile) > 0 {
-		slog.Debug("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
 		inputFiles = append(inputFiles, inputFile)
 	} else if len(inputFolder) > 0 {
-		slog.Debug("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolder:" + inputFolder)
 		// add all files in folder
 		files, err := os.ReadDir(inputFolder)
 		if err != nil {
@@ -81,7 +76,6 @@ func main() {
 		}
 
 	} else if len(inputFolderRecursive) > 0 {
-		slog.Debug("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFolderRecursive:" + inputFolderRecursive)
 		// add all files in folder
 		regEx := "(.*?)"
 		if len(fileNameRegEx) > 0 {
@@ -149,15 +143,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	state.Conf, err = core.ParseConfig(settingsFilePath)
-	if err != nil {
-		slog.Error("Unable to parse config")
-		return
-	}
-
 	level := slog.LevelError
 
-	switch state.Conf.LogLevel {
+	switch state.LoadSpec.LogLevel {
 	case "DEBUG":
 		level = slog.LevelDebug
 	case "INFO":

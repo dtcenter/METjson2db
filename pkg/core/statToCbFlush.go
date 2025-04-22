@@ -27,14 +27,14 @@ func StatToCbFlush(flushFinal bool) {
 		# Output location, configuration and logic
 	*/
 	flushCount := 0
-	if state.Conf.RunNonThreaded {
+	if state.LoadSpec.RunNonThreaded {
 		for id, _ := range state.CbDocs {
 			slog.Info("id:" + id)
-			//if flushFinal || int64(dataLen) >= int64(state.Conf.FlushToDbDataSectionMaxCount) {
-			if state.Conf.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
+			//if flushFinal || int64(dataLen) >= int64(state.LoadSpec.FlushToDbDataSectionMaxCount) {
+			if state.LoadSpec.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
 				flushToFiles(id)
 			}
-			if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+			if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 				conn := utils.GetDbConnection(state.Credentials)
 				flushToDb(conn, id)
 			}
@@ -45,10 +45,10 @@ func StatToCbFlush(flushFinal bool) {
 		idxDb := 0
 		// for id, doc
 		for _, doc := range state.CbDocs {
-			if state.Conf.RunMode == "DIRECT_LOAD_TO_DB" {
+			if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 				state.AsyncFlushToDbChannels[idxDb] <- doc.(map[string]interface{})
 				idxDb++
-				if idxDb >= int(state.Conf.ThreadsDbUpload) {
+				if idxDb >= int(state.LoadSpec.ThreadsDbUpload) {
 					idxDb = 0
 				}
 			}
@@ -63,7 +63,7 @@ func flushToFiles(id string) {
 	doc := state.CbDocs[id]
 
 	docStr := utils.DocPrettyPrint(doc.(map[string]interface{}))
-	fileName := state.Conf.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + id + ".json"
+	fileName := state.LoadSpec.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + id + ".json"
 	err := os.WriteFile(fileName, []byte(docStr), 0o644)
 	if err != nil {
 		slog.Debug("Error writing output:" + fileName)
@@ -83,7 +83,7 @@ func flushToDb(conn types.CbConnection, id string) {
 		return
 	}
 
-	if state.Conf.OverWriteData {
+	if state.LoadSpec.OverWriteData {
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 		_, err := conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {

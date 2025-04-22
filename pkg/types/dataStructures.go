@@ -23,21 +23,10 @@ type Metadata []struct {
 }
 
 type LoadSpec struct {
-	Email            string `json:"email"`
-	TargetCollection string `json:"target_collection"`
-	DatasetName      string `json:"dataset_name"`
-	Verbose          bool   `json:"verbose"`
-	FolderTmpl       string `json:"folder_tmpl"`
-	LoadVal          struct {
-		Field []struct {
-			Val  StrArray `json:"val"`
-			Name string   `json:"_name"`
-		} `json:"field"`
-	} `json:"load_val"`
-	LoadNote string `json:"load_note"`
-}
-
-type ConfigJSON struct {
+	Email                         string   `json:"email"`
+	TargetCollection              string   `json:"target_collection"`
+	DatasetName                   string   `json:"dataset_name"`
+	Verbose                       bool     `json:"verbose"`
 	LogLevel                      string   `json:"LogLevel"`
 	RunMode                       string   `json:"runMode"`
 	JsonArchiveFilePathAndPrefix  string   `json:"jsonArchiveFilePathAndPrefix"`
@@ -48,6 +37,14 @@ type ConfigJSON struct {
 	ThreadsDbUpload               int64    `json:"threadsDbUpload"`
 	ThreadsMergeDocFetch          int64    `json:"threadsMergeDocFetch"`
 	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
+	FolderTmpl                    string   `json:"folder_tmpl"`
+	LoadVal                       struct {
+		Field []struct {
+			Val  StrArray `json:"val"`
+			Name string   `json:"_name"`
+		} `json:"field"`
+	} `json:"load_val"`
+	LoadNote string `json:"load_note"`
 }
 
 type Credentials struct {
