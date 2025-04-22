@@ -1,6 +1,6 @@
 # METjson2db
 
-# Version v0.1.0
+## Version v0.1.0
 
 # MET stat files to Couchbase JSON document converter and uploader
 This project is a GO language command-line program to generate Couchbase JSON documents 
@@ -120,22 +120,26 @@ Make sure of the following:
 3. Modify load_spec.json to match your input data files, or use "recursive with file pattern regex match", as given
 in examples below.
 
-### METjson2db runtime state setup
-METjson2db runtime state is controlled by the following:
-1. Credentials file, which defaults to ~/credentials
+# METjson2db runtime state setup
+METjson2db runtime state is controlled by the following, each of which is described in detail in respective sections.
+1. Credentials file
+2. load_spec file
+3. Command line parameters
+
+## Credentials file, which defaults to ~/credentials
 This file sets the following:
-1.a Couchbase URL, bucket, scope and default collection
-1.b Connection username and password 
+1. Couchbase URL, bucket, scope and default collection
+2. Connection username and password 
 A sample credentials file is available in: METjson2db/credentials.template
 
-2. load_spec file, which defaults to "./load_spec.json"
+## load_spec file, which defaults to "./load_spec.json"
 Unless overridden in the command line, the default file is 'load_spec.json' in the METdadacb run folder.
 
-2.a logLevel   
+### logLevel   
 Options are: ["DEBUG", "INFO", "WARN", "ERROR"]
 This sets the METdadacb log level. Please set to ERROR for production
 
-2.b runMode
+### runMode
 Options are:
 
 DIRECT_LOAD_TO_DB - METdadacb will load input stat files in-line, at run time, to the Couchbase database.
@@ -151,12 +155,14 @@ sets the folder and file prefix for the generated archive file.  At the end of a
 will looks like below (prefix + timestamp):
 /scratch/METjson2db_out_2025-04-09T14:40:11-06:00
 
-2.c maxDocIdLength
+METADATA_UPDATE - METdatacb will update the metadata in the database from currently existing data documents in the database.
+
+### maxDocIdLength
 As of Couchbase version 7.6.2, the max length of document ID is 250 characters.
 The document IDs are generated from the header fields of a document, so this will
 cause an error to be flagged in any ID exceeds this setting.
 
-2.d overWriteData
+### overWriteData
 NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB
 If overWriteData = false, this will trigger a database merge mode.
 In merge mode, before a document is uploaded to the database, if a document exists in the database with the same ID,
@@ -164,24 +170,32 @@ that document is fetched from the database, the a merged with the incoming docum
 a) Header fields which exist in the database document, but missing from incoming document, it is added to incoming document
 b) If a data section key exists in the database document, but missing from incoming document, it is added to incoming documentß
 
-2.c runNonThreaded
+### runNonThreaded
 NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB
 The default run mode is multi-threaded, where multiple concurrent database connections are used for inserting documents to the databse
 If  runNonThreaded is set to true, the runtime will be single threaded.  This is mainly only useful in debugging the code.
 
-2.d threadsDbUpload
+### threadsDbUpload
 NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB and runNonThreaded = false
 Specifies the number of database upload threads
 
-2.e threadsMergeDocFetch
+### threadsMergeDocFetch
 NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB and runNonThreaded = false and overWriteData = false
 Specifies the number of concurrent threads used to fetch existing documents from database for merge
 
-2.f channelBufferSizeNumberOfDocs
+### channelBufferSizeNumberOfDocs
 GO uses channels to ficilitate data transfer to threads.  This sets the max buffer size for each such channel.
 
-
-
+## Command line parameters
+The following command line parameters, if supplied, overrides what is set in load_spec
+-c : credentials file
+-l : load_spec file
+-m : run mode
+-d : data set name
+-f : single stat file to process
+-i : process all files in this folder
+-I : process all files in this folder tree (recursive)
+-r : file name match regex
 
 
 ### METjson2db run sample commands

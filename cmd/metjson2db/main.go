@@ -27,6 +27,9 @@ func main() {
 	var loadSpecFilePath string
 	flag.StringVar(&loadSpecFilePath, "l", "./load_spec.json", "path to load_spec.json")
 
+	var runMode string
+	flag.StringVar(&loadSpecFilePath, "m", "", "run mode")
+
 	var inputFile string
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
 	var inputFiles []string
@@ -54,6 +57,10 @@ func main() {
 	// fmt.Println("LoadSpec:\n" + utils.JsonPrettyPrintStruct(loadSpec))
 	if len(datasetName) > 0 {
 		state.LoadSpec.DatasetName = datasetName
+	}
+
+	if len(runMode) > 0 {
+		state.LoadSpec.RunMode = runMode
 	}
 
 	if len(state.LoadSpec.DatasetName) > 10 {
