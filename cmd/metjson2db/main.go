@@ -59,6 +59,11 @@ func main() {
 		state.LoadSpec.DatasetName = datasetName
 	}
 
+	if len(state.LoadSpec.DatasetName) > 10 {
+		slog.Error("Dataset name must be less than 10 characters!")
+		return
+	}
+
 	if len(inputFile) > 0 {
 		slog.Debug("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
 		inputFiles = append(inputFiles, inputFile)
