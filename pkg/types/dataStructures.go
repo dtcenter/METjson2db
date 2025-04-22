@@ -25,6 +25,7 @@ type Metadata []struct {
 type LoadSpec struct {
 	Email            string `json:"email"`
 	TargetCollection string `json:"target_collection"`
+	DatasetName      string `json:"dataset_name"`
 	Verbose          bool   `json:"verbose"`
 	FolderTmpl       string `json:"folder_tmpl"`
 	LoadVal          struct {

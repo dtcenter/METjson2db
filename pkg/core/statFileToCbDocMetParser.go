@@ -57,7 +57,7 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		dataLine := lines[line]
 		state.METParserNewDocId = ""
 		// TODO: from command line, document it
-		doc, err = metLineTypeParser.ParseLine("Dataset000", headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
+		doc, err = metLineTypeParser.ParseLine(state.LoadSpec.DatasetName, headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
 		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.Conf.OverWriteData, state.METParserNewDocId))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))

@@ -48,12 +48,16 @@ func main() {
 
 	flag.Parse()
 
-	loadSpec, err := core.ParseLoadSpec(loadSpecFilePath)
+	var err error
+	state.LoadSpec, err = core.ParseLoadSpec(loadSpecFilePath)
 	if err != nil {
 		slog.Error("Unable to parse config")
 		return
 	}
 	// fmt.Println("LoadSpec:\n" + utils.JsonPrettyPrintStruct(loadSpec))
+	if len(datasetName) > 0 {
+		state.LoadSpec.DatasetName = datasetName
+	}
 
 	if len(inputFile) > 0 {
 		slog.Debug("meta-update, settings file:" + settingsFilePath + ",credentials file:" + credentialsFilePath + ",inputFile:" + inputFile)
@@ -99,21 +103,21 @@ func main() {
 
 		folders := []string{}
 
-		if !strings.Contains(loadSpec.FolderTmpl, "{") {
-			folders = append(folders, loadSpec.FolderTmpl)
+		if !strings.Contains(state.LoadSpec.FolderTmpl, "{") {
+			folders = append(folders, state.LoadSpec.FolderTmpl)
 		} else {
-			for vi := 0; vi < len(loadSpec.LoadVal.Field[0].Val); vi++ {
-				fname := "{" + loadSpec.LoadVal.Field[0].Name + "}"
-				if strings.Contains(loadSpec.FolderTmpl, fname) {
-					folders = append(folders, strings.Replace(loadSpec.FolderTmpl, fname, loadSpec.LoadVal.Field[0].Val[vi], -1))
+			for vi := 0; vi < len(state.LoadSpec.LoadVal.Field[0].Val); vi++ {
+				fname := "{" + state.LoadSpec.LoadVal.Field[0].Name + "}"
+				if strings.Contains(state.LoadSpec.FolderTmpl, fname) {
+					folders = append(folders, strings.Replace(state.LoadSpec.FolderTmpl, fname, state.LoadSpec.LoadVal.Field[0].Val[vi], -1))
 				}
 			}
 
-			for fi := 1; fi < len(loadSpec.LoadVal.Field); fi++ {
-				fname := "{" + loadSpec.LoadVal.Field[fi].Name + "}"
-				for vi := 0; vi < len(loadSpec.LoadVal.Field[fi].Val); vi++ {
+			for fi := 1; fi < len(state.LoadSpec.LoadVal.Field); fi++ {
+				fname := "{" + state.LoadSpec.LoadVal.Field[fi].Name + "}"
+				for vi := 0; vi < len(state.LoadSpec.LoadVal.Field[fi].Val); vi++ {
 					for i := 0; i < len(folders); i++ {
-						folders[i] = strings.Replace(folders[i], fname, loadSpec.LoadVal.Field[fi].Val[vi], -1)
+						folders[i] = strings.Replace(folders[i], fname, state.LoadSpec.LoadVal.Field[fi].Val[vi], -1)
 					}
 				}
 			}
@@ -167,9 +171,9 @@ func main() {
 	slog.SetDefault(logger)
 
 	state.Credentials = core.GetCredentials(credentialsFilePath)
-	if len(loadSpec.TargetCollection) > 0 {
-		slog.Debug("Using load_spec target collection:" + loadSpec.TargetCollection)
-		state.Credentials.Cb_collection = loadSpec.TargetCollection
+	if len(state.LoadSpec.TargetCollection) > 0 {
+		slog.Debug("Using load_spec target collection:" + state.LoadSpec.TargetCollection)
+		state.Credentials.Cb_collection = state.LoadSpec.TargetCollection
 	}
 	slog.Debug(fmt.Sprintf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection))
 
