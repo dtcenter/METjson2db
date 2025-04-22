@@ -70,7 +70,6 @@ func testMerge_Init() {
 	slog.Info("TestMerge_Init()")
 
 	home, _ := os.UserHomeDir()
-	state.Conf, _ = core.ParseConfig("../../settings.json")
 	state.Credentials = core.GetCredentials(home + "/credentials")
 
 	state.Credentials.Cb_collection = "MET_tests"

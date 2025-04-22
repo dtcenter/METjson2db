@@ -22,18 +22,3 @@ func TestParseLoadSpec(t *testing.T) {
 		return
 	}
 }
-
-func TestParseConfig(t *testing.T) {
-	slog.Info("TestParseConfig")
-
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Errorf("TestParseConfig error:%v", err)
-		return
-	}
-	_, err = core.ParseLoadSpec(dir + "/../../settings.json")
-	if err != nil {
-		t.Errorf("TestParseConfig error:%v", err)
-		return
-	}
-}
