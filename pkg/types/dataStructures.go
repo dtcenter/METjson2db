@@ -11,6 +11,7 @@ type CbConnection struct {
 	Bucket     *gocb.Bucket
 	Scope      *gocb.Scope
 	Collection *gocb.Collection
+	vxDBTARGET string
 }
 
 type StrArray []string

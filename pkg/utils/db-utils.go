@@ -43,6 +43,7 @@ func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 	conn.Bucket = conn.Cluster.Bucket(bucketName)
 	conn.Collection = conn.Bucket.Collection(collection)
 
+	conn.vxDBTARGET = cred.Cb_bucket + "." + cred.Cb_scope + "." + cred.Cb_collection
 	// slog.Debug("vxDBTARGET:" + conn.vxDBTARGET)
 
 	err = conn.Bucket.WaitUntilReady(5*time.Second, nil)
