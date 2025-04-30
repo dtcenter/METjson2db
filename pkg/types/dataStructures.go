@@ -11,16 +11,64 @@ type CbConnection struct {
 	Bucket     *gocb.Bucket
 	Scope      *gocb.Scope
 	Collection *gocb.Collection
-	vxDBTARGET string
+	VxDBTARGET string
 }
 
 type StrArray []string
 
-type Metadata []struct {
-	Name       string   `json:"name"`
-	App        string   `json:"app"`
-	SubDocType string   `json:"subDocType"`
-	DocType    StrArray `json:"docType"`
+type MdCounts struct {
+	Storms       StrArray `json:"storms"`
+	Truths       StrArray `json:"truths"`
+	Descriptions StrArray `json:"descriptions"`
+	FcstLens     StrArray `json:"fcst_lens"`
+	Levels       StrArray `json:"levels"`
+	Mindate      StrArray `json:"mindate"`
+	Maxdate      StrArray `json:"maxdate"`
+	Mumrecs      int      `json:"numrecs"`
+	Updated      string   `json:"updated"`
+}
+
+type StormId struct {
+	StormId  string   `json:"stormid"`
+	MdCounts MdCounts `json:"mdcounts"`
+}
+
+type Basin struct {
+	Basin    string    `json:"basin"`
+	StormIds []StormId `json:"stormids"`
+}
+
+type LineType struct {
+	LineType string  `json:"linetype"`
+	Basins   []Basin `json:"basins"`
+}
+
+type Model struct {
+	Model     string     `json:"model"`
+	LineTypes []LineType `json:"linetypes"`
+}
+
+type Dataset struct {
+	Dataset string  `json:"dataset"`
+	Models  []Model `json:"models"`
+}
+
+type Metadata struct {
+	ID       string    `json:"id"`
+	App      string    `json:"app"`
+	Type     string    `json:"type"`
+	SubType  string    `json:"subDocType"`
+	Version  string    `json:"VERSION"`
+	Datasets []Dataset `json:"datasets"`
+}
+
+type ConfigJSON struct {
+	Metadata []struct {
+		Name    string `json:"name"`
+		App     string `json:"app"`
+		SubType string `json:"subType"`
+		Version string `json:"VERSION"`
+	} `json:"metadata"`
 }
 
 type LoadSpec struct {

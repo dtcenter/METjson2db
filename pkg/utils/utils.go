@@ -22,7 +22,7 @@ func getTabbedString(count int) (rv string) {
 	return rv
 }
 
-func printStringArray(in []string) {
+func PrintStringArray(in []string) {
 	for i := 0; i < len(in); i++ {
 		fmt.Println(in[i])
 	}

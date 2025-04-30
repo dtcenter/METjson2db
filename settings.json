@@ -1,28 +1,11 @@
 {
     "metadata": [
         {
-            "name": "ceiling",
-            "app": "cb-ceiling",
-            "docType": [
-                "CTC"
-            ],
-            "subDocType": "CEILING"
-        },
-        {
-            "name": "visibility",
-            "app": "cb-visibility",
-            "docType": [
-                "CTC"
-            ],
-            "subDocType": "VISIBILITY"
-        },
-        {
-            "name": "surface",
-            "app": "cb-surface",
-            "docType": [
-                "SUMS"
-            ],
-            "subDocType": "SURFACE"
+            "name": "met-cyclone",
+            "app": "met-cyclone",
+            "type" :"DD",
+            "subtype": "MET",
+            "VERSION" : "V10.1.1"
         }
     ]
 }

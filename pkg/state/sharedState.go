@@ -8,6 +8,7 @@ import (
 
 var (
 	LoadSpec            = types.LoadSpec{}
+	Conf                = types.ConfigJSON{}
 	TotalLinesProcessed = 0
 	CbDocs              map[string]interface{}
 	CbDocsMutex         *sync.RWMutex

@@ -164,3 +164,24 @@ func ParseLoadSpec(file string) (types.LoadSpec, error) {
 
 	return ls, nil
 }
+
+func ParseConfig(file string) (types.ConfigJSON, error) {
+	slog.Debug("parseConfig(" + file + ")")
+
+	state.Conf = types.ConfigJSON{}
+	configFile, err := os.Open(file)
+	if err != nil {
+		slog.Error("opening config file", err.Error())
+		configFile.Close()
+		return state.Conf, err
+	}
+	defer configFile.Close()
+
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&state.Conf); err != nil {
+		slog.Error("parsing config file", err.Error())
+		return state.Conf, err
+	}
+
+	return state.Conf, nil
+}

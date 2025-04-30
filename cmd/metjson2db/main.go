@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/NOAA-GSL/METjson2db/pkg/core"
+	"github.com/NOAA-GSL/METjson2db/pkg/metadataUpdate"
 	"github.com/NOAA-GSL/METjson2db/pkg/state"
 )
 
@@ -28,7 +29,10 @@ func main() {
 	flag.StringVar(&loadSpecFilePath, "l", "./load_spec.json", "path to load_spec.json")
 
 	var runMode string
-	flag.StringVar(&loadSpecFilePath, "m", "", "run mode")
+	flag.StringVar(&runMode, "m", "", "run mode")
+
+	var settingsFilePath string
+	flag.StringVar(&settingsFilePath, "s", "./settings.json", "path to settings.json file")
 
 	var inputFile string
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
@@ -61,6 +65,44 @@ func main() {
 
 	if len(runMode) > 0 {
 		state.LoadSpec.RunMode = runMode
+	}
+
+	state.Conf, err = core.ParseConfig(settingsFilePath)
+	if err != nil {
+		log.Fatal("Unable to parse config")
+		return
+	}
+
+	level := slog.LevelError
+
+	switch state.LoadSpec.LogLevel {
+	case "DEBUG":
+		level = slog.LevelDebug
+	case "INFO":
+		level = slog.LevelInfo
+	case "WARN":
+		level = slog.LevelWarn
+	case "ERROR":
+		level = slog.LevelError
+	}
+	opts := &slog.HandlerOptions{
+		AddSource: true,
+		Level:     level,
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	slog.SetDefault(logger)
+
+	state.Credentials = core.GetCredentials(credentialsFilePath)
+	if len(state.LoadSpec.TargetCollection) > 0 {
+		slog.Debug("Using load_spec target collection:" + state.LoadSpec.TargetCollection)
+		state.Credentials.Cb_collection = state.LoadSpec.TargetCollection
+	}
+	slog.Debug(fmt.Sprintf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection))
+
+	if runMode == "METADATA_UPDATE" {
+		metadataUpdate.MetadataUpdate()
+		return
 	}
 
 	if len(state.LoadSpec.DatasetName) > 10 {
@@ -149,33 +191,6 @@ func main() {
 		slog.Error("Must specify either an input file (-f), input folder (-i) OR must have load_spec files!")
 		os.Exit(1)
 	}
-
-	level := slog.LevelError
-
-	switch state.LoadSpec.LogLevel {
-	case "DEBUG":
-		level = slog.LevelDebug
-	case "INFO":
-		level = slog.LevelInfo
-	case "WARN":
-		level = slog.LevelWarn
-	case "ERROR":
-		level = slog.LevelError
-	}
-	opts := &slog.HandlerOptions{
-		AddSource: true,
-		Level:     level,
-	}
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
-
-	state.Credentials = core.GetCredentials(credentialsFilePath)
-	if len(state.LoadSpec.TargetCollection) > 0 {
-		slog.Debug("Using load_spec target collection:" + state.LoadSpec.TargetCollection)
-		state.Credentials.Cb_collection = state.LoadSpec.TargetCollection
-	}
-	slog.Debug(fmt.Sprintf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection))
 
 	// slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	slog.Debug("inputFiles:", slog.Any("inputFiles", inputFiles))
