@@ -7,6 +7,7 @@ require (
 	github.com/couchbase/gocb/v2 v2.9.4
 	github.com/google/uuid v1.6.0
 	github.com/relvacode/iso8601 v1.6.0
+	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

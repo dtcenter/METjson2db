@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/NOAA-GSL/METjson2db/pkg/state"
 	"github.com/NOAA-GSL/METjson2db/pkg/types"
 	"github.com/NOAA-GSL/METjson2db/pkg/utils"
@@ -60,10 +62,58 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 					utils.PrintStringArray(stormIds)
 					basin := types.Basin{Basin: basins[bi]}
 
+					year_to_stormids_map := make(map[string][]string)
 					for sti := 0; sti < len(stormIds); sti++ {
 						s := stormIds[sti]
 						year := s[len(s)-4:]
-						stormid := types.StormId{StormId: year}
+						year_to_stormids_map[year] = append(year_to_stormids_map[year], s)
+					}
+
+					for year, stormids := range year_to_stormids_map {
+						fmt.Printf("Key: %s, Value: %d\n", year, stormids)
+						docsForStormIds := GetDocsForStormIds(conn, app, subType, version, datasets[dsi], models[mi], lineTypes[lti], basins[bi], stormids)
+						fmt.Println("docsForStormIds:%d\n%s", len(docsForStormIds), utils.JsonPrettyPrintStruct(docsForStormIds))
+						stormid := types.StormId{Year: year}
+
+						storms := make(map[string]bool)
+						truths := make(map[string]bool)
+						levels := make(map[string]bool)
+						fcst_lens := make(map[string]bool)
+						numrecs := 0
+						mindate := float64(0)
+						maxdate := float64(0)
+
+						for i := 0; i < len(docsForStormIds); i++ {
+							doc := docsForStormIds[i].(map[string]interface{})
+							storms[doc["STORM_ID"].(string)+"-"+doc["STORM_NAME"].(string)] = true
+							truths[doc["BMODEL"].(string)] = true
+							//descriptions[doc["DECR"].(string)] = true
+							data := doc["data"].(map[string]interface{})
+							numrecs = numrecs + len(maps.Keys(data))
+
+							if mindate == 0 || doc["VALID"].(float64) < mindate {
+								mindate = doc["VALID"].(float64)
+							}
+							if maxdate == 0 || doc["VALID"].(float64) > maxdate {
+								maxdate = doc["VALID"].(float64)
+							}
+
+							for dataKey, dv := range data {
+								fcst_lens[dataKey] = true
+								dataVal := dv.(map[string]interface{})
+								level := dataVal["level"].(string)
+								levels[level] = true
+							}
+						}
+						stormid.MdCounts.Storms = maps.Keys(storms)
+						stormid.MdCounts.Truths = maps.Keys(truths)
+						stormid.MdCounts.Levels = maps.Keys(levels)
+						stormid.MdCounts.FcstLens = maps.Keys(fcst_lens)
+						stormid.MdCounts.Numrecs = numrecs
+						stormid.MdCounts.Mindate = mindate
+						stormid.MdCounts.Maxdate = maxdate
+						stormid.MdCounts.Updated = float64(time.Now().UTC().Unix())
+
 						basin.StormIds = append(basin.StormIds, stormid)
 					}
 					linetype.Basins = append(linetype.Basins, basin)
@@ -76,57 +126,13 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 	}
 	fmt.Println(utils.JsonPrettyPrintStruct(metadata))
 
-	/*
-		// get needed models
-		models := getModels(conn, name, app, doctype, subDocType)
-		log.Println("models:")
-		printStringArray(models)
+	writeMetadataToDb(conn, metadata)
+	log.Println("Metadata ID:" + metadata.ID)
+}
 
-		// get models having metadata but no data (remove metadata for these)
-		// (note 'like %' is changed to 'like %25')
-		models_with_metatada_but_no_data := getModelsNoData(conn, name, app, doctype, subDocType)
-		log.Println("models_with_metatada_but_no_data:")
-		printStringArray(models_with_metatada_but_no_data)
-
-		metadata := MetadataJSON{ID: "MD:matsGui:" + name + ":COMMON:V01", Name: name, App: app}
-		metadata.Updated = 0
-
-		for i, m := range models {
-			model := Model{Name: m}
-			thresholds := getDistinctThresholds(conn, name, app, doctype, subDocType, m)
-			log.Println(thresholds)
-			fcstLen := getDistinctFcstLen(conn, name, app, doctype, subDocType, m)
-			log.Println(fcstLen)
-			region := getDistinctRegion(conn, name, app, doctype, subDocType, m)
-			log.Println(region)
-			displayText := getDistinctDisplayText(conn, name, app, doctype, subDocType, m)
-			log.Println(displayText)
-			displayCategory := getDistinctDisplayCategory(conn, name, app, doctype, subDocType, m)
-			log.Println(displayCategory)
-			displayOrder := getDistinctDisplayOrder(conn, name, app, doctype, subDocType, m, i)
-			log.Println(displayOrder)
-			minMaxCountFloor := getMinMaxCountFloor(conn, name, app, doctype, subDocType, m)
-			log.Println(jsonPrettyPrintStruct(minMaxCountFloor[0].(map[string]interface{})))
-
-			// ./sqls/getDistinctThresholds.sql returns list of variables for SUMS DocType, like in Surface
-			if doctype == "SUMS" {
-				model.Variables = thresholds
-			} else {
-				model.Thresholds = thresholds
-			}
-			model.Model = models[i]
-			model.FcstLens = fcstLen
-			model.Regions = region
-			model.DisplayText = displayText[0]
-			model.DisplayCategory = displayCategory[0]
-			model.DisplayOrder = displayOrder[0]
-			model.Mindate = int(minMaxCountFloor[0].(map[string]interface{})["mindate"].(float64))
-			model.Maxdate = int(minMaxCountFloor[0].(map[string]interface{})["maxdate"].(float64))
-			model.Numrecs = int(minMaxCountFloor[0].(map[string]interface{})["numrecs"].(float64))
-			metadata.Updated = int(minMaxCountFloor[0].(map[string]interface{})["updated"].(float64))
-			metadata.Models = append(metadata.Models, model)
-		}
-		log.Println(jsonPrettyPrintStruct(metadata))
-		writeMetadataToDb(conn, metadata)
-	*/
+func writeMetadataToDb(conn types.CbConnection, metadata types.Metadata) {
+	_, err := conn.Collection.Upsert(metadata.ID, metadata, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

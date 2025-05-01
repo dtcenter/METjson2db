@@ -1,5 +1,5 @@
 SELECT
-    DISTINCT RAW BMODEL
+    DISTINCT RAW AMODEL
 FROM
     {{vxDBTARGET}}
 WHERE
@@ -8,4 +8,4 @@ WHERE
     AND VERSION = "{{vxVERSION}}"
     AND dataSetName = "{{vxDATASET}}"
 order by
-    BMODEL
+    AMODEL

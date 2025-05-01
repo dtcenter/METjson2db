@@ -22,20 +22,20 @@ type MdCounts struct {
 	Descriptions StrArray `json:"descriptions"`
 	FcstLens     StrArray `json:"fcst_lens"`
 	Levels       StrArray `json:"levels"`
-	Mindate      StrArray `json:"mindate"`
-	Maxdate      StrArray `json:"maxdate"`
-	Mumrecs      int      `json:"numrecs"`
-	Updated      string   `json:"updated"`
+	Mindate      float64  `json:"mindate"`
+	Maxdate      float64  `json:"maxdate"`
+	Numrecs      int      `json:"numrecs"`
+	Updated      float64  `json:"updated"`
 }
 
 type StormId struct {
-	StormId  string   `json:"stormid"`
+	Year     string   `json:"year"`
 	MdCounts MdCounts `json:"mdcounts"`
 }
 
 type Basin struct {
 	Basin    string    `json:"basin"`
-	StormIds []StormId `json:"stormids"`
+	StormIds []StormId `json:"years"`
 }
 
 type LineType struct {

@@ -1,5 +1,9 @@
-SELECT
-    DISTINCT RAW STORM_ID
+SELECT STORM_ID,
+       STORM_NAME,
+       BMODEL,
+       DESCR,
+       VALID,
+       data AS data
 FROM
     {{vxDBTARGET}}
 WHERE
@@ -7,8 +11,8 @@ WHERE
     AND subtype = "{{vxSUBTYPE}}"
     AND VERSION = "{{vxVERSION}}"
     AND dataSetName = "{{vxDATASET}}"
-    AND BMODEL = "{{vxMODEL}}"
+    AND AMODEL = "{{vxMODEL}}"
     AND LINE_TYPE = "{{vxLINE_TYPE}}"
     AND BASIN = "{{vxBASIN}}"
-order by
-    STORM_ID
+    AND STORM_ID IN {{vxSTORM_IDS_LIST}}
+

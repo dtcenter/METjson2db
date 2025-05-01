@@ -7,7 +7,7 @@ WHERE
     AND subtype = "{{vxSUBTYPE}}"
     AND VERSION = "{{vxVERSION}}"
     AND dataSetName = "{{vxDATASET}}"
-    AND BMODEL = "{{vxMODEL}}"
+    AND AMODEL = "{{vxMODEL}}"
     AND LINE_TYPE = "{{vxLINE_TYPE}}"
     AND BASIN = "{{vxBASIN}}"
 order by
