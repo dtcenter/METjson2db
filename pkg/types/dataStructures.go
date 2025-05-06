@@ -54,12 +54,13 @@ type Dataset struct {
 }
 
 type Metadata struct {
-	ID       string    `json:"id"`
-	App      string    `json:"app"`
-	Type     string    `json:"type"`
-	SubType  string    `json:"subDocType"`
-	Version  string    `json:"VERSION"`
-	Datasets []Dataset `json:"datasets"`
+	ID        string    `json:"id"`
+	App       string    `json:"app"`
+	Type      string    `json:"type"`
+	DocType   string    `json:"docType"`
+	Version   string    `json:"VERSION"`
+	Generated bool      `json:"generated"`
+	Datasets  []Dataset `json:"datasets"`
 }
 
 type ConfigJSON struct {
