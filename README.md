@@ -248,9 +248,10 @@ go run ./cmd/... -c ~/credentials -l ./load_spec.json -i /Users/gopa.padmanabhan
 go run ./cmd/... -c ~/credentials -l ./load_spec.json -i /Users/gopa.padmanabhan/scratch/data/MET/
 # recursive with file pattern regex match
 go run ./cmd/... -c ~/credentials -l ./load_spec.json -I /Users/gopa.padmanabhan/scratch/data/MET/tc_data/tc_data/ -r ".tcst"
+go run ./cmd/... -c ~/credentials.MET -d gopa01 -l ./load_spec.json -I /home/amb-verif/MET_data/tc_data/ -r ".tcst"
 # if -f,-F,-i OR -I options are specified, ignores load_spec input files
 
-# updata metadata
+# update metadata
 go run ./cmd/... -c ~/credentials -l ./load_spec.json -m METADATA_UPDATE
 ```
 

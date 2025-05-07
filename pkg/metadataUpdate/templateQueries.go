@@ -62,7 +62,7 @@ func GetLineTypes(conn types.CbConnection, app string, subtype string, version s
 	log.Println("GetLineTypes(" + app + "," + subtype + "," + version + "," + dataset + ")")
 	start := time.Now()
 
-	fileContent, err := os.ReadFile("sqlTemplates/GetLineTypes.sql")
+	fileContent, err := os.ReadFile("sqlTemplates/getLineTypes.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,7 +84,7 @@ func GetBasins(conn types.CbConnection, app string, subtype string, version stri
 	log.Println("GetBasins(" + app + "," + subtype + "," + version + "," + dataset + "," + lineType + ")")
 	start := time.Now()
 
-	fileContent, err := os.ReadFile("sqlTemplates/GetBasins.sql")
+	fileContent, err := os.ReadFile("sqlTemplates/getBasins.sql")
 	if err != nil {
 		log.Fatal(err)
 	}
