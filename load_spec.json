@@ -16,6 +16,15 @@
     "threadsDbUpload": 32,
     "threadsMergeDocFetch": 4,
     "channelBufferSizeNumberOfDocs": 1024,
+    "metadata": [
+        {
+            "name": "met-cyclone",
+            "app": "met-cyclone",
+            "type" :"DD",
+            "subtype": "MET",
+            "VERSION" : "V10.1.1"
+        }
+    ],
     "folder_tmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
     "folder_tmpl_1": "/home/amb-verif/MET_data/MET_test_data_0//{model}/20240801-00z/{data_type}",
     "folder_tmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",

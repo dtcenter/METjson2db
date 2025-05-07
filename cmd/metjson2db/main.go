@@ -67,12 +67,6 @@ func main() {
 		state.LoadSpec.RunMode = runMode
 	}
 
-	state.Conf, err = core.ParseConfig(settingsFilePath)
-	if err != nil {
-		log.Fatal("Unable to parse config")
-		return
-	}
-
 	level := slog.LevelError
 
 	switch state.LoadSpec.LogLevel {

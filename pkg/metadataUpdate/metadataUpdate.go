@@ -22,8 +22,9 @@ func MetadataUpdate() {
 
 	conn := utils.GetDbConnection(state.Credentials)
 
-	for ds := 0; ds < len(state.Conf.Metadata); ds++ {
-		updateMedataForAppDocType(conn, state.Conf.Metadata[ds].Name, state.Conf.Metadata[ds].App, state.Conf.Metadata[ds].SubType, state.Conf.Metadata[ds].Version)
+	for ds := 0; ds < len(state.LoadSpec.Metadata); ds++ {
+		updateMedataForAppDocType(conn, state.LoadSpec.Metadata[ds].Name, state.LoadSpec.Metadata[ds].App,
+			state.LoadSpec.Metadata[ds].SubType, state.LoadSpec.Metadata[ds].Version)
 	}
 	log.Println(fmt.Sprintf("\tmeta update finished in %v", time.Since(start)))
 }
@@ -70,9 +71,9 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 					}
 
 					for year, stormids := range year_to_stormids_map {
-						fmt.Printf("Key: %s, Value: %d\n", year, stormids)
+						fmt.Printf("Key: %s, Value: %v\n", year, stormids)
 						docsForStormIds := GetDocsForStormIds(conn, app, subType, version, datasets[dsi], models[mi], lineTypes[lti], basins[bi], stormids)
-						fmt.Println("docsForStormIds:%d\n%s", len(docsForStormIds), utils.JsonPrettyPrintStruct(docsForStormIds))
+						fmt.Printf("docsForStormIds:%d\n%s", len(docsForStormIds), utils.JsonPrettyPrintStruct(docsForStormIds))
 						stormid := types.StormId{Year: year}
 
 						storms := make(map[string]bool)

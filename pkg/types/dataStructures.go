@@ -63,15 +63,6 @@ type Metadata struct {
 	Datasets  []Dataset `json:"datasets"`
 }
 
-type ConfigJSON struct {
-	Metadata []struct {
-		Name    string `json:"name"`
-		App     string `json:"app"`
-		SubType string `json:"subType"`
-		Version string `json:"VERSION"`
-	} `json:"metadata"`
-}
-
 type LoadSpec struct {
 	Email                         string   `json:"email"`
 	TargetCollection              string   `json:"target_collection"`
@@ -88,7 +79,13 @@ type LoadSpec struct {
 	ThreadsMergeDocFetch          int64    `json:"threadsMergeDocFetch"`
 	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
 	FolderTmpl                    string   `json:"folder_tmpl"`
-	LoadVal                       struct {
+	Metadata                      []struct {
+		Name    string `json:"name"`
+		App     string `json:"app"`
+		SubType string `json:"subType"`
+		Version string `json:"VERSION"`
+	} `json:"metadata"`
+	LoadVal struct {
 		Field []struct {
 			Val  StrArray `json:"val"`
 			Name string   `json:"_name"`
