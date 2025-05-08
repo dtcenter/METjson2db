@@ -102,8 +102,10 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 							for dataKey, dv := range data {
 								fcst_lens[dataKey] = true
 								dataVal := dv.(map[string]interface{})
-								level := dataVal["level"].(string)
-								levels[level] = true
+								if nil != dataVal["level"] {
+									level := dataVal["level"].(string)
+									levels[level] = true
+								}
 							}
 						}
 						stormid.MdCounts.Storms = maps.Keys(storms)
