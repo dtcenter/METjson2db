@@ -37,7 +37,7 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 	log.Println("datasets:")
 	utils.PrintStringArray(datasets)
 
-	metadata := types.Metadata{ID: "MD:matsGui:METexpressGui:met-cyclone:" + version, Type: "MD", DocType: "METexpressGui", App: "met-cyclone", Version: types.LoadSpec.Version, Generated: true}
+	metadata := types.Metadata{ID: "MD:matsGui:METexpressGui:met-cyclone:" + version, Type: "MD", DocType: "METexpressGui", App: "met-cyclone", Version: state.LoadSpec.Version, Generated: true}
 
 	for dsi := 0; dsi < len(datasets); dsi++ {
 		models := GetModels(conn, app, subType, version, datasets[dsi])
