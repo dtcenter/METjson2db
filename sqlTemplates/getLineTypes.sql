@@ -5,7 +5,6 @@ FROM
 WHERE
     type = "DD"
     AND subtype = "{{vxSUBTYPE}}"
-    AND VERSION = "{{vxVERSION}}"
     AND dataSetName = "{{vxDATASET}}"
     AND AMODEL = "{{vxMODEL}}"
 order by

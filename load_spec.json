@@ -1,4 +1,5 @@
 {
+    "version": "1.0",
     "email": "molly.b.smith@noaa.gov",
     "target_collection": "MET_parser",
     "target_collection0": "MET_default",

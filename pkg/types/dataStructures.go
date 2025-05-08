@@ -64,6 +64,7 @@ type Metadata struct {
 }
 
 type LoadSpec struct {
+	Version                       string   `json:"version"`
 	Email                         string   `json:"email"`
 	TargetCollection              string   `json:"target_collection"`
 	DatasetName                   string   `json:"dataset_name"`
