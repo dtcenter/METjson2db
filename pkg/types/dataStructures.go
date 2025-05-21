@@ -81,10 +81,11 @@ type LoadSpec struct {
 	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
 	FolderTmpl                    string   `json:"folder_tmpl"`
 	Metadata                      []struct {
-		Name    string `json:"name"`
-		App     string `json:"app"`
-		SubType string `json:"subType"`
-		Version string `json:"VERSION"`
+		Name     string `json:"name"`
+		App      string `json:"app"`
+		SubType  string `json:"subType"`
+		LineType string `json:"linetype"`
+		Version  string `json:"VERSION"`
 	} `json:"metadata"`
 	LoadVal struct {
 		Field []struct {

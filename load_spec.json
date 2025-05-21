@@ -1,5 +1,5 @@
 {
-    "version": "1.0",
+    "version": "V01",
     "email": "molly.b.smith@noaa.gov",
     "target_collection": "MET_parser",
     "target_collection0": "MET_default",
@@ -23,7 +23,8 @@
             "app": "met-cyclone",
             "type" :"DD",
             "subtype": "MET",
-            "VERSION" : "V10.1.1"
+            "linetype": "TCMPR",
+            "VERSION" : "V01"
         }
     ],
     "folder_tmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",

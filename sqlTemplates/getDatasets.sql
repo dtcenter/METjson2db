@@ -5,5 +5,6 @@ FROM
 WHERE
     type = "DD"
     AND subtype = "{{vxSUBTYPE}}"
+    AND LINE_TYPE = "{{vxLINETYPE}}"
 order by
     dataSetName

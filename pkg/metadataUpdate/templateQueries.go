@@ -16,8 +16,8 @@ func init() {
 	log.Println("templateQueries:init()")
 }
 
-func GetDatasets(conn types.CbConnection, app string, subtype string, version string) (jsonOut []string) {
-	log.Printf("GetDatasets(" + app + "," + subtype + "," + version + ")")
+func GetDatasets(conn types.CbConnection, app string, subtype string, lineType string) (jsonOut []string) {
+	log.Printf("GetDatasets(" + app + "," + subtype + "," + lineType + ")")
 	start := time.Now()
 
 	fileContent, err := os.ReadFile("sqlTemplates/getDatasets.sql")
@@ -27,7 +27,7 @@ func GetDatasets(conn types.CbConnection, app string, subtype string, version st
 	tmplSQL := string(fileContent)
 	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
 	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxVERSION}}", version, -1)
+	tmplSQL = strings.Replace(tmplSQL, "{{vxLINETYPE}}", lineType, -1)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 
