@@ -30,7 +30,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 		if !state.LoadSpec.RunNonThreaded {
 			for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
-				di := di
+
 				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
 				state.AsyncWaitGroupFlushToDb.Add(1)
 				go func() {
@@ -40,9 +40,9 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 				}()
 			}
 
-			if false == state.LoadSpec.OverWriteData {
+			if !state.LoadSpec.OverWriteData {
 				for di := 0; di < int(state.LoadSpec.ThreadsMergeDocFetch); di++ {
-					di := di
+
 					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
 					go func() {
@@ -63,8 +63,9 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 	dbTotalCount := int64(0)
 	dbTotalErrors := int64(0)
 
-	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
-		if false == state.LoadSpec.OverWriteData {
+	switch state.LoadSpec.RunMode {
+	case "DIRECT_LOAD_TO_DB":
+		if !state.LoadSpec.OverWriteData {
 			for fi := 0; fi < int(state.LoadSpec.ThreadsMergeDocFetch); fi++ {
 				state.AsyncMergeDocFetchChannels[fi] <- "endMarker"
 			}
@@ -115,7 +116,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 				}
 			*/
 		}
-	} else if state.LoadSpec.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
+	case "CREATE_JSON_DOC_ARCHIVE":
 		// home, _ := os.UserHomeDir()
 		err := metLineTypeParser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
 		if err != nil {

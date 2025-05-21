@@ -151,7 +151,7 @@ func main() {
 			for vi := 0; vi < len(state.LoadSpec.LoadVal.Field[0].Val); vi++ {
 				fname := "{" + state.LoadSpec.LoadVal.Field[0].Name + "}"
 				if strings.Contains(state.LoadSpec.FolderTmpl, fname) {
-					folders = append(folders, strings.Replace(state.LoadSpec.FolderTmpl, fname, state.LoadSpec.LoadVal.Field[0].Val[vi], -1))
+					folders = append(folders, strings.ReplaceAll(state.LoadSpec.FolderTmpl, fname, state.LoadSpec.LoadVal.Field[0].Val[vi]))
 				}
 			}
 
@@ -159,7 +159,7 @@ func main() {
 				fname := "{" + state.LoadSpec.LoadVal.Field[fi].Name + "}"
 				for vi := 0; vi < len(state.LoadSpec.LoadVal.Field[fi].Val); vi++ {
 					for i := 0; i < len(folders); i++ {
-						folders[i] = strings.Replace(folders[i], fname, state.LoadSpec.LoadVal.Field[fi].Val[vi], -1)
+						folders[i] = strings.ReplaceAll(folders[i], fname, state.LoadSpec.LoadVal.Field[fi].Val[vi])
 					}
 				}
 			}

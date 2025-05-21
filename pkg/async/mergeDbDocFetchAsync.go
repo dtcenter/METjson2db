@@ -38,7 +38,7 @@ func MergeDbDocFetchAsync(threadIdx int /*, conn CbConnection*/) {
 		state.CbMergeDbDocsMutex.RUnlock()
 
 		dbReadDoc := utils.GetDocWithId(conn.Collection, id)
-		if dbReadDoc != nil && len(dbReadDoc) > 0 && len(dbReadDoc["data"].(map[string]interface{})) > 0 {
+		if len(dbReadDoc) > 0 && len(dbReadDoc["data"].(map[string]interface{})) > 0 {
 			state.CbMergeDbDocsMutex.Lock()
 			state.CbMergeDbDocs[id] = dbReadDoc
 			state.CbMergeDbDocsMutex.Unlock()

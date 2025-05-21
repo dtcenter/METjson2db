@@ -36,7 +36,7 @@ func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 	cluster, err := gocb.Connect(connectionString, options)
 	if err != nil {
 		slog.Error(fmt.Sprintf("%v", err))
-		return
+		return conn
 	}
 
 	conn.Cluster = cluster
@@ -49,7 +49,7 @@ func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
 	err = conn.Bucket.WaitUntilReady(5*time.Second, nil)
 	if err != nil {
 		slog.Error(fmt.Sprintf("%v", err))
-		return
+		return conn
 	}
 
 	conn.Scope = conn.Bucket.Scope(cred.Cb_scope)
@@ -71,7 +71,7 @@ func QueryWithSQLStringSA(scope *gocb.Scope, text string) (rv []string) {
 	slog.Debug("queryWithSQLStringSA(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
-		fmt.Sprintf(text),
+		fmt.Sprint(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
@@ -99,7 +99,7 @@ func QueryWithSQLStringFA(scope *gocb.Scope, text string) (rv []float64) {
 	slog.Debug("queryWithSQLStringFA(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
-		fmt.Sprintf(text),
+		fmt.Sprint(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
@@ -126,7 +126,7 @@ func QueryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 	slog.Debug("queryWithSQLStringFA(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
-		fmt.Sprintf(text),
+		fmt.Sprint(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
@@ -143,11 +143,11 @@ func QueryWithSQLStringIA(scope *gocb.Scope, text string) (rv []int) {
 		if err != nil {
 			slog.Error(fmt.Sprintf("%v", err))
 		}
-		switch row.(type) {
+		switch row := row.(type) {
 		case float64:
-			retValues = append(retValues, int(row.(float64)))
+			retValues = append(retValues, int(row))
 		case int:
-			retValues = append(retValues, row.(int))
+			retValues = append(retValues, row)
 		}
 	}
 
@@ -173,7 +173,7 @@ func QueryWithSQLStringMAP(scope *gocb.Scope, text string) (jsonOut []interface{
 	slog.Debug("queryWithSQLStringMAP(\n" + text + "\n)")
 
 	queryResult, err := scope.Query(
-		fmt.Sprintf(text),
+		fmt.Sprint(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {
@@ -204,7 +204,7 @@ func QueryWithSQLFileJustPrint(scope *gocb.Scope, file string) {
 	text := string(fileContent)
 
 	queryResult, err := scope.Query(
-		fmt.Sprintf(text),
+		fmt.Sprint(text),
 		&gocb.QueryOptions{Adhoc: true},
 	)
 	if err != nil {

@@ -28,9 +28,9 @@ func StatToCbFlush(flushFinal bool) {
 	*/
 	flushCount := 0
 	if state.LoadSpec.RunNonThreaded {
-		for id, _ := range state.CbDocs {
+		for id := range state.CbDocs {
 			slog.Info("id:" + id)
-			//if flushFinal || int64(dataLen) >= int64(state.LoadSpec.FlushToDbDataSectionMaxCount) {
+			// if flushFinal || int64(dataLen) >= int64(state.LoadSpec.FlushToDbDataSectionMaxCount) {
 			if state.LoadSpec.RunMode == "CREATE_JSON_DOC_ARCHIVE" {
 				flushToFiles(id)
 			}
@@ -76,7 +76,7 @@ func flushToDb(conn types.CbConnection, id string) {
 	doc := state.CbDocs[id].(map[string]interface{})
 	slog.Debug(fmt.Sprintf("%v", doc))
 
-	var anyJson = doc
+	anyJson := doc
 
 	if anyJson["data"] == nil || len(anyJson) == 0 {
 		slog.Debug("NULL document:" + id)

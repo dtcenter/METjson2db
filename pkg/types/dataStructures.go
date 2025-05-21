@@ -4,8 +4,7 @@ import (
 	"github.com/couchbase/gocb/v2"
 )
 
-//type CbDataDocument map[string]interface{}
-
+// type CbDataDocument map[string]interface{}
 type CbConnection struct {
 	Cluster    *gocb.Cluster
 	Bucket     *gocb.Bucket
@@ -20,7 +19,7 @@ type MdCounts struct {
 	Storms       StrArray `json:"storms"`
 	Truths       StrArray `json:"truths"`
 	Descriptions StrArray `json:"descriptions"`
-	FcstLens     StrArray `json:"fcst_lens"`
+	FcstLens     StrArray `json:"fcstLens"`
 	Levels       StrArray `json:"levels"`
 	Mindate      float64  `json:"mindate"`
 	Maxdate      float64  `json:"maxdate"`
@@ -58,7 +57,7 @@ type Metadata struct {
 	App       string    `json:"app"`
 	Type      string    `json:"type"`
 	DocType   string    `json:"docType"`
-	Version   string    `json:"VERSION"`
+	Version   string    `json:"version"`
 	Generated bool      `json:"generated"`
 	Datasets  []Dataset `json:"datasets"`
 }
@@ -66,10 +65,10 @@ type Metadata struct {
 type LoadSpec struct {
 	Version                       string   `json:"version"`
 	Email                         string   `json:"email"`
-	TargetCollection              string   `json:"target_collection"`
-	DatasetName                   string   `json:"dataset_name"`
+	TargetCollection              string   `json:"targetCollection"`
+	DatasetName                   string   `json:"datasetName"`
 	Verbose                       bool     `json:"verbose"`
-	LogLevel                      string   `json:"LogLevel"`
+	LogLevel                      string   `json:"logLevel"`
 	RunMode                       string   `json:"runMode"`
 	JsonArchiveFilePathAndPrefix  string   `json:"jsonArchiveFilePathAndPrefix"`
 	MaxDocIdLength                int64    `json:"maxDocIdLength"`
@@ -79,21 +78,21 @@ type LoadSpec struct {
 	ThreadsDbUpload               int64    `json:"threadsDbUpload"`
 	ThreadsMergeDocFetch          int64    `json:"threadsMergeDocFetch"`
 	ChannelBufferSizeNumberOfDocs int64    `json:"channelBufferSizeNumberOfDocs"`
-	FolderTmpl                    string   `json:"folder_tmpl"`
+	FolderTmpl                    string   `json:"folderTmpl"`
 	Metadata                      []struct {
 		Name     string `json:"name"`
 		App      string `json:"app"`
 		SubType  string `json:"subType"`
 		LineType string `json:"linetype"`
-		Version  string `json:"VERSION"`
+		Version  string `json:"version"`
 	} `json:"metadata"`
 	LoadVal struct {
 		Field []struct {
 			Val  StrArray `json:"val"`
-			Name string   `json:"_name"`
+			Name string   `json:"name"`
 		} `json:"field"`
-	} `json:"load_val"`
-	LoadNote string `json:"load_note"`
+	} `json:"loadVal"`
+	LoadNote string `json:"loadNote"`
 }
 
 type Credentials struct {
@@ -106,8 +105,8 @@ type Credentials struct {
 }
 
 type LineTypeStat struct {
-	ProcessedCount int  `json:"ProcessedCount"`
-	Handled        bool `json:"Handled"`
+	ProcessedCount int  `json:"processedCount"`
+	Handled        bool `json:"handled"`
 }
 
 type DocKeyCounts struct {

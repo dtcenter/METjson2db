@@ -24,5 +24,5 @@ func StatDateToEpoh(dateStr string) int64 {
 	// log.Printf("strISO8601:", strISO8601)
 	t, _ := iso8601.ParseString(strISO8601)
 
-	return int64(t.Unix())
+	return t.Unix()
 }

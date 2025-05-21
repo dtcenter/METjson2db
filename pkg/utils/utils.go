@@ -14,6 +14,7 @@ func init() {
 	slog.Debug("utils:init()")
 }
 
+/*
 func getTabbedString(count int) (rv string) {
 	rv = ""
 	for i := 0; i < count; i++ {
@@ -21,6 +22,7 @@ func getTabbedString(count int) (rv string) {
 	}
 	return rv
 }
+*/
 
 func PrintStringArray(in []string) {
 	for i := 0; i < len(in); i++ {
@@ -34,7 +36,10 @@ func DocPrettyPrint(in map[string]interface{}) string {
 		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
 	}
 	var out bytes.Buffer
-	json.Indent(&out, jsonText, "", "\t")
+	err = json.Indent(&out, jsonText, "", "\t")
+	if err != nil {
+		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
+	}
 	return out.String()
 }
 
@@ -44,7 +49,10 @@ func JsonPrettyPrint(in []interface{}) string {
 		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
 	}
 	var out bytes.Buffer
-	json.Indent(&out, jsonText, "", "\t")
+	err = json.Indent(&out, jsonText, "", "\t")
+	if err != nil {
+		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
+	}
 	return out.String()
 }
 
@@ -54,10 +62,14 @@ func JsonPrettyPrintStruct(in interface{}) string {
 		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
 	}
 	var out bytes.Buffer
-	json.Indent(&out, jsonText, "", "\t")
+	err = json.Indent(&out, jsonText, "", "\t")
+	if err != nil {
+		fmt.Println("ERROR PROCESSING STREAMING OUTPUT:", err)
+	}
 	return out.String()
 }
 
+/*
 func walkJsonMap(val map[string]interface{}, depth int) {
 	for k, v := range val {
 		switch vv := v.(type) {
@@ -79,13 +91,14 @@ func walkJsonMap(val map[string]interface{}, depth int) {
 		}
 	}
 }
+*/
 
 func ConvertSlice[E any](in []any) (out []E) {
 	out = make([]E, 0, len(in))
 	for _, v := range in {
 		out = append(out, v.(E))
 	}
-	return
+	return out
 }
 
 func PrettyPrint(i interface{}) string {

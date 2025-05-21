@@ -25,15 +25,15 @@ func GetDatasets(conn types.CbConnection, app string, subtype string, lineType s
 		log.Fatal(err)
 	}
 	tmplSQL := string(fileContent)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxLINETYPE}}", lineType, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSUBTYPE}}", subtype)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxLINETYPE}}", lineType)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 
 	datasets := utils.QueryWithSQLStringSA(conn.Scope, tmplSQL)
 
-	log.Printf(fmt.Sprintf("\tin %v", time.Since(start)))
+	log.Printf("\tin %v", time.Since(start))
 	return datasets
 }
 
@@ -46,15 +46,15 @@ func GetModels(conn types.CbConnection, app string, subtype string, version stri
 		log.Fatal(err)
 	}
 	tmplSQL := string(fileContent)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxVERSION}}", version, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDATASET}}", dataset, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSUBTYPE}}", subtype)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxVERSION}}", version)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDATASET}}", dataset)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 	rv := utils.QueryWithSQLStringSA(conn.Scope, tmplSQL)
 
-	log.Println(fmt.Sprintf("\tin %v", time.Since(start)))
+	log.Printf("\tin %v", time.Since(start))
 	return rv
 }
 
@@ -67,16 +67,16 @@ func GetLineTypes(conn types.CbConnection, app string, subtype string, version s
 		log.Fatal(err)
 	}
 	tmplSQL := string(fileContent)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxVERSION}}", version, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDATASET}}", dataset, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxMODEL}}", model, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSUBTYPE}}", subtype)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxVERSION}}", version)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDATASET}}", dataset)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxMODEL}}", model)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 	rv := utils.QueryWithSQLStringSA(conn.Scope, tmplSQL)
 
-	log.Println(fmt.Sprintf("\tin %v", time.Since(start)))
+	log.Printf("\tin %v", time.Since(start))
 	return rv
 }
 
@@ -89,17 +89,17 @@ func GetBasins(conn types.CbConnection, app string, subtype string, version stri
 		log.Fatal(err)
 	}
 	tmplSQL := string(fileContent)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxVERSION}}", version, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDATASET}}", dataset, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxMODEL}}", model, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxLINE_TYPE}}", lineType, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSUBTYPE}}", subtype)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxVERSION}}", version)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDATASET}}", dataset)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxMODEL}}", model)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxLINE_TYPE}}", lineType)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 	rv := utils.QueryWithSQLStringSA(conn.Scope, tmplSQL)
 
-	log.Println(fmt.Sprintf("\tin %v", time.Since(start)))
+	log.Printf("\tin %v", time.Since(start))
 	return rv
 }
 
@@ -112,23 +112,24 @@ func GetStormIDs(conn types.CbConnection, app string, subtype string, version st
 		log.Fatal(err)
 	}
 	tmplSQL := string(fileContent)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxVERSION}}", version, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDATASET}}", dataset, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxMODEL}}", model, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxLINE_TYPE}}", lineType, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxBASIN}}", basin, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSUBTYPE}}", subtype)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxVERSION}}", version)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDATASET}}", dataset)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxMODEL}}", model)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxLINE_TYPE}}", lineType)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxBASIN}}", basin)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 	rv := utils.QueryWithSQLStringSA(conn.Scope, tmplSQL)
 
-	log.Println(fmt.Sprintf("\tin %v", time.Since(start)))
+	log.Printf("\tin %v", time.Since(start))
 	return rv
 }
 
 func GetDocsForStormIds(conn types.CbConnection, app string, subtype string, version string, dataset string, model string,
-	lineType string, basin string, stormids []string) (jsonOut []interface{}) {
+	lineType string, basin string, stormids []string,
+) (jsonOut []interface{}) {
 	log.Println("GetStormIDs(" + app + "," + subtype + "," + version + "," + dataset + "," + lineType + "," + basin + ")")
 	start := time.Now()
 
@@ -137,13 +138,13 @@ func GetDocsForStormIds(conn types.CbConnection, app string, subtype string, ver
 		log.Fatal(err)
 	}
 	tmplSQL := string(fileContent)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSUBTYPE}}", subtype, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxVERSION}}", version, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxDATASET}}", dataset, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxMODEL}}", model, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxLINE_TYPE}}", lineType, -1)
-	tmplSQL = strings.Replace(tmplSQL, "{{vxBASIN}}", basin, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDBTARGET}}", conn.VxDBTARGET)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSUBTYPE}}", subtype)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxVERSION}}", version)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxDATASET}}", dataset)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxMODEL}}", model)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxLINE_TYPE}}", lineType)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxBASIN}}", basin)
 	stormidsStr := "["
 	for i := 0; i < len(stormids); i++ {
 		stormidsStr = stormidsStr + "\"" + stormids[i] + "\""
@@ -153,11 +154,11 @@ func GetDocsForStormIds(conn types.CbConnection, app string, subtype string, ver
 			stormidsStr = stormidsStr + "]"
 		}
 	}
-	tmplSQL = strings.Replace(tmplSQL, "{{vxSTORM_IDS_LIST}}", stormidsStr, -1)
+	tmplSQL = strings.ReplaceAll(tmplSQL, "{{vxSTORM_IDS_LIST}}", stormidsStr)
 
 	fmt.Println("SQL:\n" + tmplSQL)
 	rv := utils.QueryWithSQLStringMAP(conn.Scope, tmplSQL)
 
-	log.Println(fmt.Sprintf("\tin %v", time.Since(start)))
+	log.Printf("\tin %v", time.Since(start))
 	return rv
 }

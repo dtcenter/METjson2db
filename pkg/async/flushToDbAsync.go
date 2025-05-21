@@ -39,10 +39,10 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 
 		// slog.Info(fmt.Sprintf("FlushToDbAsync(), doc:%v", doc))
 		id := doc["id"].(string)
-		//state.CbDocMutexMap[id].Lock()
+		// state.CbDocMutexMap[id].Lock()
 		// slog.Debug("flushToDbAsync(%d), ID:%s", threadIdx, doc.headerFields["ID"].StringVal)
 
-		if false == state.LoadSpec.OverWriteData && state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
+		if !state.LoadSpec.OverWriteData && state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 			state.CbMergeDbDocsMutex.RLock()
 			tmpDbDoc := state.CbMergeDbDocs[id]
 			state.CbMergeDbDocsMutex.RUnlock()
@@ -64,7 +64,10 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 						// data fields
 						var docData map[string]interface{}
 						inrec, _ := json.Marshal(doc["data"])
-						json.Unmarshal(inrec, &docData)
+						err := json.Unmarshal(inrec, &docData)
+						if err != nil {
+							slog.Error(fmt.Sprintf("%v", err))
+						}
 						for dbDataKey, dbDataVal := range dbVal.(map[string]interface{}) {
 							docDataVal := docData[dbDataKey]
 							if docDataVal == nil {
@@ -84,7 +87,7 @@ func FlushToDbAsync(threadIdx int /*, conn CbConnection*/) {
 		if doc["data"] == nil {
 			slog.Debug(fmt.Sprintf("NULL document[%s]", doc["ID"]))
 			errors++
-			//state.CbDocMutexMap[id].Unlock()
+			// state.CbDocMutexMap[id].Unlock()
 			continue
 		}
 

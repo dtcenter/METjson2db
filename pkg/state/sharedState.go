@@ -34,7 +34,6 @@ var (
 
 // init runs before main() is evaluated
 func init() {
-
 	CbDocsMutex = &sync.RWMutex{}
 	DocKeyCountMapMutex = &sync.RWMutex{}
 	CbMergeDbDocsMutex = &sync.RWMutex{}

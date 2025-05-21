@@ -1,9 +1,9 @@
 {
     "version": "V01",
     "email": "molly.b.smith@noaa.gov",
-    "target_collection": "MET_parser",
-    "target_collection0": "MET_default",
-    "dataset_name": "METDEFAULT",
+    "targetCollection": "MET_parser",
+    "targetCollection0": "MET_default",
+    "datasetName": "METDEFAULT",
     "logLevel": "INFO",
     "logLevel_doc": ["DEBUG", "INFO", "WARN", "ERROR"],
     "runMode0" : "CREATE_JSON_DOC_ARCHIVE",
@@ -24,18 +24,18 @@
             "type" :"DD",
             "subtype": "MET",
             "linetype": "TCMPR",
-            "VERSION" : "V01"
+            "version" : "V01"
         }
     ],
-    "folder_tmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
-    "folder_tmpl_1": "/home/amb-verif/MET_data/MET_test_data_0//{model}/20240801-00z/{data_type}",
-    "folder_tmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
-    "folder_tmpl_3": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
-    "folder_tmpl_4": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
-    "folder_tmpl_5": "/Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/{date_time}/grid_stat",
-    "folder_tmpl": "/home/amb-verif/MET_data/G2G_v12/{date_time}/grid_stat",
-    "folder_tmpl_7": "/home/amb-verif/MET_data/met_regression_just_stat_files",
-    "load_val": {
+    "folderTmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
+    "folderTmpl_1": "/home/amb-verif/MET_data/MET_test_data_0//{model}/20240801-00z/{data_type}",
+    "folderTmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
+    "folderTmpl_3": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
+    "folderTmpl_4": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
+    "ffolderTmpl_5": "/Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/{date_time}/grid_stat",
+    "folderTmpl": "/home/amb-verif/MET_data/G2G_v12/{date_time}/grid_stat",
+    "folderTmpl_7": "/home/amb-verif/MET_data/met_regression_just_stat_files",
+    "loadVal": {
         "field": [
             {
                 "val": [
@@ -59,7 +59,7 @@
                     "20241103-18z",
                     "20241104-06z"
                 ],
-                "_name": "date_time"
+                "name": "date_time"
             },
             {
                 "val": [
@@ -70,16 +70,16 @@
                     "FV3_GSL_C384",
                     "FV3_GSL_Chem"
                 ],
-                "_name": "model"
+                "name": "model"
             },
             
             {
                 "val": [
                     "grid_stat"
                 ],
-                "_name": "data_type"
+                "name": "data_type"
             }
         ]
     },
-    "load_note": "GSL Global Grid-to-Grid Verification"
+    "loadNote": "GSL Global Grid-to-Grid Verification"
 }

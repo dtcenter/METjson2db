@@ -26,7 +26,7 @@ func MetadataUpdate() {
 		updateMedataForAppDocType(conn, state.LoadSpec.Metadata[ds].Name, state.LoadSpec.Metadata[ds].App,
 			state.LoadSpec.Metadata[ds].SubType, state.LoadSpec.Metadata[ds].LineType, state.LoadSpec.Metadata[ds].Version)
 	}
-	log.Println(fmt.Sprintf("\tmeta update finished in %v", time.Since(start)))
+	log.Printf("\tmeta update finished in %v", time.Since(start))
 }
 
 func updateMedataForAppDocType(conn types.CbConnection, name string, app string, subType string, lineType string, version string) {
@@ -51,7 +51,7 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 			// utils.PrintStringArray(lineTypes)
 			model := types.Model{Model: models[mi]}
 
-			//for lti := 0; lti < len(lineTypes); lti++ {
+			// for lti := 0; lti < len(lineTypes); lti++ {
 			basins := GetBasins(conn, app, subType, version, datasets[dsi], models[mi], lineType)
 			log.Println("dataset:" + datasets[dsi] + ",model:" + models[mi] + ",lineType:" + lineType + ",basins:")
 			utils.PrintStringArray(basins)
@@ -88,7 +88,7 @@ func updateMedataForAppDocType(conn types.CbConnection, name string, app string,
 						doc := docsForStormIds[i].(map[string]interface{})
 						storms[doc["STORM_ID"].(string)+"-"+doc["STORM_NAME"].(string)] = true
 						truths[doc["BMODEL"].(string)] = true
-						//descriptions[doc["DECR"].(string)] = true
+						// descriptions[doc["DECR"].(string)] = true
 						data := doc["data"].(map[string]interface{})
 						numrecs = numrecs + len(maps.Keys(data))
 
