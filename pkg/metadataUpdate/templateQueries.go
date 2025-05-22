@@ -17,7 +17,7 @@ func init() {
 }
 
 func GetDatasets(conn types.CbConnection, app string, subtype string, lineType string) (jsonOut []string) {
-	log.Printf("GetDatasets(" + app + "," + subtype + "," + lineType + ")")
+	log.Printf("%s", "GetDatasets("+app+","+subtype+","+lineType+")")
 	start := time.Now()
 
 	fileContent, err := os.ReadFile("sqlTemplates/getDatasets.sql")
