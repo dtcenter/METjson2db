@@ -104,7 +104,7 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
 	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
-	//slog.Info("id for data count=3:\n" + utils.JsonPrettyPrint(rv))
+	// slog.Info("id for data count=3:\n" + utils.JsonPrettyPrint(rv))
 	for i := 0; i < len(rv); i++ {
 		id := rv[i].(map[string]interface{})["id"].(string)
 		sqlStr = fmt.Sprintf("SELECT * FROM %s.%s.%s AS c USE KEYS \"%s\"",
@@ -120,7 +120,7 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 		json.Unmarshal(inrec, &docPost)
 		data := docPost["data"].(map[string]interface{})
 		ikey := 0
-		for k, _ := range data {
+		for k := range data {
 			ikey = ikey + 1
 			if ikey == 2 {
 				delete(data, k)

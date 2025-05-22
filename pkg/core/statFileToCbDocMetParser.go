@@ -32,7 +32,7 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 }
 
 func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
-	slog.Debug(fmt.Sprintf("statFileToCbDocMetParser(" + filepath + ")"))
+	slog.Debug("statFileToCbDocMetParser(" + filepath + ")")
 	var doc map[string]interface{}
 	var err error
 
