@@ -1,0 +1,5 @@
+SELECT
+    c
+FROM
+    metdata._default.MET_default AS c 
+WHERE c.ID = ":V11.1.0:GFS:20240801_000000:P150:TMP:P150:FULL:SAL1L2"

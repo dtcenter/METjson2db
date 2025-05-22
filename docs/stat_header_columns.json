@@ -1,0 +1,130 @@
+[
+	{
+		"Field" : "stat_header_id",
+		"Type" : "int(10) unsigned",
+		"Null" : "NO",
+		"Key" : "PRI",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "version",
+		"Type" : "varchar(8)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "model",
+		"Type" : "varchar(80)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "descr",
+		"Type" : "varchar(40)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : "NA",
+		"Extra" : ""
+	},
+	{
+		"Field" : "fcst_var",
+		"Type" : "varchar(50)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "fcst_units",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : "NA",
+		"Extra" : ""
+	},
+	{
+		"Field" : "fcst_lev",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "obs_var",
+		"Type" : "varchar(50)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "obs_units",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : "NA",
+		"Extra" : ""
+	},
+	{
+		"Field" : "obs_lev",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "obtype",
+		"Type" : "varchar(20)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "vx_mask",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "interp_mthd",
+		"Type" : "varchar(20)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "interp_pnts",
+		"Type" : "int(10) unsigned",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "fcst_thresh",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "MUL",
+		"Default" : null,
+		"Extra" : ""
+	},
+	{
+		"Field" : "obs_thresh",
+		"Type" : "varchar(100)",
+		"Null" : "YES",
+		"Key" : "",
+		"Default" : null,
+		"Extra" : ""
+	}
+]

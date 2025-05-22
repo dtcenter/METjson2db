@@ -1,0 +1,85 @@
+{
+    "version": "V01",
+    "email": "molly.b.smith@noaa.gov",
+    "targetCollection": "MET_parser",
+    "targetCollection0": "MET_default",
+    "datasetName": "METDEFAULT",
+    "logLevel": "INFO",
+    "logLevel_doc": ["DEBUG", "INFO", "WARN", "ERROR"],
+    "runMode0" : "CREATE_JSON_DOC_ARCHIVE",
+    "runMode" : "DIRECT_LOAD_TO_DB",
+    "runMode_doc" : ["DIRECT_LOAD_TO_DB", "CREATE_JSON_DOC_ARCHIVE", "METADATA_UPDATE"],
+    "jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out_",
+    "maxDocIdLength": 200,
+    "progressiveLargeDocIdPolicies": [ "SHA256", "REJECT_WIH_ERROR_LOG"],
+    "overWriteData": true,
+    "runNonThreaded": false,
+    "threadsDbUpload": 32,
+    "threadsMergeDocFetch": 4,
+    "channelBufferSizeNumberOfDocs": 1024,
+    "metadata": [
+        {
+            "name": "met-cyclone",
+            "app": "met-cyclone",
+            "type" :"DD",
+            "subtype": "MET",
+            "linetype": "TCMPR",
+            "version" : "V01"
+        }
+    ],
+    "folderTmpl_0": "/home/role.amb-verif/GSL_verif-global/verif/g2g_reprocess/{model}/realtime/METplus/20240722-12z/{data_type}",
+    "folderTmpl_1": "/home/amb-verif/MET_data/MET_test_data_0//{model}/20240801-00z/{data_type}",
+    "folderTmpl_2": "/Users/gopa.padmanabhan/scratch/data/MET/{model}/20240801-00z/{data_type}",
+    "folderTmpl_3": "/Users/gopa.padmanabhan/scratch/data/MET/met_regression_just_stat_files",
+    "folderTmpl_4": "/home/gopa/scratch/MET_test_data_0/{model}/20240801-00z/{data_type}",
+    "ffolderTmpl_5": "/Users/gopa.padmanabhan/scratch/data/MET/G2G_v12/G2G_v12/{date_time}/grid_stat",
+    "folderTmpl": "/home/amb-verif/MET_data/G2G_v12/{date_time}/grid_stat",
+    "folderTmpl_7": "/home/amb-verif/MET_data/met_regression_just_stat_files",
+    "loadVal": {
+        "field": [
+            {
+                "val": [
+                    "20241031-00z",
+                    "20241031-12z",
+                    "20241101-00z",
+                    "20241101-12z",
+                    "20241102-00z",
+                    "20241102-12z",
+                    "20241103-00z",
+                    "20241103-12z",
+                    "20241104-00z",
+                    "20241104-18z",
+                    "20241031-06z",
+                    "20241031-18z",
+                    "20241101-06z",
+                    "20241101-18z",
+                    "20241102-06z",
+                    "20241102-18z",
+                    "20241103-06z",
+                    "20241103-18z",
+                    "20241104-06z"
+                ],
+                "name": "date_time"
+            },
+            {
+                "val": [
+                    "GFS",
+                    "ECMWF",
+                    "FV3_GSL_L127",
+                    "FV3_GSL_L127_dev1",
+                    "FV3_GSL_C384",
+                    "FV3_GSL_Chem"
+                ],
+                "name": "model"
+            },
+            
+            {
+                "val": [
+                    "grid_stat"
+                ],
+                "name": "data_type"
+            }
+        ]
+    },
+    "loadNote": "GSL Global Grid-to-Grid Verification"
+}

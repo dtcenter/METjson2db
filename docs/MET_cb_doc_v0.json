@@ -1,0 +1,43 @@
+{
+    "id": "V11.1.0:GFS:SL1L2:TMP:FULL:20240203_120000:20240203_120000:20240203_120000:20240203_120000",
+    "VERSION": "V11.1.0",
+    "MODEL": "GFS",
+    "DESC": "NA",
+    "LINE_TYPE": "SL1L2",
+    "FCST_VALID_BEG": "20240203_120000",
+    "FCST_VALID_END": "20240203_120000",
+    "OBS_VALID_BEG": "20240203_120000",
+    "OBS_VALID_END": "20240203_120000",
+    "FCST_VAR": "TMP",
+    "FCST_UNITS": "K",
+    "FCST_LEV": "P1000",
+    "FCST_THRESH": "NA",
+    "OBS_VAR": "TMP",
+    "OBS_UNITS": "K",
+    "OBS_LEV": "P1000",
+    "OBS_THRESH": "NA",
+    "OBTYPE": "ANLYS",
+    "VX_MASK": "FULL",
+    "INTERP_MTHD": "NEAREST",
+    "INTERP_PNTS": 1,
+    "data": {
+        "240000": {
+            "TOTAL": 10512,
+            "FBAR": 287.42687,
+            "OBAR": 287.43036,
+            "FOBAR": 82828.81923,
+            "FFBAR": 82828.45965,
+            "OOBAR": 82829.74693,
+            "MAE": 0.45338
+        },
+        "480000": {
+            "TOTAL": 3600,
+            "FBAR": 277.39335,
+            "OBAR": 277.42943,
+            "FOBAR": 77191.68907,
+            "FFBAR": 77182.22693,
+            "OOBAR": 77202.03058,
+            "MAE": 0.60431
+        }
+    }
+}

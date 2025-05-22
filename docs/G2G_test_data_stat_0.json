@@ -1,0 +1,18 @@
+{
+    "SAL1L2": {
+        "ProcessedCount": 206544,
+        "Handled": true
+    },
+    "SL1L2": {
+        "ProcessedCount": 808681,
+        "Handled": true
+    },
+    "VAL1L2": {
+        "ProcessedCount": 51636,
+        "Handled": true
+    },
+    "VL1L2": {
+        "ProcessedCount": 119232,
+        "Handled": true
+    }
+}

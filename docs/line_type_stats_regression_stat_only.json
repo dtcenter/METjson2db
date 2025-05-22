@@ -1,0 +1,138 @@
+{
+	"CNT": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"CTC": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"CTS": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"DMAP": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"ECLV": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"ECNT": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"FHO": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"GENMPR": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"GRAD": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"ISC": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"MCTC": {
+		"ProcessedCount": 0,
+		"Handled": true
+	},
+	"MCTS": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"MPR": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"NBRCNT": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"NBRCTC": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"NBRCTS": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"ORANK": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"PCT": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"PHIST": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"PJC": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"PRC": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"PSTD": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"RELP": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"RHIST": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"RPS": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"SAL1L2": {
+		"ProcessedCount": 255,
+		"Handled": true
+	},
+	"SEEPS": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"SEEPS_MPR": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"SL1L2": {
+		"ProcessedCount": 2356,
+		"Handled": true
+	},
+	"SSIDX": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"SSVAR": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"VAL1L2": {
+		"ProcessedCount": 56,
+		"Handled": true
+	},
+	"VCNT": {
+		"ProcessedCount": 0,
+		"Handled": false
+	},
+	"VL1L2": {
+		"ProcessedCount": 481,
+		"Handled": true
+	}
+}

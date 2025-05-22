@@ -1,0 +1,158 @@
+version: "2"
+run:
+  tests: true
+
+# Linters & linter-settings inspired by https://olegk.dev/go-linters-configuration-the-right-version
+linters:
+  enable:
+    # Check for passing []any as any in variadic func(...any).
+    - asasalint
+
+    # Checks for dangerous unicode character sequences.
+    - bidichk
+
+    # Check that HTTP response bodies are closed
+    - bodyclose
+
+    # Check whether the function uses a non-inherited context.
+    - contextcheck
+
+    # Detect when loop variables are copied.
+    - copyloopvar
+
+    # Check for two durations multiplied together.
+    - durationcheck
+
+    # Forces to not skip error check.
+    - errcheck
+
+    # Checks `Err-` prefix for var and `-Error` suffix for error type.
+    - errname
+
+    # Suggests to use `%w` for error-wrapping.
+    - errorlint
+
+    # TODO - enable
+    # - gocritic
+
+    # Handle replace, retract, exclude directives in go.mod
+    - gomoddirectives
+
+    # Detects when assignments to existing variables are unused
+    - ineffassign
+
+    # Check for misspellings
+    - misspell
+
+    # Finds naked/bare returns
+    - nakedret
+
+    # Both require a bit more explicit returns.
+    - nilerr
+    - nilnil
+
+    # Finds sending HTTP request without context.Context.
+    # TODO - enable
+    # - noctx
+
+    # Forces comment why another check is disabled.
+    # Better not to have //nolint: at all ;)
+    - nolintlint
+
+    # Finds shadowing of Go's predeclared identifiers.
+    # I hear a lot of complaints from junior developers.
+    # But after some time they find it very useful.
+    - predeclared
+
+    # Lint your Prometheus metrics name.
+    - promlinter
+
+    # Checks that package variables are not reassigned.
+    # Super rare case but can catch bad things (like `io.EOF = nil`)
+    - reassign
+
+    # Somewhat similar to `bodyclose` but for `database/sql` package.
+    # TODO - enable
+    # - rowserrcheck
+    - sqlclosecheck
+
+    # Go's go-to static checker - in addition to bugs, also does simplification & style
+    - staticcheck
+
+    # Check struct tags.
+    - tagliatelle
+
+    # Test-related checks.
+    - usetesting
+    - testableexamples
+    - thelper
+    - tparallel
+
+    # Remove unnecessary type conversions, make code cleaner
+    - unconvert
+
+    # Must have. Finds unused declarations.
+    - unused
+
+    # Detect the possibility to use variables/constants from stdlib.
+    - usestdlibvars
+
+    # Finds wasted assignment statements.
+    - wastedassign
+
+  settings:
+    errcheck:
+      exclude-functions:
+        - io/ioutil.ReadFile
+        - io.Copy(*bytes.Buffer)
+        - io.Copy(os.Stdout)
+    gocritic:
+      disabled-checks:
+        - hugeParam
+        - rangeExprCopy
+        - rangeValCopy
+      enabled-tags:
+        - diagnostic
+        - opinionated
+        - performance
+        - style
+    nakedret:
+      # No naked returns
+      max-func-lines: 1
+    tagliatelle:
+      case:
+        rules:
+          avro: snake
+          bson: camel
+          json: camel
+          mapstructure: kebab
+          xml: camel
+          yaml: snake
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  # Show all issues in the project
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: false
+  new: false
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

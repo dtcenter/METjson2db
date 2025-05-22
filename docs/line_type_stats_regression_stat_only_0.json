@@ -1,0 +1,139 @@
+{
+    "CNT": {
+        "ProcessedCount": 2560,
+        "Handled": true
+    },
+    "CTC": {
+        "ProcessedCount": 1329,
+        "Handled": true
+    },
+    "CTS": {
+        "ProcessedCount": 1403,
+        "Handled": true
+    },
+    "DMAP": {
+        "ProcessedCount": 35,
+        "Handled": true
+    },
+    "ECLV": {
+        "ProcessedCount": 3109,
+        "Handled": true
+    },
+    "ECNT": {
+        "ProcessedCount": 0,
+        "Handled": false
+    },
+    "FHO": {
+        "ProcessedCount": 1124,
+        "Handled": true
+    },
+    "GENMPR": {
+        "ProcessedCount": 0,
+        "Handled": false
+    },
+    "GRAD": {
+        "ProcessedCount": 55,
+        "Handled": true
+    },
+    "ISC": {
+        "ProcessedCount": 231,
+        "Handled": true
+    },
+    "MCTC": {
+        "ProcessedCount": 25,
+        "Handled": true
+    },
+    "MCTS": {
+        "ProcessedCount": 29,
+        "Handled": true
+    },
+    "MPR": {
+        "ProcessedCount": 361258,
+        "Handled": true
+    },
+    "NBRCNT": {
+        "ProcessedCount": 454,
+        "Handled": true
+    },
+    "NBRCTC": {
+        "ProcessedCount": 230,
+        "Handled": true
+    },
+    "NBRCTS": {
+        "ProcessedCount": 436,
+        "Handled": true
+    },
+    "ORANK": {
+        "ProcessedCount": 20003,
+        "Handled": true
+    },
+    "PCT": {
+        "ProcessedCount": 505,
+        "Handled": true
+    },
+    "PHIST": {
+        "ProcessedCount": 116,
+        "Handled": true
+    },
+    "PJC": {
+        "ProcessedCount": 479,
+        "Handled": true
+    },
+    "PRC": {
+        "ProcessedCount": 479,
+        "Handled": true
+    },
+    "PSTD": {
+        "ProcessedCount": 534,
+        "Handled": true
+    },
+    "RELP": {
+        "ProcessedCount": 130,
+        "Handled": true
+    },
+    "RHIST": {
+        "ProcessedCount": 128,
+        "Handled": true
+    },
+    "RPS": {
+        "ProcessedCount": 58,
+        "Handled": true
+    },
+    "SAL1L2": {
+        "ProcessedCount": 255,
+        "Handled": true
+    },
+    "SEEPS": {
+        "ProcessedCount": 15,
+        "Handled": true
+    },
+    "SEEPS_MPR": {
+        "ProcessedCount": 1610,
+        "Handled": true
+    },
+    "SL1L2": {
+        "ProcessedCount": 2356,
+        "Handled": true
+    },
+    "SSIDX": {
+        "ProcessedCount": 0,
+        "Handled": false
+    },
+    "SSVAR": {
+        "ProcessedCount": 6888,
+        "Handled": true
+    },
+    "VAL1L2": {
+        "ProcessedCount": 56,
+        "Handled": true
+    },
+    "VCNT": {
+        "ProcessedCount": 503,
+        "Handled": true
+    },
+    "VL1L2": {
+        "ProcessedCount": 481,
+        "Handled": true
+    }
+}
+}

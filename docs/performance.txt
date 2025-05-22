@@ -1,0 +1,18 @@
+Jan 6th, 2025
+"uploadToDb": true
+{"time":"2025-01-02T19:43:43.890343714Z","level":"INFO","msg":"Run stats","files":708,"docs":62700,"fileTotalCount":0,"fileTotalErrors":0,"dbTotalCount":1187695,"dbTotalErrors":0,"run-time(ms)":293653}
+
+"uploadToDb": false
+{"time":"2025-01-06T22:41:37.465390249Z","level":"INFO","msg":"Run stats","files":708,"docs":62700,"fileTotalCount":0,"fileTotalErrors":0,"dbTotalCount":0,"dbTotalErrors":0,"run-time(ms)":154595}
+
+
+
+Sep 24, 2024
+============
+    Threads = 32
+    2024/09/24 14:39:55 flushToDbAsync.go:38: flushToDbAsync(21) doc count:356488
+    2024/09/24 14:39:55 statToCbDoc.go:274: asyncWaitGroupDb finished!
+    2024/09/24 14:39:55 statToCbDoc.go:287: 	statToCbDoc finished in 2h57m22.984773583s
+
+    Files processed = 297
+    Records processed = 356488 * 32 = 11,407,616
