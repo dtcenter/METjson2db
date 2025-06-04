@@ -7,13 +7,11 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/yaml.v3"
-
-	"github.com/NOAA-GSL/METstat2json/pkg/metLineTypeParser"
-
 	"github.com/NOAA-GSL/METjson2db/pkg/async"
 	"github.com/NOAA-GSL/METjson2db/pkg/state"
 	"github.com/NOAA-GSL/METjson2db/pkg/types"
+	"github.com/NOAA-GSL/METstat2json/pkg/parser"
+	"gopkg.in/yaml.v3"
 )
 
 // init runs before main() is evaluated
@@ -118,7 +116,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		}
 	case "CREATE_JSON_DOC_ARCHIVE":
 		// home, _ := os.UserHomeDir()
-		err := metLineTypeParser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		err := parser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}
