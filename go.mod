@@ -1,6 +1,6 @@
 module github.com/NOAA-GSL/METjson2db
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/NOAA-GSL/METstat2json v0.1.12

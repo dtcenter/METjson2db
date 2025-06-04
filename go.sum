@@ -1,7 +1,5 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/NOAA-GSL/METstat2json v0.1.11 h1:FwtcrxhJPmvDzfa0hCi6c8drj112vcaq1pGz63y2Z68=
-github.com/NOAA-GSL/METstat2json v0.1.11/go.mod h1:On55cHsapSSb8UMX0ZMrP8BoKJiZ3+AfHAUiWDFzQbM=
 github.com/NOAA-GSL/METstat2json v0.1.12 h1:TSybyxjjXvDhv+ovllTxeN/ujYLbRa9pdxRIKtKJ5U4=
 github.com/NOAA-GSL/METstat2json v0.1.12/go.mod h1:4+Srw7ttpFS5h1Txa96oJzHsWyL+rR0pUBHGCzFzs7k=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
