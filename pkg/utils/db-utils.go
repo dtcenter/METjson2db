@@ -8,7 +8,7 @@ import (
 
 	"github.com/couchbase/gocb/v2"
 
-	"github.com/NOAA-GSL/METjson2db/pkg/types"
+	"github.com/dtcenter/METjson2db/pkg/types"
 )
 
 // init runs before main() is evaluated

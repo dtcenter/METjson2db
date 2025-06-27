@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/NOAA-GSL/METjson2db/pkg/async"
-	"github.com/NOAA-GSL/METjson2db/pkg/state"
-	"github.com/NOAA-GSL/METjson2db/pkg/types"
-	"github.com/NOAA-GSL/METstat2json/pkg/parser"
+	"github.com/dtcenter/METjson2db/pkg/async"
+	"github.com/dtcenter/METjson2db/pkg/state"
+	"github.com/dtcenter/METjson2db/pkg/types"
+	"github.com/dtcenter/METstat2json/pkg/parser"
 	"gopkg.in/yaml.v3"
 )
 

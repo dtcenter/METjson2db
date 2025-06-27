@@ -7,9 +7,9 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	"github.com/NOAA-GSL/METjson2db/pkg/state"
-	"github.com/NOAA-GSL/METjson2db/pkg/types"
-	"github.com/NOAA-GSL/METjson2db/pkg/utils"
+	"github.com/dtcenter/METjson2db/pkg/state"
+	"github.com/dtcenter/METjson2db/pkg/types"
+	"github.com/dtcenter/METjson2db/pkg/utils"
 	// "github.com/couchbase/gocb/v2"
 )
 

@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/NOAA-GSL/METjson2db/pkg/core"
-	"github.com/NOAA-GSL/METjson2db/pkg/metadataUpdate"
-	"github.com/NOAA-GSL/METjson2db/pkg/state"
+	"github.com/dtcenter/METjson2db/pkg/core"
+	"github.com/dtcenter/METjson2db/pkg/metadataUpdate"
+	"github.com/dtcenter/METjson2db/pkg/state"
 )
 
 func main() {
