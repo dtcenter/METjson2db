@@ -25,7 +25,8 @@ go.work.sum
 .env
 
 # Project-specific files
-output
+output/
+build/
 tmp/
 .env*
 *.env

@@ -1,10 +1,10 @@
-module github.com/NOAA-GSL/METjson2db
+module github.com/dtcenter/METjson2db
 
 go 1.24.0
 
 require (
-	github.com/NOAA-GSL/METstat2json v0.1.12
 	github.com/couchbase/gocb/v2 v2.10.0
+	github.com/dtcenter/METstat2json v0.1.13
 	github.com/google/uuid v1.6.0
 	github.com/relvacode/iso8601 v1.6.0
 	golang.org/x/exp v0.0.0-20250531010427-b6e5de432a8b
@@ -30,7 +30,7 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/grpc v1.72.2 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect

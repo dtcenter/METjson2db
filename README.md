@@ -104,7 +104,7 @@ generate an index advice which will list, new indexes, if any, that may be neede
 
 # Generating LINE_TYPE definitions
 # This needs to be done once for each MET version change, OR when LINE_TYPE definitions change in the following MET repo files
-git clone https://github.com/NOAA-GSL/METstat2json
+git clone https://github.com/dtcenter/METstat2json
 make sure you are in the main branch
 cd  <repo path>/pkg/buildHeaderLineTypes
 go run . > /tmp/types.go

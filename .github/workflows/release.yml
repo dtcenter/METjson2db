@@ -1,12 +1,9 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: CI
+name: Release
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   golangci:
@@ -31,12 +28,8 @@ jobs:
         run: go build -v ./...
       - name: Test
         run: go test -v -shuffle=on -cover ./...
-      - name: Test for flaky tests
-        run: go test -count 100 ./...
-      - name: Test for race conditions
-        run: go test -race ./...
 
-  build:
+  docker:
     name: Build Docker image
     runs-on: ubuntu-latest
     permissions:
@@ -76,3 +69,42 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
           push: true
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [golangci, test, docker]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create the GitHub Release
+        run: |
+          # Create a new release or update an existing one, with generated notes
+          gh release create "${{ github.ref_name }}" --draft --title "Release ${{ github.ref_name }}" --generate-notes
+
+  upload:
+    name: Build & Upload Release Binaries
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        include:
+          - GOOS: linux
+            GOARCH: amd64
+            OUT: build/json2db-linux-amd64
+          - GOOS: linux
+            GOARCH: arm64
+            OUT: build/json2db-linux-arm64
+          - GOOS: darwin
+            GOARCH: arm64
+            OUT: build/json2db-darwin-arm64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+      - name: Build binary
+        run: |
+          GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} go build -o ${{ matrix.OUT }}
+      - name: Upload release binaries
+        run: |
+          gh release upload "${{ github.ref_name }}" "${{ matrix.OUT }}"
