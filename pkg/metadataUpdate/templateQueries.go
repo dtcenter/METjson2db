@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NOAA-GSL/METjson2db/pkg/types"
-	"github.com/NOAA-GSL/METjson2db/pkg/utils"
+	"github.com/dtcenter/METjson2db/pkg/types"
+	"github.com/dtcenter/METjson2db/pkg/utils"
 )
 
 // init runs before main() is evaluated

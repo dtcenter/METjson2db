@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/NOAA-GSL/METjson2db/pkg/state"
-	"github.com/NOAA-GSL/METstat2json/pkg/parser"
+	"github.com/dtcenter/METjson2db/pkg/state"
+	"github.com/dtcenter/METstat2json/pkg/parser"
 )
 
 // init runs before main() is evaluated
