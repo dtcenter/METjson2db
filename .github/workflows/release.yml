@@ -80,6 +80,23 @@ jobs:
         run: |
           # Create a new release or update an existing one, with generated notes
           gh release create "${{ github.ref_name }}" --draft --title "Release ${{ github.ref_name }}" --generate-notes
+      - name: Add release publishing instructions
+        run: |
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          ## 🚀 Draft Release Created
+
+          A draft release for version ${{ github.ref_name }} has been created.
+
+          ### How to Review and Publish:
+
+          1. Go to [Releases page](https://github.com/${{ github.repository }}/releases)
+          2. Find the draft release for ${{ github.ref_name }}
+          3. Review the generated release notes and binaries
+          4. Click "Edit" to make any changes if needed
+          5. Click "Publish release" when ready to make it public
+
+          **Direct link**: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+          EOF
 
   upload:
     name: Build & Upload Release Binaries
