@@ -1,8 +1,7 @@
 {
     "version": "V01",
     "email": "molly.b.smith@noaa.gov",
-    "targetCollection": "MET_parser",
-    "targetCollection0": "MET_default",
+    "targetCollection": "MET_default",
     "datasetName": "METDEFAULT",
     "logLevel": "INFO",
     "logLevel_doc": ["DEBUG", "INFO", "WARN", "ERROR"],
