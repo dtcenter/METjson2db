@@ -21,6 +21,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dtcenter/METstat2json v0.1.13 h1:td4WVcxujYaRxlDG3022vNQZViv5aW/z5l2sKEocuRM=
 github.com/dtcenter/METstat2json v0.1.13/go.mod h1:j/5k9g8a5Z57pQxiUlEA/uZnwoc9R6BHVVSyJR9dL68=
+github.com/dtcenter/METstat2json v0.1.14 h1:kYoYRNoOm+SPKV04UEePJTpQU4qDOqo1uYHxwYZUhug=
+github.com/dtcenter/METstat2json v0.1.14/go.mod h1:ZTfG4GZTsaKyTH+8b4dFluDrCLY+ycknJY2QsAC/LTk=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=

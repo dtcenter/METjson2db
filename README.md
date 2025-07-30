@@ -7,12 +7,20 @@ This project is a GO language command-line program to generate Couchbase JSON do
 and/or upload these documents to Couchbase database.
  
 ## Inline upload vs JSON archive generation
-There are two ways this program can be run. The run mode is specified in the settings.json file.
-Refer to documentation for a detailed description of settings.json 
-The 2 run modes are: 
+There are multiple modes in which this program can be run. 
+The run mode is specified in the load_spec.json file.
+
+NOTE: run mode specified in load_spec.json can be overidden in
+the command line, for example:
+-m METADATA_UPDATE
+
+Refer to load_spec documentation for a detailed description of these run modes.
+
+The current run modes are: 
 "runMode" : "DIRECT_LOAD_TO_DB"
-OR
 "runMode" : "CREATE_JSON_DOC_ARCHIVE"
+"runMode" : "METADATA_UPDATE"
+
 Please note that the setting:
 "overWriteData": false
 which enables merge functionality, wherein incoming data is merged with data already in the database
@@ -27,7 +35,7 @@ Refer to documentation section "Generating LINE_TYPE definitions" for details on
 See section "Running the METjson2db to generate and/or upload JSON documents"
 
 # Couchbase
-Unlike relational databases like MySQL, PostGres etc, Couchbase is a JSON document based database where
+Unlike relational databases like MySQL, Postgres etc, Couchbase is a JSON document based database where
 the unit of storage is a single JSON document. This model is much more flexible than a relational model, 
 for example, you can add another attribute to your documents without adding/modifying a table schema.  
 In fact there are no tables or table metadata like columns, column types etc that needs to be maintained and
