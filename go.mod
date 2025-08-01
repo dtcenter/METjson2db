@@ -3,7 +3,7 @@ module github.com/dtcenter/METjson2db
 go 1.24.0
 
 require (
-	github.com/couchbase/gocb/v2 v2.10.0
+	github.com/couchbase/gocb/v2 v2.10.1
 	github.com/dtcenter/METstat2json v0.1.14
 	github.com/google/uuid v1.6.0
 	github.com/relvacode/iso8601 v1.6.0
@@ -12,7 +12,7 @@ require (
 )
 
 require (
-	github.com/couchbase/gocbcore/v10 v10.7.0 // indirect
+	github.com/couchbase/gocbcore/v10 v10.7.1 // indirect
 	github.com/couchbase/gocbcoreps v0.1.3 // indirect
 	github.com/couchbase/goprotostellar v1.0.2 // indirect
 	github.com/couchbaselabs/gocbconnstr/v2 v2.0.0-20240607131231-fb385523de28 // indirect
