@@ -1,0 +1,45 @@
+// from URL:
+// https://stackoverflow.com/questions/49266516/reading-files-from-aws-s3-in-golang
+
+
+go install github.com/seaweedfs/seaweedfs/weed@latest
+go/bin/weed server -dir=~/scratch/ -s3
+https://github.com/seaweedfs/seaweedfs/wiki/s3cmd-with-SeaweedFS
+
+brew install localstack/tap/localstack-cli
+brew install rancher
+https://docs.localstack.cloud/aws/integrations/containers/rancher-desktop/
+ls /Applications/Rancher\ Desktop.app/Contents/Resources/resources/darwin/bin
+/Applications/Rancher\ Desktop.app/Contents/Resources/resources/darwin/bin/rdctl shutdown
+/Applications/Rancher\ Desktop.app/Contents/Resources/resources/darwin/bin/rdctl start
+
+localstack start
+https://docs.localstack.cloud/aws/getting-started/quickstart/
+brew install awscli-local
+brew install awscli
+
+--Create buckets
+awslocal s3 mb s3://gopa0
+awslocal s3 mb s3://gopa1
+awslocal s3 mb s3://metin
+awslocal s3 mb s3://metout
+awslocal s3 ls
+aws --profile localstack --endpoint-url=http://localhost:4566 s3 ls
+
+-- Add item to bucket
+awslocal s3 cp /Users/gopa.padmanabhan/git/work/MATS.gopa/GoS3Test/test_data/test_data_0.txt s3://gopa0/test_data_0.txt
+awslocal s3 cp /Users/gopa.padmanabhan/git/dtcenter/METjson2db/test_data/s3test.jar s3://metin/s3test.jar
+awslocal s3 ls metin
+
+$cat ~/.aws/credentials
+[localstack]
+aws_access_key_id=test
+aws_secret_access_key=test
+
+$export AWS_ACCESS_KEY_ID=test
+$export AWS_SECRET_ACCESS_KEY=test
+$export AWS_DEFAULT_REGION=us-east-1
+
+go mod tidy
+go run .
+

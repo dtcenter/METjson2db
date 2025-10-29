@@ -257,6 +257,8 @@ go run ./cmd/... -c ~/credentials -l ./load_spec.json -i /Users/gopa.padmanabhan
 # recursive with file pattern regex match
 go run ./cmd/... -c ~/credentials -l ./load_spec.json -I /Users/gopa.padmanabhan/scratch/data/MET/tc_data/tc_data/ -r ".tcst"
 go run ./cmd/... -c ~/credentials.MET -d gopa01 -l ./load_spec.json -I /home/amb-verif/MET_data/tc_data/ -r ".tcst"
+# load data from S3, transform, write back to S3
+go run ./cmd/... -c ~/credentials.MET -d gopa01 -l ./load_spec.json -b s3://metin/s3test.jar -B s3://MET_out/s3test.jar
 # if -f,-F,-i OR -I options are specified, ignores load_spec input files
 
 # update metadata

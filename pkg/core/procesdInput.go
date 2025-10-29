@@ -116,7 +116,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		}
 	case "CREATE_JSON_DOC_ARCHIVE":
 		// home, _ := os.UserHomeDir()
-		err := parser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		err := parser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339)+".gz")
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}

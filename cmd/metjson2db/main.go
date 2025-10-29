@@ -38,6 +38,12 @@ func main() {
 	flag.StringVar(&inputFile, "f", "", "stat file full path")
 	var inputFiles []string
 
+	// s3://bucket/path/to/file.zip (b/B for s3 bundle)
+	var s3inputFile string
+	flag.StringVar(&s3inputFile, "b", "", "s3 stat zip input path")
+	var s3outputFile string
+	flag.StringVar(&s3outputFile, "B", "", "s3 stat zip output path")
+
 	var inputFolder string
 	flag.StringVar(&inputFolder, "i", "", "input stat files folder")
 
@@ -96,6 +102,11 @@ func main() {
 
 	if runMode == "METADATA_UPDATE" {
 		metadataUpdate.MetadataUpdate()
+		return
+	}
+
+	if len(s3inputFile) > 0 && len(s3outputFile) > 0 {
+		core.ProcessS3Files(s3inputFile, s3outputFile, nil)
 		return
 	}
 

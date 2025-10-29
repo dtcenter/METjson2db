@@ -8,7 +8,7 @@
     "runMode0" : "CREATE_JSON_DOC_ARCHIVE",
     "runMode" : "DIRECT_LOAD_TO_DB",
     "runMode_doc" : ["DIRECT_LOAD_TO_DB", "CREATE_JSON_DOC_ARCHIVE", "METADATA_UPDATE"],
-    "jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out_",
+    "jsonArchiveFilePathAndPrefix" :"/Users/gopa.padmanabhan/scratch/METjson2db_out_",
     "maxDocIdLength": 200,
     "progressiveLargeDocIdPolicies": [ "SHA256", "REJECT_WIH_ERROR_LOG"],
     "overWriteData": true,

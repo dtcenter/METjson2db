@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-10-29T10:36:46.172154-06:00",
+  "files": [
+    {
+      "name": "my_dir",
+      "path": "my_dir/",
+      "size": 0,
+      "mode": 493,
+      "modTime": "2025-10-29T10:36:46-06:00",
+      "isDir": true
+    },
+    {
+      "name": "file1.txt",
+      "path": "my_dir/file1.txt",
+      "size": 11,
+      "mode": 420,
+      "modTime": "2025-10-29T10:36:46-06:00",
+      "isDir": false
+    }
+  ]
+}
