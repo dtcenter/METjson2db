@@ -2,15 +2,26 @@ package core
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/dtcenter/METjson2db/pkg/state"
 )
 
@@ -41,6 +52,144 @@ func ProcessS3Files(inputS3Path string, outputS3Path string, preDbLoadCallback f
 	// start := time.Now()
 	state.StateReset()
 
+	_, s3client, err := iniS3Client()
+	if err != nil {
+		log.Fatalf("Unable to init s3 %v", err)
+	}
+	bucketIn, keyIn, _ := extractS3InfoFromS3Path(inputS3Path)
+	bucketOut, keyOut, _ := extractS3InfoFromS3Path(outputS3Path)
+	slog.Info(fmt.Sprintf("bucketIn=%s,keyIn=%s bucketOut=%s,keyOut=%s", bucketIn, keyIn, bucketOut, keyOut))
+
+	// Get the first page of results for ListObjectsV2 for a bucket
+	output, err := s3client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucketIn),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("first page results")
+	for _, object := range output.Contents {
+		log.Printf("key=%s size=%d", aws.ToString(object.Key), *object.Size)
+	}
+
+	result, err := s3client.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(bucketIn),
+		Key:    aws.String(keyIn),
+	})
+
+	if err != nil {
+		var nsk *types.NoSuchKey
+		if errors.As(err, &nsk) {
+			// handle NoSuchKey error
+			return nil
+		}
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			code := apiErr.ErrorCode()
+			message := apiErr.ErrorMessage()
+			log.Printf("key=%s message=%d", code, message)
+			return nil
+		}
+		// handle error
+		return nil
+	}
+	defer result.Body.Close()
+
+	contentType := *result.ContentType
+	contentLength := *result.ContentLength
+	eTag := *result.ETag
+
+	log.Printf("contentType=%s,contentLength=%d,eTag:%s", contentType, contentLength, eTag)
+
+	body, err := io.ReadAll(result.Body)
+	_, err = io.ReadAll(result.Body)
+	if err != nil {
+		log.Fatalf("failed to read: %v", err)
+	}
+
+	// Convert the byte slice to a string for printing
+	// fmt.Println(string(body))
+
+	/*
+		// Simulate a tar archive in a byte slice
+		// In a real scenario, this byte slice would come from a network, memory, etc.
+		tarData := createTarInBytes()
+
+		// Write the JSON data to a file
+		err = os.WriteFile("testTar0.tar", tarData, 0644)
+		if err != nil {
+			log.Fatalf("Error writing testTar0.tar: %v\n", err)
+		}
+
+		// Convert the byte slice to an io.Reader
+		tarReaderFromBytes := bytes.NewReader(tarData)
+	*/
+
+	// Convert the byte slice to an io.Reader
+	tarReaderFromBytes := bytes.NewReader(body)
+
+	// Create a tar.Reader
+	tarReader := tar.NewReader(tarReaderFromBytes)
+
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break // End of archive
+		}
+		if err != nil {
+			log.Fatalf("Error reading tar header: %v", err)
+		}
+
+		log.Printf("header: %s", header.Name)
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			log.Println("TypeDir:%v", header.Mode)
+		case tar.TypeReg:
+			log.Println("TypeReg:%v", header.Mode)
+		default:
+			fmt.Printf("Skipping unknown tar entry type: %s, %v\n", header.Name, header.Typeflag)
+		}
+	}
+
+	// createTarManifestTest()
+	return nil
+}
+
+func iniS3Client() (aws.Config, *s3.Client, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion("us-east-1"),
+		config.WithBaseEndpoint("http://localhost:4566"),
+	)
+	if err != nil {
+		log.Fatalf("Unable to init s3: %v", err)
+	}
+
+	s3client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.UsePathStyle = true
+	})
+	return cfg, s3client, nil
+}
+
+func extractS3InfoFromS3Path(s3URI string) (string, string, error) {
+	u, err := url.Parse(s3URI)
+	if err != nil {
+		fmt.Printf("Error parsing S3 URI: %v\n", err)
+		return "", "", err
+	}
+
+	// Extract the bucket name
+	bucketName := u.Host
+
+	// Extract the object key (path)
+	// The u.Path will include a leading slash, which is typically removed for S3 keys.
+	objectKey := strings.TrimPrefix(u.Path, "/")
+
+	return bucketName, objectKey, nil
+}
+
+func createTarManifestTest() error {
 	tarFilePath := "example.tar.gz" // Replace with your tar file path
 	manifestOutputPath := "manifest.json"
 
@@ -148,4 +297,52 @@ func createDummyTarGz(filename string) {
 	}
 	tw.WriteHeader(header)
 	tw.Write([]byte("hello world"))
+}
+
+// createTarInBytes creates a simple tar archive in a byte slice for demonstration
+func createTarInBytes() []byte {
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+
+	// Add a file
+	header := &tar.Header{
+		Name: "file1.txt",
+		Mode: 0644,
+		Size: int64(len("Hello from file1!")),
+	}
+	if err := tw.WriteHeader(header); err != nil {
+		log.Fatalf("Failed to write header for file1.txt: %v", err)
+	}
+	if _, err := tw.Write([]byte("Hello from file1!")); err != nil {
+		log.Fatalf("Failed to write content for file1.txt: %v", err)
+	}
+
+	// Add a directory
+	dirHeader := &tar.Header{
+		Name:     "my_directory/",
+		Mode:     0755,
+		Typeflag: tar.TypeDir,
+	}
+	if err := tw.WriteHeader(dirHeader); err != nil {
+		log.Fatalf("Failed to write header for my_directory: %v", err)
+	}
+
+	// Add another file inside the directory
+	file2Header := &tar.Header{
+		Name: "my_directory/file2.txt",
+		Mode: 0644,
+		Size: int64(len("Content of file2.")),
+	}
+	if err := tw.WriteHeader(file2Header); err != nil {
+		log.Fatalf("Failed to write header for file2.txt: %v", err)
+	}
+	if _, err := tw.Write([]byte("Content of file2.")); err != nil {
+		log.Fatalf("Failed to write content for file2.txt: %v", err)
+	}
+
+	if err := tw.Close(); err != nil {
+		log.Fatalf("Failed to close tar writer: %v", err)
+	}
+
+	return buf.Bytes()
 }

@@ -28,7 +28,7 @@ aws --profile localstack --endpoint-url=http://localhost:4566 s3 ls
 
 -- Add item to bucket
 awslocal s3 cp /Users/gopa.padmanabhan/git/work/MATS.gopa/GoS3Test/test_data/test_data_0.txt s3://gopa0/test_data_0.txt
-awslocal s3 cp /Users/gopa.padmanabhan/git/dtcenter/METjson2db/test_data/s3test.jar s3://metin/s3test.jar
+awslocal s3 cp /Users/gopa.padmanabhan/git/dtcenter/METjson2db/test_data/testTar0.tar s3://metin/testTar0.tar
 awslocal s3 ls metin
 
 $cat ~/.aws/credentials
