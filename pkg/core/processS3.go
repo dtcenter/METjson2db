@@ -132,6 +132,14 @@ func ProcessS3Files(inputS3Path string, outputS3Path string, preDbLoadCallback f
 	// Create a tar.Reader
 	tarReader := tar.NewReader(tarReaderFromBytes)
 
+	var buf bytes.Buffer
+	tarWriter := tar.NewWriter(&buf)
+
+	manifest := &Manifest{
+		Timestamp: time.Now(),
+		Files:     []ManifestEntry{},
+	}
+
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -143,17 +151,95 @@ func ProcessS3Files(inputS3Path string, outputS3Path string, preDbLoadCallback f
 
 		log.Printf("header: %s", header.Name)
 
+		entry := ManifestEntry{
+			Name:    filepath.Base(header.Name),
+			Path:    header.Name,
+			Size:    header.Size,
+			Mode:    os.FileMode(header.Mode),
+			ModTime: header.ModTime,
+			IsDir:   header.Typeflag == tar.TypeDir,
+		}
+		manifest.Files = append(manifest.Files, entry)
+
 		switch header.Typeflag {
 		case tar.TypeDir:
-			log.Println("TypeDir:%v", header.Mode)
+			log.Println("TypeDir, Mode:%v", header.Mode)
+			dirHeader := &tar.Header{
+				Name:     header.Name,
+				Mode:     header.Mode,
+				Typeflag: tar.TypeDir,
+			}
+			if err := tarWriter.WriteHeader(dirHeader); err != nil {
+				log.Fatalf("Failed to write header for %s: %v", header.Name, err)
+			}
 		case tar.TypeReg:
 			log.Println("TypeReg:%v", header.Mode)
+			if header.Typeflag == tar.TypeReg {
+				fmt.Printf("--- Contents of %s ---\n", header.Name)
+				var buf bytes.Buffer
+				if _, err := io.Copy(&buf, tarReader); err != nil {
+					log.Fatalf("Error copying file content: %v", err)
+				}
+				fileContent := buf.String()
+				fmt.Println(fileContent)
+				fmt.Println("\n----------------------")
+
+				file2Header := &tar.Header{
+					Name: header.Name,
+					Mode: header.Mode,
+					Size: int64(len(fileContent)),
+				}
+				if err := tarWriter.WriteHeader(file2Header); err != nil {
+					log.Fatalf("Failed to write header for %s: %v", header.Name, err)
+				}
+				if _, err := tarWriter.Write([]byte(fileContent)); err != nil {
+					log.Fatalf("Failed to write content for %s: %v", header.Name, err)
+				}
+
+			}
 		default:
 			fmt.Printf("Skipping unknown tar entry type: %s, %v\n", header.Name, header.Typeflag)
 		}
 	}
 
+	// Marshal the manifest to JSON
+	jsonData, err := json.MarshalIndent(manifest, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling manifest to JSON: %v\n", err)
+		return err
+	}
+	// Add manifest.json to tar
+	file2Header := &tar.Header{
+		Name: "manifest.json",
+		Mode: 0644,
+		Size: int64(len(jsonData)),
+	}
+	if err := tarWriter.WriteHeader(file2Header); err != nil {
+		log.Fatalf("Failed to write header for manifest.json: %v", err)
+	}
+	if _, err := tarWriter.Write([]byte(jsonData)); err != nil {
+		log.Fatalf("Failed to write content for manifest.json: %v", err)
+	}
+
 	// createTarManifestTest()
+
+	if err := tarWriter.Close(); err != nil {
+		log.Fatalf("Failed to close tar writer: %v", err)
+	}
+
+	// write modified tar out
+	input := &s3.PutObjectInput{
+		Bucket:            aws.String(bucketOut),
+		Key:               aws.String(keyOut),
+		Body:              bytes.NewReader(buf.Bytes()),
+		ChecksumAlgorithm: types.ChecksumAlgorithmSha256,
+	}
+
+	_, err = s3client.PutObject(context.TODO(), input)
+	if err != nil {
+		log.Fatalf("Error in PutObject: %v", err)
+	}
+
 	return nil
 }
 
