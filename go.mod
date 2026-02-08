@@ -6,7 +6,7 @@ require (
 	github.com/couchbase/gocb/v2 v2.10.0
 	github.com/dtcenter/METstat2json v0.1.14
 	github.com/google/uuid v1.6.0
-	github.com/relvacode/iso8601 v1.6.0
+	github.com/relvacode/iso8601 v1.7.0
 	golang.org/x/exp v0.0.0-20250531010427-b6e5de432a8b
 	gopkg.in/yaml.v3 v3.0.1
 )
