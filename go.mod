@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.25
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.24
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.0
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.44.0
 	github.com/couchbase/gocb/v2 v2.10.0
 	github.com/dtcenter/METstat2json v0.1.14
 	github.com/google/uuid v1.6.0

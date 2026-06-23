@@ -7,8 +7,11 @@
 
 ## Build
 
+Binaries go in the `build/` directory (gitignored):
+
 ```bash
-go build ./cmd/metjson2db
+go build -o build/metjson2db ./cmd/metjson2db
+go build -o build/sqsworker ./cmd/sqsworker
 ```
 
 ## Tests
@@ -54,6 +57,15 @@ The test checks `http://localhost:4566/_ministack/health` before doing anything 
 docker rm -f ministack
 ```
 
+#### SQS worker tests (`cmd/sqsworker/`)
+
+These tests exercise the full SQS message flow: build a tarball, upload to S3, send an S3 event notification to SQS, receive the message, process it through `handleMessage`, and verify the message is deleted from the queue. They also require MiniStack.
+
+```bash
+AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+  go test -tags integration ./cmd/sqsworker/ -v
+```
+
 #### Couchbase merge tests (`pkg/black_box_tests/`)
 
 These tests exercise the full parse-and-upsert pipeline against a live Couchbase cluster. They require a `~/credentials` file with valid connection details (see `credentials.template`).
@@ -69,7 +81,7 @@ AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
   go test -tags integration ./... -v
 ```
 
-This requires both MiniStack and Couchbase to be available.
+This requires both MiniStack (for S3/SQS tests) and Couchbase (for merge tests) to be available.
 
 ### Coverage
 
@@ -103,5 +115,15 @@ Note: the default `jsonArchiveFilePathAndPrefix` in `load_spec.json` points to `
 
 ```bash
 docker build -t metjson2db .
-docker run metjson2db -f /path/to/file.stat -m CREATE_JSON_DOC_ARCHIVE
+```
+
+The Dockerfile builds both `metjson2db` and `sqsworker` binaries. Since there is no hardcoded entrypoint, specify the binary when running:
+
+```bash
+# CLI
+docker run metjson2db /app/metjson2db -f /path/to/file.stat -m CREATE_JSON_DOC_ARCHIVE
+
+# SQS worker
+docker run -e SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789/my-queue \
+  metjson2db /app/sqsworker -l /app/load_spec.json
 ```
