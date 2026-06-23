@@ -1,14 +1,15 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
 
 	"github.com/dtcenter/METjson2db/pkg/async"
 	"github.com/dtcenter/METjson2db/pkg/state"
+	"github.com/dtcenter/METjson2db/pkg/storage"
 	"github.com/dtcenter/METjson2db/pkg/types"
 	"github.com/dtcenter/METstat2json/pkg/parser"
 	"gopkg.in/yaml.v3"
@@ -19,8 +20,15 @@ func init() {
 	slog.Debug("ProcessInput:init()")
 }
 
+// ProcessInputFiles processes stat files from a list of paths (backward-compatible).
 func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
-	slog.Info(fmt.Sprintf("ProcessInputFiles(%d)", len(inputFiles)))
+	provider := storage.NewLocalProvider(inputFiles)
+	return ProcessFromProvider(context.Background(), provider, preDbLoadCallback)
+}
+
+// ProcessFromProvider processes stat files from a StorageProvider.
+func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, preDbLoadCallback func()) error {
+	slog.Info("ProcessFromProvider")
 
 	start := time.Now()
 	state.StateReset()
@@ -33,7 +41,6 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 				state.AsyncWaitGroupFlushToDb.Add(1)
 				go func() {
 					defer state.AsyncWaitGroupFlushToDb.Done()
-					// conn := getDbConnection(credentials)
 					async.FlushToDbAsync(di)
 				}()
 			}
@@ -52,9 +59,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		}
 	}
 
-	// slog.Error("Test exit!")
-
-	StartProcessing(inputFiles)
+	StartProcessingFromProvider(ctx, provider)
 
 	fileTotalCount := int64(0)
 	fileTotalErrors := int64(0)
@@ -88,34 +93,8 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 
 			state.AsyncWaitGroupFlushToDb.Wait()
 			slog.Debug("asyncWaitGroupFlushToDb finished!")
-
-			// get return info from threads
-			/*
-				for fi := 0; fi < int(state.LoadSpec.ThreadsWriteToDisk); fi++ {
-					doc, ok := <-state.AsyncFlushToFileChannels[fi]
-					if ok && len(doc.HeaderFields) > 0 {
-						slog.Debug("\tflushToFilesAsync[%d], count:%d, errors:%d", fi, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-						fileTotalCount += doc.HeaderFields["count"].IntVal
-						fileTotalErrors += doc.HeaderFields["errors"].IntVal
-					} else {
-						slog.Debug("\tflushToFilesAsync[%d], errors:", fi)
-					}
-				}
-
-				for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
-					doc, ok := <-state.AsyncFlushToDbChannels[di]
-					if ok && len(doc.HeaderFields) > 0 {
-						slog.Debug("\tflushToDbAsync[%d], count:%d, errors:%d", di, doc.HeaderFields["count"].IntVal, doc.HeaderFields["errors"].IntVal)
-						dbTotalCount += doc.HeaderFields["count"].IntVal
-						dbTotalErrors += doc.HeaderFields["errors"].IntVal
-					} else {
-						slog.Debug("\tflushToDbAsync[%d], errors:", di)
-					}
-				}
-			*/
 		}
 	case "CREATE_JSON_DOC_ARCHIVE":
-		// home, _ := os.UserHomeDir()
 		err := parser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
@@ -123,7 +102,7 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 		return err
 	}
 
-	slog.Info("Run stats", "files", len(inputFiles), "docs", len(state.CbDocs), "fileTotalCount", fileTotalCount,
+	slog.Info("Run stats", "docs", len(state.CbDocs), "fileTotalCount", fileTotalCount,
 		"fileTotalErrors", fileTotalErrors, "dbTotalCount", dbTotalCount, "dbTotalErrors", dbTotalErrors,
 		"run-time(ms)", time.Since(start).Milliseconds())
 	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)

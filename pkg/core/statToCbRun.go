@@ -1,13 +1,14 @@
 package core
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"time"
 
-	// "github.com/couchbase/gocb/v2"
-
 	"github.com/dtcenter/METjson2db/pkg/state"
+	"github.com/dtcenter/METjson2db/pkg/storage"
 )
 
 // init runs before main() is evaluated
@@ -17,33 +18,33 @@ func init() {
 	state.StatToCbRun.Documents = make(map[string]interface{})
 }
 
+// StartProcessing processes files from a list of paths (backward-compatible).
 func StartProcessing(files []string) bool {
-	slog.Info(fmt.Sprintf("startProcessing(%d)", len(files)))
+	provider := storage.NewLocalProvider(files)
+	err := StartProcessingFromProvider(context.Background(), provider)
+	return err == nil
+}
 
-	// slog.Debug("files:\n%v", files)
-
-	for i := 0; i < len(files); i++ {
-		if len(files[i]) > 0 {
-			state.StatToCbRun.FileStatus[files[i]] = "processing"
-		}
-	}
-
-	// TODO: update/create db file document
-
+// StartProcessingFromProvider processes stat files from a StorageProvider.
+func StartProcessingFromProvider(ctx context.Context, provider storage.StorageProvider) error {
 	start := time.Now()
+	fileCount := 0
 
-	for file, status := range state.StatToCbRun.FileStatus {
-		slog.Debug(fmt.Sprintf("%s,%s", file, status))
-		_, err := statFileToCbDocMetParser(file)
-		if err != nil {
-			slog.Debug("Unable to process:" + file)
-			state.StatToCbRun.FileStatus[file] = "error"
+	err := provider.Walk(ctx, func(name string, r io.Reader) error {
+		fileCount++
+		state.StatToCbRun.FileStatus[name] = "processing"
+		slog.Debug(fmt.Sprintf("%s,%s", name, "processing"))
+
+		_, parseErr := parseStatFileContent(name, r)
+		if parseErr != nil {
+			slog.Debug("Unable to process:" + name)
+			state.StatToCbRun.FileStatus[name] = "error"
 		} else {
-			state.StatToCbRun.FileStatus[file] = "finished"
+			state.StatToCbRun.FileStatus[name] = "finished"
 		}
-	}
+		return nil
+	})
 
-	slog.Debug(fmt.Sprintf("%d", len(files)) + " files processed in:" + fmt.Sprintf("%d", time.Since(start).Milliseconds()) + " ms")
-
-	return true
+	slog.Debug(fmt.Sprintf("%d files processed in: %d ms", fileCount, time.Since(start).Milliseconds()))
+	return err
 }

@@ -27,22 +27,28 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 
 func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 	slog.Debug("statFileToCbDocMetParser(" + filepath + ")")
+
+	file, err := os.Open(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("opening file %s: %w", filepath, err)
+	}
+	defer file.Close()
+
+	return parseStatFileContent(filepath, file)
+}
+
+// parseStatFileContent parses stat file content from any io.Reader.
+func parseStatFileContent(name string, r io.Reader) (map[string]interface{}, error) {
 	var doc map[string]interface{}
 	var err error
 
-	file, err := os.Open(filepath) // open the file
+	rawData, err := io.ReadAll(r)
 	if err != nil {
-		slog.Error("error opening file:", slog.Any("error", err))
-	}
-	defer file.Close()
-	rawData, err := io.ReadAll(file)
-	if err != nil {
-		slog.Error("error reading file:", filepath, slog.Any("error", err))
+		return nil, fmt.Errorf("reading %s: %w", name, err)
 	}
 	lines := strings.Split(string(rawData), "\n")
 	headerLine := lines[0]
 
-	// distribute ids to fetch channels, round-robin, for async processing
 	idxFetch := 0
 	for line := range lines {
 		if line == 0 || lines[line] == "" {
@@ -50,8 +56,7 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 		}
 		dataLine := lines[line]
 		state.METParserNewDocId = ""
-		// TODO: from command line, document it
-		doc, err = parser.ParseLine(state.LoadSpec.DatasetName, headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
+		doc, err = parser.ParseLine(state.LoadSpec.DatasetName, headerLine, dataLine, &state.CbDocs, name, getMissingExternalDocForId)
 		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.LoadSpec.OverWriteData, state.METParserNewDocId))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
