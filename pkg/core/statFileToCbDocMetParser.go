@@ -1,11 +1,11 @@
 package core
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
-	"strings"
 
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METstat2json/pkg/parser"
@@ -42,19 +42,24 @@ func parseStatFileContent(name string, r io.Reader) (map[string]interface{}, err
 	var doc map[string]interface{}
 	var err error
 
-	rawData, err := io.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("reading %s: %w", name, err)
+	scanner := bufio.NewScanner(r)
+	// Increase the maximum buffer size from the default 64kb to 1MB to handle extremely wide stat file lines
+	// Pass nil to start small with the default 4kb buffer, but allow it to grow to 1MB
+	const maxCapacity = 1024 * 1024
+	scanner.Buffer(nil, maxCapacity)
+
+	if !scanner.Scan() {
+		return nil, fmt.Errorf("empty file or error reading header for %s: %w", name, scanner.Err())
 	}
-	lines := strings.Split(string(rawData), "\n")
-	headerLine := lines[0]
+	headerLine := scanner.Text()
 
 	idxFetch := 0
-	for line := range lines {
-		if line == 0 || lines[line] == "" {
+	for scanner.Scan() {
+		dataLine := scanner.Text()
+		if dataLine == "" {
 			continue
 		}
-		dataLine := lines[line]
+
 		state.METParserNewDocId = ""
 		doc, err = parser.ParseLine(state.LoadSpec.DatasetName, headerLine, dataLine, &state.CbDocs, name, getMissingExternalDocForId)
 		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.LoadSpec.OverWriteData, state.METParserNewDocId))
@@ -69,6 +74,10 @@ func parseStatFileContent(name string, r io.Reader) (map[string]interface{}, err
 				idxFetch = 0
 			}
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error scanning file %s: %w", name, err)
 	}
 
 	return doc, err
