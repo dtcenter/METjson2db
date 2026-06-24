@@ -30,7 +30,6 @@ func TestLocalProvider_Walk(t *testing.T) {
 		contents = append(contents, string(data))
 		return nil
 	})
-
 	if err != nil {
 		t.Fatalf("Walk returned error: %v", err)
 	}
@@ -60,7 +59,6 @@ func TestLocalProvider_Walk_SkipsEmptyPaths(t *testing.T) {
 		count++
 		return nil
 	})
-
 	if err != nil {
 		t.Fatalf("Walk returned error: %v", err)
 	}
@@ -112,7 +110,6 @@ func TestLocalProvider_Walk_EmptyFileList(t *testing.T) {
 		count++
 		return nil
 	})
-
 	if err != nil {
 		t.Fatalf("Walk returned error: %v", err)
 	}
