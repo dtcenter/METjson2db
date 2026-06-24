@@ -32,9 +32,9 @@ func (p *LocalProvider) Walk(ctx context.Context, fn func(name string, r io.Read
 		if err != nil {
 			return fmt.Errorf("opening %s: %w", path, err)
 		}
+		defer f.Close()
 
 		err = fn(path, f)
-		f.Close()
 		if err != nil {
 			return err
 		}
