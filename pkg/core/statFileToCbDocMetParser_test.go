@@ -52,7 +52,7 @@ func BenchmarkParseStatFileContent(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		// Reset the file pointer to the beginning for each iteration
-		file.Seek(0, 0)
+		_, _ = file.Seek(0, 0)
 		_, _ = parseStatFileContent(filePath, file)
 	}
 }

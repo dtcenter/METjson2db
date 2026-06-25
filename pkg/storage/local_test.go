@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,8 +14,8 @@ func TestLocalProvider_Walk(t *testing.T) {
 
 	file1 := filepath.Join(dir, "a.stat")
 	file2 := filepath.Join(dir, "b.stat")
-	os.WriteFile(file1, []byte("header1\ndata1"), 0o644)
-	os.WriteFile(file2, []byte("header2\ndata2"), 0o644)
+	_ = os.WriteFile(file1, []byte("header1\ndata1"), 0o644)
+	_ = os.WriteFile(file2, []byte("header2\ndata2"), 0o644)
 
 	provider := NewLocalProvider([]string{file1, file2})
 
@@ -50,7 +51,7 @@ func TestLocalProvider_Walk(t *testing.T) {
 func TestLocalProvider_Walk_SkipsEmptyPaths(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "a.stat")
-	os.WriteFile(file1, []byte("content"), 0o644)
+	_ = os.WriteFile(file1, []byte("content"), 0o644)
 
 	provider := NewLocalProvider([]string{"", file1, ""})
 
@@ -71,8 +72,8 @@ func TestLocalProvider_Walk_ContextCancellation(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "a.stat")
 	file2 := filepath.Join(dir, "b.stat")
-	os.WriteFile(file1, []byte("data1"), 0o644)
-	os.WriteFile(file2, []byte("data2"), 0o644)
+	_ = os.WriteFile(file1, []byte("data1"), 0o644)
+	_ = os.WriteFile(file2, []byte("data2"), 0o644)
 
 	provider := NewLocalProvider([]string{file1, file2})
 
@@ -84,7 +85,7 @@ func TestLocalProvider_Walk_ContextCancellation(t *testing.T) {
 		return nil
 	})
 
-	if err != context.Canceled {
+	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("expected context.Canceled, got: %v", err)
 	}
 }
@@ -122,8 +123,8 @@ func TestLocalProvider_Walk_CallbackError(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "a.stat")
 	file2 := filepath.Join(dir, "b.stat")
-	os.WriteFile(file1, []byte("data1"), 0o644)
-	os.WriteFile(file2, []byte("data2"), 0o644)
+	_ = os.WriteFile(file1, []byte("data1"), 0o644)
+	_ = os.WriteFile(file2, []byte("data2"), 0o644)
 
 	provider := NewLocalProvider([]string{file1, file2})
 
@@ -134,7 +135,7 @@ func TestLocalProvider_Walk_CallbackError(t *testing.T) {
 		return callbackErr
 	})
 
-	if err != callbackErr {
+	if !errors.Is(err, callbackErr) {
 		t.Fatalf("expected callback error, got: %v", err)
 	}
 	if count != 1 {

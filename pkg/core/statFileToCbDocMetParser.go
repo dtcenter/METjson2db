@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"os"
 
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METstat2json/pkg/parser"
@@ -23,18 +22,6 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 	slog.Debug(fmt.Sprintf("getMissingExternalDocForId(%v)", state.METParserNewDocId))
 	state.METParserNewDocId = id
 	return nil, fmt.Errorf("%s: %s", parser.DOC_NOT_FOUND, id)
-}
-
-func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
-	slog.Debug("statFileToCbDocMetParser(" + filepath + ")")
-
-	file, err := os.Open(filepath)
-	if err != nil {
-		return nil, fmt.Errorf("opening file %s: %w", filepath, err)
-	}
-	defer file.Close()
-
-	return parseStatFileContent(filepath, file)
 }
 
 // parseStatFileContent parses stat file content from any io.Reader.

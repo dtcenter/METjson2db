@@ -59,7 +59,10 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 		}
 	}
 
-	StartProcessingFromProvider(ctx, provider)
+	err := StartProcessingFromProvider(ctx, provider)
+	if err != nil {
+		slog.Error("Expected no error, got:", slog.Any("error", err))
+	}
 
 	fileTotalCount := int64(0)
 	fileTotalErrors := int64(0)
