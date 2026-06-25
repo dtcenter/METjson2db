@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"testing"
@@ -124,7 +125,7 @@ func TestS3TarballProvider_Walk_ContextCancellation(t *testing.T) {
 		return nil
 	})
 
-	if err != nil && err != context.Canceled {
+	if err != nil && !errors.Is(err, context.Canceled) {
 		t.Fatalf("expected nil or context.Canceled, got: %v", err)
 	}
 	if count > 1 {
@@ -152,7 +153,7 @@ func TestS3TarballProvider_Walk_CallbackError(t *testing.T) {
 		return callbackErr
 	})
 
-	if err != callbackErr {
+	if !errors.Is(err, callbackErr) {
 		t.Fatalf("expected callback error, got: %v", err)
 	}
 	if count != 1 {
