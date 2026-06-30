@@ -44,6 +44,7 @@ func TestIsStatFile(t *testing.T) {
 	}{
 		{"grid_stat_output.stat", true},
 		{"path/to/deep/file.stat", true},
+		{"tcstat-file.tcst", true},
 		{"file.txt", false},
 		{"file.stat.bak", false},
 		{"readme.md", false},

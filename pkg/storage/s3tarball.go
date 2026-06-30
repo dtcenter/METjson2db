@@ -80,7 +80,7 @@ func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.
 		}
 
 		fileCount++
-		if err := fn(hdr.Name, tr); err != nil {
+		if err := fn(hdr.Name, tr); err != nil { // Note - this most likely isn't safe in a concurrent environment given the global state
 			return err
 		}
 	}
