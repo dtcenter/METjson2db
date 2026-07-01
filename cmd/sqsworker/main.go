@@ -96,6 +96,7 @@ func main() {
 	slog.Info("sqsworker shutdown complete")
 }
 
+// pollLoop Uses a 20 second long-poll looking for messages on the SQS queue
 func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, queueURL string) {
 	for {
 		select {
@@ -133,6 +134,15 @@ func handleMessage(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Clie
 	if err != nil {
 		return fmt.Errorf("parsing S3 event: %w", err)
 	}
+
+	visibilityTimeout, err := fetchQueueVisibilityTimeout(ctx, sqsClient, queueURL)
+	if err != nil {
+		slog.Warn("failed to fetch queue visibility timeout, using default 30s", "error", err)
+		visibilityTimeout = 30
+	}
+
+	stopHeartbeat := startVisibilityHeartbeat(ctx, sqsClient, queueURL, receiptHandle, visibilityTimeout)
+	defer stopHeartbeat()
 
 	for _, record := range event.Records {
 		bucket := record.S3.Bucket.Name
