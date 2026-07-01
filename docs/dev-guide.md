@@ -114,16 +114,18 @@ Note: the default `jsonArchiveFilePathAndPrefix` in `load_spec.json` points to `
 ## Docker
 
 ```bash
-docker build -t metjson2db .
+docker build -t sqsworker .
 ```
 
-The Dockerfile builds both `metjson2db` and `sqsworker` binaries. Since there is no hardcoded entrypoint, specify the binary when running:
+The Dockerfile builds the `sqsworker` binary and sets it as the entrypoint. To run:
 
 ```bash
-# CLI
-docker run metjson2db /app/metjson2db -f /path/to/file.stat -m CREATE_JSON_DOC_ARCHIVE
-
-# SQS worker
 docker run -e SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789/my-queue \
-  metjson2db /app/sqsworker -l /app/load_spec.json
+  sqsworker -l /app/load_spec.json
+```
+
+To build the `metjson2db` CLI binary, use `go build` directly:
+
+```bash
+go build -o build/metjson2db ./cmd/metjson2db
 ```
