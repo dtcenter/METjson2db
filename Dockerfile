@@ -1,4 +1,4 @@
-FROM golang:1.24 AS build
+FROM golang:1.25 AS build
 
 WORKDIR /app
 
@@ -8,16 +8,14 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -installsuffix 'static' ./cmd/metjson2db
+RUN CGO_ENABLED=0 go build -installsuffix 'static' -o sqsworker ./cmd/sqsworker
 
 FROM gcr.io/distroless/static
 
 WORKDIR /app
 
-COPY --from=build /app/metjson2db /app/
-
-EXPOSE 8080
+COPY --from=build /app/sqsworker /app/
 
 USER nonroot:nonroot
 
-ENTRYPOINT [ "/app/metjson2db" ]
+ENTRYPOINT [ "/app/sqsworker" ]
