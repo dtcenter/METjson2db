@@ -96,7 +96,8 @@ func main() {
 	slog.Info("sqsworker shutdown complete")
 }
 
-// pollLoop Uses a 20 second long-poll looking for messages on the SQS queue
+// pollLoop polls for messages to process on the SQS queue
+// It uses a standard long-poll
 func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, queueURL string) {
 	for {
 		select {

@@ -31,7 +31,6 @@ func fetchQueueVisibilityTimeout(ctx context.Context, client sqsAttributeGetter,
 		return 0, fmt.Errorf("failed to get queue attributes: %w", err)
 	}
 
-	// SQS returns attributes as a map of strings
 	timeoutStr, ok := result.Attributes[string(types.QueueAttributeNameVisibilityTimeout)]
 	if !ok {
 		return 0, fmt.Errorf("VisibilityTimeout attribute not found in response")
