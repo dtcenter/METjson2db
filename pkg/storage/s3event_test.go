@@ -131,4 +131,7 @@ func TestParseS3Event_RealWorldFormat(t *testing.T) {
 	if event.Records[0].S3.Object.Size != 5242880 {
 		t.Errorf("size: got %d", event.Records[0].S3.Object.Size)
 	}
+	if event.Records[0].EventName != "ObjectCreated:Put" {
+		t.Errorf("eventName: got %q, want %q", event.Records[0].EventName, "ObjectCreated:Put")
+	}
 }

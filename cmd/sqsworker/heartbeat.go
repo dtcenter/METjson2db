@@ -51,6 +51,11 @@ func heartbeatInterval(visibilityTimeoutSecs int32) time.Duration {
 	return time.Duration(visibilityTimeoutSecs) * time.Second / 3
 }
 
+// sqsMessageDeleter is the subset of sqs.Client needed to delete a processed message.
+type sqsMessageDeleter interface {
+	DeleteMessage(ctx context.Context, params *sqs.DeleteMessageInput, optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error)
+}
+
 // sqsVisibilityChanger is the subset of sqs.Client needed by the visibility heartbeat.
 type sqsVisibilityChanger interface {
 	ChangeMessageVisibility(ctx context.Context, params *sqs.ChangeMessageVisibilityInput, optFns ...func(*sqs.Options)) (*sqs.ChangeMessageVisibilityOutput, error)

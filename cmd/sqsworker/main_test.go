@@ -146,6 +146,7 @@ func TestSQSWorker_EndToEnd(t *testing.T) {
 			{
 				"eventVersion": "2.4",
 				"eventSource":  "aws:s3",
+				"eventName":    "ObjectCreated:Put",
 				"s3": map[string]interface{}{
 					"bucket": map[string]string{"name": sqsTestBucket},
 					"object": map[string]interface{}{"key": sqsTestKey, "size": len(tarball)},

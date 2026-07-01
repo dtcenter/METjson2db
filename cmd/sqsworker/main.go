@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -96,6 +97,14 @@ func main() {
 	slog.Info("sqsworker shutdown complete")
 }
 
+// sqsHandler combines the SQS operations needed by handleMessage.
+// *sqs.Client satisfies this interface.
+type sqsHandler interface {
+	sqsAttributeGetter
+	sqsVisibilityChanger
+	sqsMessageDeleter
+}
+
 // pollLoop polls for messages to process on the SQS queue
 // It uses a standard long-poll
 func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, queueURL string) {
@@ -130,7 +139,7 @@ func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, q
 	}
 }
 
-func handleMessage(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, queueURL, body, receiptHandle string) error {
+func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Client, queueURL, body, receiptHandle string) error {
 	event, err := storage.ParseS3Event(body)
 	if err != nil {
 		return fmt.Errorf("parsing S3 event: %w", err)
@@ -146,6 +155,11 @@ func handleMessage(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Clie
 	defer stopHeartbeat()
 
 	for _, record := range event.Records {
+		if !strings.HasPrefix(record.EventName, "ObjectCreated:") {
+			slog.Info("skipping non-creation S3 event", "eventName", record.EventName)
+			continue
+		}
+
 		bucket := record.S3.Bucket.Name
 		key := record.S3.Object.Key
 

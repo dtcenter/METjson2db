@@ -12,6 +12,7 @@ type S3Event struct {
 
 type S3EventRecord struct {
 	EventVersion string   `json:"eventVersion"`
+	EventName    string   `json:"eventName"`
 	S3           S3Entity `json:"s3"`
 }
 
