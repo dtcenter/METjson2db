@@ -46,7 +46,7 @@ func main() {
 		slog.Error("unable to parse load_spec", "error", err)
 		os.Exit(1)
 	}
-	state.LoadSpec.RunMode = "DIRECT_LOAD_TO_DB"
+	state.LoadSpec.RunMode = "DIRECT_LOAD_TO_DB" // CREATE_JSON_DOC_ARCHIVE is not supported in this entrypoint
 
 	level := slog.LevelInfo
 	switch state.LoadSpec.LogLevel {
@@ -93,6 +93,9 @@ func main() {
 	})
 
 	slog.Info("sqsworker ready, polling for messages")
+	// On SIGTERM, ctx is cancelled and the AWS SDK propagates it into the blocked
+	// ReceiveMessage call, aborting it immediately. If a message was already received and
+	// handleMessage is running, it is allowed to complete before the loop exits.
 	pollLoop(ctx, sqsClient, s3Client, queueURL)
 	slog.Info("sqsworker shutdown complete")
 }
@@ -116,7 +119,8 @@ func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, q
 		}
 
 		out, err := sqsClient.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
-			QueueUrl:            aws.String(queueURL),
+			QueueUrl: aws.String(queueURL),
+			// Must stay 1: ProcessFromProvider resets global state in pkg/state/ and is not safe for concurrent runs.
 			MaxNumberOfMessages: 1,
 			WaitTimeSeconds:     20,
 		})
@@ -154,6 +158,9 @@ func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Clien
 	stopHeartbeat := startVisibilityHeartbeat(ctx, sqsClient, queueURL, receiptHandle, visibilityTimeout)
 	defer stopHeartbeat()
 
+	// Records in an S3 event are processed sequentially. If a later record fails the message
+	// is retried and earlier records are reprocessed — safe because DB upserts are idempotent
+	// when overWriteData is true in load_spec.json.
 	for _, record := range event.Records {
 		if !strings.HasPrefix(record.EventName, "ObjectCreated:") {
 			slog.Info("skipping non-creation S3 event", "eventName", record.EventName)
