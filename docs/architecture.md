@@ -51,7 +51,7 @@ METjson2db/
 │   └── main.go             # Polls SQS, processes S3 tarballs
 ├── pkg/
 │   ├── core/               # Core processing pipeline
-│   │   ├── procesdInput.go            # Orchestrator — sets up workers, drives pipeline
+│   │   ├── processInput.go            # Orchestrator — sets up workers, drives pipeline
 │   │   ├── statFileToCbDocMetParser.go # Per-file parsing via METstat2json
 │   │   ├── statToCbRun.go             # File iteration and status tracking
 │   │   └── statToCbFlush.go           # Flush docs to Couchbase or disk
@@ -95,7 +95,7 @@ METjson2db/
 | [pkg/storage/local.go](../pkg/storage/local.go)                                 | `LocalProvider` — implements `StorageProvider` by opening files from the local filesystem.                                                                                                  |
 | [pkg/storage/s3tarball.go](../pkg/storage/s3tarball.go)                         | `S3TarballProvider` — implements `StorageProvider` by streaming a tar.gz from S3 and yielding `.stat` entries without disk I/O.                                                            |
 | [pkg/storage/s3event.go](../pkg/storage/s3event.go)                             | Parses S3 event notification JSON (the format SQS receives when S3 triggers a notification).                                                                                                |
-| [pkg/core/procesdInput.go](../pkg/core/procesdInput.go)                         | **Pipeline orchestrator.** `ProcessFromProvider` sets up async DB-upload and merge-fetch goroutines, walks files via a `StorageProvider`, flushes, and reports run stats. `ProcessInputFiles` is a backward-compatible wrapper. Also contains `GetCredentials` and `ParseLoadSpec`. |
+| [pkg/core/processInput.go](../pkg/core/processInput.go)                         | **Pipeline orchestrator.** `ProcessFromProvider` sets up async DB-upload and merge-fetch goroutines, walks files via a `StorageProvider`, flushes, and reports run stats. `ProcessInputFiles` is a backward-compatible wrapper. Also contains `GetCredentials` and `ParseLoadSpec`. |
 | [pkg/core/statFileToCbDocMetParser.go](../pkg/core/statFileToCbDocMetParser.go) | `parseStatFileContent` reads stat file content from an `io.Reader`, splits into header + data lines, and calls `METstat2json/parser.ParseLine` for each line. `statFileToCbDocMetParser` is a thin wrapper that opens a local file and delegates.                    |
 | [pkg/core/statToCbRun.go](../pkg/core/statToCbRun.go)                           | `StartProcessingFromProvider` walks files via a `StorageProvider` and calls `parseStatFileContent` for each. Tracks file status. `StartProcessing` is a backward-compatible wrapper.        |
 | [pkg/core/statToCbFlush.go](../pkg/core/statToCbFlush.go)                       | Distributes in-memory docs to async upload channels (round-robin) or writes them to disk.                                                                                                                 |
@@ -213,7 +213,7 @@ MET stat data is stored as JSON documents with:
 4. **DB connection per call**: `GetDbConnection()` creates a new Couchbase cluster connection each time it's called (including inside each async goroutine). Couchbase SDK connections are meant to be long-lived and shared. Create one connection at startup and pass it through.
 
 5. **Naming conventions**: Some names don't follow Go conventions:
-   - `procesdInput.go` → `process_input.go` (or `processInput.go`)
+   - `processInput.go` ✓ (renamed)
    - `statToCbUtils.go` → Merge into the package it serves or name by domain
    - `Cb_host`, `Cb_user` → `CbHost`, `CbUser` (Go exported fields use CamelCase, not snake_case)
    - Unexported types like `StrArray` are duplicated across packages

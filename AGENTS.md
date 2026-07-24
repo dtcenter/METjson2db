@@ -23,7 +23,7 @@ AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test go test -tags integration ./pk
 go test -tags integration ./pkg/black_box_tests/...
 
 # Docker
-docker build -t metjson2db .
+docker build -t sqsworker .
 ```
 
 See [docs/dev-guide.md](docs/dev-guide.md) for full details on running tests.
