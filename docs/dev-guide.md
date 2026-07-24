@@ -174,20 +174,21 @@ The worker processes the tarball, writes the output, deletes the SQS message, an
 
 ### Step 6 — Inspect the output
 
-The output file has no extension — it is a gzipped JSON file. Rename it before opening:
-
 ```bash
-mv /tmp/metjson2db_out_* /tmp/metjson2db_out.json.gz
-gunzip /tmp/metjson2db_out.json.gz
+# List what was written
+ls /tmp/metjson2db_out_*.json.gz
+gunzip /tmp/metjson2db_out_*.json.gz
 ```
 
-Then inspect with any JSON tool:
+Then inspect with any JSON tool. The filename includes a timestamp, so use a glob to find it:
 
 ```bash
+OUTPUT=$(ls /tmp/metjson2db_out_*.json | head -1)
+
 # Summary: total doc count and a sample of keys
 python3 -c "
 import json
-docs = json.load(open('/tmp/metjson2db_out.json'))
+docs = json.load(open('$OUTPUT'))
 print(f'Total documents: {len(docs)}')
 for key in list(docs.keys())[:3]:
     print(f'  {key}')
@@ -196,7 +197,7 @@ for key in list(docs.keys())[:3]:
 # Pretty-print a single document
 python3 -c "
 import json
-docs = json.load(open('/tmp/metjson2db_out.json'))
+docs = json.load(open('$OUTPUT'))
 key = next(iter(docs))
 print(json.dumps(docs[key], indent=2))
 "

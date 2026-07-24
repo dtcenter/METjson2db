@@ -98,7 +98,8 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 			slog.Debug("asyncWaitGroupFlushToDb finished!")
 		}
 	case "CREATE_JSON_DOC_ARCHIVE":
-		err := parser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		outputFilename := state.LoadSpec.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + ".json.gz"
+		err := parser.WriteJsonToCompressedFile(state.CbDocs, outputFilename)
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}
