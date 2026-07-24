@@ -139,6 +139,8 @@ func TestHandleMessage_FiltersNonObjectCreatedEvents(t *testing.T) {
 // TestHandleMessage_PassesObjectCreatedEventToProcessing verifies that ObjectCreated
 // events are not filtered and reach S3. We confirm this by checking that the tracking
 // server received a GetObject request — a filtered event never touches S3.
+// The tracking server returns 404 so processing fails; the point of this test is only
+// that the event was not filtered before reaching S3.
 func TestHandleMessage_PassesObjectCreatedEventToProcessing(t *testing.T) {
 	objectCreatedEvents := []string{
 		"ObjectCreated:Put",
@@ -155,16 +157,12 @@ func TestHandleMessage_PassesObjectCreatedEventToProcessing(t *testing.T) {
 				s3Record(eventName, "my-bucket", "path/to/file.tar.gz"),
 			})
 
-			err := handleMessage(context.Background(), fake, s3Client, testQueueURL, body, testReceiptHandle)
-			if err != nil {
-				t.Errorf("unexpected error for event %q: %v", eventName, err)
-			}
+			// Processing will fail (server returns 404) — that's expected here.
+			// The only assertion is that S3 was reached, proving the event was not filtered.
+			handleMessage(context.Background(), fake, s3Client, testQueueURL, body, testReceiptHandle) //nolint:errcheck
 			paths := requestedPaths()
 			if len(paths) == 0 {
 				t.Errorf("event %q: expected S3 GetObject request, but no requests reached the server — event may have been filtered", eventName)
-			}
-			if fake.deleteCount() != 1 {
-				t.Errorf("event %q: expected 1 DeleteMessage call, got %d", eventName, fake.deleteCount())
 			}
 		})
 	}
@@ -173,6 +171,8 @@ func TestHandleMessage_PassesObjectCreatedEventToProcessing(t *testing.T) {
 // TestHandleMessage_MixedEventTypes verifies that in a multi-record message, ObjectRemoved
 // records are skipped while ObjectCreated records reach S3. Only the ObjectCreated key
 // should appear in the S3 server's request log.
+// The tracking server returns 404 so processing fails; the point of this test is only
+// that filtering applied to the correct records before S3 was reached.
 func TestHandleMessage_MixedEventTypes(t *testing.T) {
 	s3Client, requestedPaths := trackingS3Server(t)
 	fake := &fakeSQSHandler{}
@@ -181,10 +181,8 @@ func TestHandleMessage_MixedEventTypes(t *testing.T) {
 		s3Record("ObjectCreated:Put", "my-bucket", "new-file.tar.gz"),
 	})
 
-	err := handleMessage(context.Background(), fake, s3Client, testQueueURL, body, testReceiptHandle)
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
+	// Processing will fail (server returns 404) — that's expected here.
+	handleMessage(context.Background(), fake, s3Client, testQueueURL, body, testReceiptHandle) //nolint:errcheck
 	paths := requestedPaths()
 	if len(paths) == 0 {
 		t.Error("expected an S3 request for the ObjectCreated record, got none")
@@ -194,17 +192,11 @@ func TestHandleMessage_MixedEventTypes(t *testing.T) {
 			t.Errorf("S3 request for ObjectRemoved key %q should not have been made", p)
 		}
 	}
-	if fake.deleteCount() != 1 {
-		t.Errorf("expected 1 DeleteMessage call, got %d", fake.deleteCount())
-	}
 }
 
 // TestHandleMessage_DoesNotDeleteMessageWhenProcessingFails verifies that when
 // S3 GetObject fails (e.g. key not found), handleMessage returns an error and
 // does NOT delete the SQS message — leaving it in the queue for retry.
-//
-// This test is expected to FAIL until ProcessFromProvider propagates errors from
-// StartProcessingFromProvider instead of logging and returning nil.
 func TestHandleMessage_DoesNotDeleteMessageWhenProcessingFails(t *testing.T) {
 	// trackingS3Server returns 404 NoSuchKey for every request, simulating a
 	// missing or inaccessible object — GetObject inside S3TarballProvider.Walk will fail.
