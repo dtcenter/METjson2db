@@ -18,15 +18,8 @@ func init() {
 	state.StatToCbRun.Documents = make(map[string]interface{})
 }
 
-// StartProcessing processes files from a list of paths (backward-compatible).
-func StartProcessing(files []string) bool {
-	provider := storage.NewLocalProvider(files)
-	err := StartProcessingFromProvider(context.Background(), provider)
-	return err == nil
-}
-
-// StartProcessingFromProvider processes stat files from a StorageProvider.
-func StartProcessingFromProvider(ctx context.Context, provider storage.StorageProvider) error {
+// startProcessingFromProvider walks a StorageProvider and parses each stat file.
+func startProcessingFromProvider(ctx context.Context, provider storage.StorageProvider) error {
 	start := time.Now()
 	fileCount := 0
 

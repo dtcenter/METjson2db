@@ -97,7 +97,7 @@ METjson2db/
 | [pkg/storage/s3event.go](../pkg/storage/s3event.go)                             | Parses S3 event notification JSON (the format SQS receives when S3 triggers a notification).                                                                                                |
 | [pkg/core/processInput.go](../pkg/core/processInput.go)                         | **Pipeline orchestrator.** `ProcessFromProvider` sets up async DB-upload and merge-fetch goroutines, walks files via a `StorageProvider`, flushes, and reports run stats. `ProcessInputFiles` is a backward-compatible wrapper. Also contains `GetCredentials` and `ParseLoadSpec`. |
 | [pkg/core/statFileToCbDocMetParser.go](../pkg/core/statFileToCbDocMetParser.go) | `parseStatFileContent` reads stat file content from an `io.Reader`, splits into header + data lines, and calls `METstat2json/parser.ParseLine` for each line. `statFileToCbDocMetParser` is a thin wrapper that opens a local file and delegates.                    |
-| [pkg/core/statToCbRun.go](../pkg/core/statToCbRun.go)                           | `StartProcessingFromProvider` walks files via a `StorageProvider` and calls `parseStatFileContent` for each. Tracks file status. `StartProcessing` is a backward-compatible wrapper.        |
+| [pkg/core/statToCbRun.go](../pkg/core/statToCbRun.go)                           | `startProcessingFromProvider` (unexported) walks files via a `StorageProvider` and calls `parseStatFileContent` for each. Tracks file status. Called by `ProcessFromProvider` during the core parsing phase.        |
 | [pkg/core/statToCbFlush.go](../pkg/core/statToCbFlush.go)                       | Distributes in-memory docs to async upload channels (round-robin) or writes them to disk.                                                                                                                 |
 | [pkg/async/flushToDbAsync.go](../pkg/async/flushToDbAsync.go)                   | Goroutine worker that reads docs from a channel, optionally merges with existing DB docs, and upserts to Couchbase.                                                                                       |
 | [pkg/state/sharedState.go](../pkg/state/sharedState.go)                         | Global mutable state: in-memory doc maps, mutexes, async channels, wait groups. Initialized via `init()`.                                                                                                 |
@@ -121,7 +121,7 @@ The async pipeline uses Go channels and goroutines in a fan-out pattern:
 flowchart TB
     P["ProcessFromProvider\n(main goroutine)"] -->|"spawns N"| FW["flushToDbAsync\ngoroutines"]
     P -->|"spawns M"| MW["mergeDbDocFetchAsync\ngoroutines"]
-    S["StartProcessingFromProvider\n(walk files via StorageProvider)"] -->|"new doc IDs\n(round-robin)"| MC["mergeDocFetch\nchannels"]
+    S["startProcessingFromProvider\n(walk files via StorageProvider)"] -->|"new doc IDs\n(round-robin)"| MC["mergeDocFetch\nchannels"]
     MC --> MW
     MW -->|"fetched docs"| MDB["state.CbMergeDbDocs\n(mutex-protected map)"]
     SF["StatToCbFlush"] -->|"docs\n(round-robin)"| FC["flushToDb\nchannels"]

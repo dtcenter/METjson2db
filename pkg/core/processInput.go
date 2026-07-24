@@ -60,7 +60,9 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 		}
 	}
 
-	if err := StartProcessingFromProvider(ctx, provider); err != nil {
+	// Return any errors instead of continuing so the caller can correctly handle the error
+	// e.g. - by deciding to not mark the queue message as resolved
+	if err := startProcessingFromProvider(ctx, provider); err != nil {
 		return fmt.Errorf("processing files: %w", err)
 	}
 
