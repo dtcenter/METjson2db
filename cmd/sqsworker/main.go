@@ -32,6 +32,9 @@ func main() {
 	var awsEndpoint string
 	flag.StringVar(&awsEndpoint, "endpoint", "", "AWS endpoint override (e.g. http://localhost:4566 for MiniStack)")
 
+	var jsonOutputPrefix string
+	flag.StringVar(&jsonOutputPrefix, "json-output", "", "write parsed docs to compressed JSON files with this path prefix instead of loading to DB (e.g. /tmp/metjson2db_out_)")
+
 	flag.Parse()
 
 	queueURL := os.Getenv("SQS_QUEUE_URL")
@@ -46,7 +49,12 @@ func main() {
 		slog.Error("unable to parse load_spec", "error", err)
 		os.Exit(1)
 	}
-	state.LoadSpec.RunMode = "DIRECT_LOAD_TO_DB" // CREATE_JSON_DOC_ARCHIVE is not supported in this entrypoint
+	if jsonOutputPrefix != "" {
+		state.LoadSpec.RunMode = "CREATE_JSON_DOC_ARCHIVE"
+		state.LoadSpec.JsonArchiveFilePathAndPrefix = jsonOutputPrefix
+	} else {
+		state.LoadSpec.RunMode = "DIRECT_LOAD_TO_DB"
+	}
 
 	level := slog.LevelInfo
 	switch state.LoadSpec.LogLevel {

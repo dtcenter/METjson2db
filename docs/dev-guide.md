@@ -111,6 +111,103 @@ go run ./cmd/metjson2db \
 
 Note: the default `jsonArchiveFilePathAndPrefix` in `load_spec.json` points to `/scratch/`, which likely doesn't exist locally. Either create that directory or edit the field to a valid path like `/tmp/metjson2db_out_`.
 
+## End-to-end test with real tarballs (MiniStack)
+
+Use this workflow to verify that a real tarball of stat files is correctly streamed from S3, parsed, and converted to JSON — without needing a Couchbase database.
+
+### Step 1 — Start MiniStack
+
+```bash
+docker run --name ministack -d -p 4566:4566 ministackorg/ministack
+curl -s http://localhost:4566/_ministack/health  # should return 200
+```
+
+### Step 2 — Create a bucket and queue
+
+```bash
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export ENDPOINT=http://localhost:4566
+
+aws --endpoint-url $ENDPOINT s3 mb s3://met-test-bucket
+aws --endpoint-url $ENDPOINT sqs create-queue --queue-name met-test-queue
+# note the QueueUrl from the output
+```
+
+### Step 3 — Upload your tarball
+
+```bash
+aws --endpoint-url $ENDPOINT s3 cp your_stat_files.tar.gz \
+  s3://met-test-bucket/uploads/your_stat_files.tar.gz
+```
+
+### Step 4 — Send an S3 ObjectCreated event to SQS
+
+```bash
+aws --endpoint-url $ENDPOINT sqs send-message \
+  --queue-url http://localhost:4566/000000000000/met-test-queue \
+  --message-body '{
+    "Records": [{
+      "eventName": "ObjectCreated:Put",
+      "s3": {
+        "bucket": {"name": "met-test-bucket"},
+        "object": {"key": "uploads/your_stat_files.tar.gz", "size": 0}
+      }
+    }]
+  }'
+```
+
+### Step 5 — Run the worker with JSON output
+
+The `--json-output` flag switches the worker into `CREATE_JSON_DOC_ARCHIVE` mode and sets the output path prefix. No database connection is required.
+
+```bash
+SQS_QUEUE_URL=http://localhost:4566/000000000000/met-test-queue \
+  go run ./cmd/sqsworker \
+    --endpoint http://localhost:4566 \
+    -l ./load_spec.json \
+    --json-output /tmp/metjson2db_out_
+```
+
+The worker processes the tarball, writes the output, deletes the SQS message, and waits for the next message. Press `Ctrl+C` to stop it.
+
+### Step 6 — Inspect the output
+
+The output file has no extension — it is a gzipped JSON file. Rename it before opening:
+
+```bash
+mv /tmp/metjson2db_out_* /tmp/metjson2db_out.json.gz
+gunzip /tmp/metjson2db_out.json.gz
+```
+
+Then inspect with any JSON tool:
+
+```bash
+# Summary: total doc count and a sample of keys
+python3 -c "
+import json
+docs = json.load(open('/tmp/metjson2db_out.json'))
+print(f'Total documents: {len(docs)}')
+for key in list(docs.keys())[:3]:
+    print(f'  {key}')
+"
+
+# Pretty-print a single document
+python3 -c "
+import json
+docs = json.load(open('/tmp/metjson2db_out.json'))
+key = next(iter(docs))
+print(json.dumps(docs[key], indent=2))
+"
+```
+
+### Stop MiniStack when done
+
+```bash
+docker rm -f ministack
+```
+
 ## Docker
 
 ```bash
