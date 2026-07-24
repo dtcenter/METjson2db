@@ -198,3 +198,28 @@ func TestHandleMessage_MixedEventTypes(t *testing.T) {
 		t.Errorf("expected 1 DeleteMessage call, got %d", fake.deleteCount())
 	}
 }
+
+// TestHandleMessage_DoesNotDeleteMessageWhenProcessingFails verifies that when
+// S3 GetObject fails (e.g. key not found), handleMessage returns an error and
+// does NOT delete the SQS message — leaving it in the queue for retry.
+//
+// This test is expected to FAIL until ProcessFromProvider propagates errors from
+// StartProcessingFromProvider instead of logging and returning nil.
+func TestHandleMessage_DoesNotDeleteMessageWhenProcessingFails(t *testing.T) {
+	// trackingS3Server returns 404 NoSuchKey for every request, simulating a
+	// missing or inaccessible object — GetObject inside S3TarballProvider.Walk will fail.
+	s3Client, _ := trackingS3Server(t)
+	fake := &fakeSQSHandler{}
+	body := s3EventBody(t, []map[string]any{
+		s3Record("ObjectCreated:Put", "my-bucket", "path/to/missing.tar.gz"),
+	})
+
+	err := handleMessage(context.Background(), fake, s3Client, testQueueURL, body, testReceiptHandle)
+
+	if err == nil {
+		t.Error("expected an error when S3 GetObject fails, got nil — ProcessFromProvider is swallowing the error and the message will be incorrectly deleted")
+	}
+	if fake.deleteCount() != 0 {
+		t.Errorf("expected 0 DeleteMessage calls when processing fails, got %d — message was incorrectly acked despite a processing error", fake.deleteCount())
+	}
+}
