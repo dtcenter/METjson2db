@@ -49,7 +49,7 @@ func requireMiniStack(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf(
 			"MiniStack health check returned status %d at %s\n\n"+
-				"Ensure MiniStack is running: localstack start",
+				"Ensure MiniStack is running: docker start ministack",
 			resp.StatusCode, ministackHealth,
 		)
 	}
