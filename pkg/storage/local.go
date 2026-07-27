@@ -32,10 +32,13 @@ func (p *LocalProvider) Walk(ctx context.Context, fn func(name string, r io.Read
 		if err != nil {
 			return fmt.Errorf("opening %s: %w", path, err)
 		}
-		defer f.Close()
 
-		err = fn(path, f)
-		if err != nil {
+		// Close the file after each iteration so we don't exhaust file descriptors
+		// Otherwise, defer fires only after Walk exits.
+		if err := func() error {
+			defer f.Close()
+			return fn(path, f)
+		}(); err != nil {
 			return err
 		}
 	}
