@@ -141,9 +141,13 @@ func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, q
 		}
 
 		for _, msg := range out.Messages {
-			if err := handleMessage(ctx, sqsClient, s3Client, queueURL, *msg.Body, *msg.ReceiptHandle); err != nil {
+			if msg.Body == nil || msg.ReceiptHandle == nil {
+				slog.Error("received SQS message missing body or receipt handle", "messageId", aws.ToString(msg.MessageId))
+				continue
+			}
+			if err := handleMessage(ctx, sqsClient, s3Client, queueURL, aws.ToString(msg.Body), aws.ToString(msg.ReceiptHandle)); err != nil {
 				slog.Error("processing message failed, leaving in queue for retry",
-					"messageId", *msg.MessageId,
+					"messageId", aws.ToString(msg.MessageId),
 					"error", err,
 				)
 			}
