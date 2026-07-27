@@ -123,8 +123,12 @@ func TestLocalProvider_Walk_CallbackError(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "a.stat")
 	file2 := filepath.Join(dir, "b.stat")
-	_ = os.WriteFile(file1, []byte("data1"), 0o644)
-	_ = os.WriteFile(file2, []byte("data2"), 0o644)
+	if err := os.WriteFile(file1, []byte("data1"), 0o644); err != nil {
+		t.Fatalf("wrte %s: %v", file1, err)
+	}
+	if err := os.WriteFile(file2, []byte("data2"), 0o644); err != nil {
+		t.Fatalf("wrte %s: %v", file2, err)
+	}
 
 	provider := NewLocalProvider([]string{file1, file2})
 
