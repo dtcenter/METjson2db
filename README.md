@@ -30,7 +30,7 @@ Please note that the setting: `"overWriteData": false` which enables merge funct
 This step needs to be done once for each MET version, and the genrerated code checked in to METstat2json git repo:main
 Refer to documentation section "Generating LINE_TYPE definitions" for details on how to do this
 
-### STEP 2 : Run METdadacb to generate and/or upload JSON documents to Couchbase/Capella
+### STEP 2 : Run METjson2db to generate and/or upload JSON documents to Couchbase/Capella
 
 See section "Running the METjson2db to generate and/or upload JSON documents"
 
@@ -147,31 +147,24 @@ This file sets the following:
 
 ### load_spec file, which defaults to "./load_spec.json"
 
-Unless overridden in the command line, the default file is 'load_spec.json' in the METdadacb run folder.
+Unless overridden in the command line, the default file is 'load_spec.json' in the METjson2db run folder.
 
 #### logLevel
 
 Options are: ["DEBUG", "INFO", "WARN", "ERROR"]
-This sets the METdadacb log level. Please set to ERROR for production
+This sets the METjson2db log level. Please set to ERROR for production
 
 #### runMode
 
 Options are:
 
-DIRECT_LOAD_TO_DB - METdadacb will load input stat files in-line, at run time, to the Couchbase database.
-Please note that the merge mode, when set using [overWriteData: false], is only available in DIRECT_LOAD_TO_DB mode.
+`DIRECT_LOAD_TO_DB` - METjson2db will load input stat files in-line, at run time, to the Couchbase database.
+Please note that the merge mode, when set using [overWriteData: false], is only available in `DIRECT_LOAD_TO_DB` mode.
 
-CREATE*JSON_DOC_ARCHIVE - METdadacb will create a gzip archive of Couchbase json documents from input stat files,
-which can then be uploaded to Couchbase later using a cbimport command line tool.
-Please note that the merge mode, when set using [overWriteData: false], is NOT available in CREATE_JSON_DOC_ARCHIVE mode,
-since the cbimport tool will overwrite existing documents in the database that has same ID as incoming documents.
-In this mode, the setting:
-"jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out*"
-sets the folder and file prefix for the generated archive file. At the end of a succesfull run, the output file name
-will looks like below (prefix + timestamp):
-/scratch/METjson2db_out_2025-04-09T14:40:11-06:00
+`CREATE_JSON_DOC_ARCHIVE` - METjson2db will create a gzip archive of Couchbase json documents from input stat files, which can then be uploaded to Couchbase later using a cbimport command line tool. Please note that the merge mode, when set using `[overWriteData: false]`, is NOT available in `CREATE_JSON_DOC_ARCHIVE` mode,
+since the cbimport tool will overwrite existing documents in the database that has same ID as incoming documents. In this mode, the setting: `"jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out_"` sets the folder and file prefix for the generated archive file. At the end of a succesfull run, the output file name will look like below (prefix + timestamp): `/scratch/METjson2db_out_2025-04-09T14:40:11-06:00`
 
-METADATA_UPDATE - METdatacb will update the metadata in the database from currently existing data documents in the database.
+`METADATA_UPDATE` - METdatacb will update the metadata in the database from currently existing data documents in the database.
 
 #### maxDocIdLength
 
