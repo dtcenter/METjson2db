@@ -70,6 +70,10 @@ type sqsVisibilityChanger interface {
 func startVisibilityHeartbeat(ctx context.Context, client sqsVisibilityChanger, queueURL, receiptHandle string, visibilityTimeoutSecs int32) context.CancelFunc {
 	interval := heartbeatInterval(visibilityTimeoutSecs)
 	hbCtx, cancel := context.WithCancel(ctx)
+	if interval <= 0 {
+		slog.Warn("invalid visibility timeout; disabling heartbeat", "visibilityTimeoutSecs", visibilityTimeoutSecs)
+		return cancel
+	}
 	go func() {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
