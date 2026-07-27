@@ -118,8 +118,11 @@ func TestHeartbeat_ExtendsPeriodically(t *testing.T) {
 	stop := startVisibilityHeartbeat(context.Background(), fake, testQueueURL, testReceiptHandle, testVisTimeout)
 	defer stop()
 
-	// heartbeatInterval(1) == 333ms; sleep 1.5s to guarantee at least 3 ticks.
-	time.Sleep(1500 * time.Millisecond)
+	// heartbeatInterval(1) == 333ms; wait (with a deadline) for at least 3 ticks.
+	deadline := time.Now().Add(2 * time.Second)
+	for fake.callCount() < 3 && time.Now().Before(deadline) {
+		time.Sleep(10 * time.Millisecond)
+	}
 	stop()
 
 	fake.mu.Lock()
