@@ -35,25 +35,25 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 
 	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 		if !state.LoadSpec.RunNonThreaded {
-			for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
+			for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsDbUpload); workerIdx++ {
 
 				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
 				state.AsyncWaitGroupFlushToDb.Add(1)
-				go func() {
+				go func(workerID int) {
 					defer state.AsyncWaitGroupFlushToDb.Done()
-					async.FlushToDbAsync(di)
-				}()
+					async.FlushToDbAsync(workerID)
+				}(workerIdx)
 			}
 
 			if !state.LoadSpec.OverWriteData {
-				for di := 0; di < int(state.LoadSpec.ThreadsMergeDocFetch); di++ {
+				for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsMergeDocFetch); workerIdx++ {
 
 					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
-					go func() {
+					go func(workerID int) {
 						defer state.AsyncWaitGroupMergeDocFetch.Done()
-						async.MergeDbDocFetchAsync(di)
-					}()
+						async.MergeDbDocFetchAsync(workerID)
+					}(workerIdx)
 				}
 			}
 		}
@@ -90,8 +90,8 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 			endMarkerDoc := make(map[string]interface{})
 			endMarkerDoc["endMarker"] = "endMarker"
 
-			for di := 0; di < int(state.LoadSpec.ThreadsDbUpload); di++ {
-				state.AsyncFlushToDbChannels[di] <- endMarkerDoc
+			for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsDbUpload); workerIdx++ {
+				state.AsyncFlushToDbChannels[workerIdx] <- endMarkerDoc
 			}
 
 			state.AsyncWaitGroupFlushToDb.Wait()
