@@ -127,11 +127,14 @@ func setupTestBucket(t *testing.T, client *s3.Client, tarball []byte) {
 	t.Helper()
 	ctx := context.Background()
 
-	client.CreateBucket(ctx, &s3.CreateBucketInput{
+	_, err := client.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket: aws.String(testBucket),
 	})
+	if err != nil {
+		t.Fatalf("creating bucket %q: %v", testBucket, err)
+	}
 
-	_, err := client.PutObject(ctx, &s3.PutObjectInput{
+	_, err = client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:            aws.String(testBucket),
 		Key:               aws.String(testKey),
 		Body:              bytes.NewReader(tarball),
