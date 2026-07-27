@@ -101,9 +101,8 @@ func main() {
 	})
 
 	slog.Info("sqsworker ready, polling for messages")
-	// On SIGTERM, ctx is cancelled and the AWS SDK propagates it into the blocked
-	// ReceiveMessage call, aborting it immediately. If a message was already received and
-	// handleMessage is running, it is allowed to complete before the loop exits.
+	// On SIGTERM, ctx is cancelled and ReceiveMessage aborts immediately.
+	// In-flight handleMessage calls use a separate context so they finish gracefully.
 	pollLoop(ctx, sqsClient, s3Client, queueURL)
 	slog.Info("sqsworker shutdown complete")
 }
@@ -145,7 +144,9 @@ func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, q
 				slog.Error("received SQS message missing body or receipt handle", "messageId", aws.ToString(msg.MessageId))
 				continue
 			}
-			if err := handleMessage(ctx, sqsClient, s3Client, queueURL, aws.ToString(msg.Body), aws.ToString(msg.ReceiptHandle)); err != nil {
+			// Use a context detached from the signal so in-flight work completes gracefully.
+			msgCtx := context.WithoutCancel(ctx)
+			if err := handleMessage(msgCtx, sqsClient, s3Client, queueURL, aws.ToString(msg.Body), aws.ToString(msg.ReceiptHandle)); err != nil {
 				slog.Error("processing message failed, leaving in queue for retry",
 					"messageId", aws.ToString(msg.MessageId),
 					"error", err,
