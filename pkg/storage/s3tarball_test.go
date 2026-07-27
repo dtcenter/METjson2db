@@ -45,7 +45,7 @@ func TestIsStatFile(t *testing.T) {
 		{"grid_stat_output.stat", true},
 		{"path/to/deep/file.stat", true},
 		{"tcstat-file.tcst", true},
-		{"file.txt", false},
+		{"file.txt", true},
 		{"file.stat.bak", false},
 		{"readme.md", false},
 		{".stat", true},
@@ -62,7 +62,7 @@ func TestS3TarballProvider_Walk_ExtractsStatFiles(t *testing.T) {
 	tarData := createTestTarGz(t, map[string]string{
 		"data/file1.stat": "header1\ndata1",
 		"data/file2.stat": "header2\ndata2",
-		"data/readme.txt": "not a stat file",
+		"data/readme.md":  "not a stat file",
 		"data/file3.stat": "header3\ndata3",
 	})
 
@@ -187,8 +187,8 @@ func TestS3TarballProvider_Walk_EmptyTarball(t *testing.T) {
 
 func TestS3TarballProvider_Walk_NoStatFiles(t *testing.T) {
 	tarData := createTestTarGz(t, map[string]string{
-		"readme.txt": "hello",
-		"data.csv":   "col1,col2",
+		"readme.md": "hello",
+		"data.csv":  "col1,col2",
 	})
 
 	client := newFakeS3Client(tarData)

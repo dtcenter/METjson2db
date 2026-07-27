@@ -19,7 +19,7 @@ type S3ObjectGetter interface {
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
 }
 
-// S3TarballProvider streams a tarball from S3 and yields .stat/.tcst file entries.
+// S3TarballProvider streams a tarball from S3 and yields .stat/.tcst/.txt stat file entries.
 type S3TarballProvider struct {
 	Client S3ObjectGetter
 	Bucket string
@@ -94,7 +94,8 @@ func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.
 // Valid file endings:
 // - .stat
 // - .tcst
+// - .txt
 func isStatFile(name string) bool {
 	base := filepath.Base(name)
-	return strings.HasSuffix(base, ".stat") || strings.HasSuffix(base, ".tcst")
+	return strings.HasSuffix(base, ".stat") || strings.HasSuffix(base, ".tcst") || strings.HasSuffix(base, ".txt")
 }
