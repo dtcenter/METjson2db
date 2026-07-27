@@ -36,7 +36,10 @@ func parseStatFileContent(name string, r io.Reader) (map[string]interface{}, err
 	scanner.Buffer(nil, maxCapacity)
 
 	if !scanner.Scan() {
-		return nil, fmt.Errorf("empty file or error reading header for %s: %w", name, scanner.Err())
+		if err := scanner.Err(); err != nil {
+			return nil, fmt.Errorf("error reading header for %s: %w", name, err)
+		}
+		return nil, fmt.Errorf("empty file: %s", name)
 	}
 	headerLine := scanner.Text()
 
