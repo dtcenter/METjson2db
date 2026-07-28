@@ -31,15 +31,17 @@ See [docs/dev-guide.md](docs/dev-guide.md) for full details on running tests.
 ## Project Structure
 
 - `cmd/metjson2db/` — CLI entry point. Flag parsing and file discovery, creates a `LocalProvider`.
-- `cmd/sqsworker/` — SQS worker entry point. Polls SQS for S3 event notifications, creates `S3TarballProvider` instances.
+- `cmd/sqsworker/` — SQS worker entry point. Polls SQS for S3 event notifications, creates `S3TarballProvider` instances. Initializes OpenTelemetry SDK and instruments the processing loop.
 - `pkg/storage/` — `StorageProvider` interface and implementations (`LocalProvider`, `S3TarballProvider`, S3 event parser). This is the abstraction layer between file sources and the processing pipeline.
 - `pkg/core/` — Core pipeline: `ProcessFromProvider` orchestrates workers, `parseStatFileContent` parses via `io.Reader`, flushing to DB/disk.
 - `pkg/async/` — Goroutine workers for concurrent DB upserts and merge-doc fetching.
+- `pkg/telemetry/` — OpenTelemetry metric instruments and tracer. Depends only on the OTel API (no SDK). Imported by all instrumented packages.
 - `pkg/state/` — Global shared state (maps, mutexes, channels). **Caution**: tightly coupled; read before modifying.
 - `pkg/types/` — All shared data structures (`LoadSpec`, `Credentials`, `CbConnection`, etc.).
 - `pkg/utils/` — DB connection helpers, query execution, JSON formatting.
 - `pkg/metadataUpdate/` — `METADATA_UPDATE` run mode: queries DB and builds aggregate metadata documents.
 - `pkg/black_box_tests/` — Couchbase integration tests (build tag: `integration`).
+- `internal/otel/` — OpenTelemetry SDK initialization (TracerProvider, MeterProvider, LoggerProvider) and slog fan-out bridge. Application-specific; not importable by external modules.
 - `sqlTemplates/` — Parameterized SQL++ templates used by metadata update.
 - `test_data/` — Sample `.stat` files for testing.
 
@@ -64,6 +66,7 @@ See [docs/dev-guide.md](docs/dev-guide.md) for full details on running tests.
 - Follow common Go best practices.
 - All new code should have unit test coverage.
 - Run `golangci-lint` to check code quality & formatting.
+- Group changes into logical commits to avoid massive PRs
 
 ### Avoid
 
@@ -72,12 +75,14 @@ See [docs/dev-guide.md](docs/dev-guide.md) for full details on running tests.
 - Creating new Couchbase connections per operation — connections should be reused.
 - Modifying `pkg/state/` globals without holding the appropriate mutex.
 - Committing credentials, passwords, or connection strings.
+- Doing numerous changes in "one shot" - resulting in single commits with massive changsets
 
 ## External Dependencies
 
 - **`github.com/dtcenter/METstat2json`** — Core parsing library. Defines line-type schemas per MET version. Changes to stat file format require updates in that repo first.
 - **`github.com/couchbase/gocb/v2`** — Couchbase Go SDK.
 - **`github.com/aws/aws-sdk-go-v2`** — AWS SDK (v2). Used by `S3TarballProvider` (S3 streaming) and the SQS worker (message polling). Auth via default credential chain.
+- **`go.opentelemetry.io/otel`** — OpenTelemetry API and SDK. Metrics, traces, and logs exported via OTLP gRPC. See [docs/observability.md](docs/observability.md).
 
 ## Run Modes
 
@@ -105,4 +110,4 @@ End-of-stream is signaled via sentinel "endMarker" values. Shared maps are prote
 4. **SQL template string replacement** — not parameterized; safe today (internal values) but fragile.
 5. **Minimal test coverage in core** — one unit test, one integration test for the core pipeline. `pkg/storage/` has 90%+ coverage.
 6. Files are output without proper file endings. When creating archives, the files should be tar.gz files.
-7. **Context not fully propagated** — `ProcessFromProvider` and `StorageProvider` accept `context.Context`, but async workers and DB calls do not yet use it.
+7. **Context not fully propagated to async workers** — `ProcessFromProvider`, `StorageProvider`, and `parseStatFileContent` all accept `context.Context`. Async DB workers (`FlushToDbAsync`, `MergeDbDocFetchAsync`) still operate without per-message context due to the channel-based fan-out pattern.
