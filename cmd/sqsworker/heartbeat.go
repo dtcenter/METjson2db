@@ -10,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+
+	"github.com/dtcenter/METjson2db/pkg/telemetry"
 )
 
 // sqsAttributeGetter is the subset of sqs.Client needed to fetch queue attributes.
@@ -88,7 +90,10 @@ func startVisibilityHeartbeat(ctx context.Context, client sqsVisibilityChanger, 
 					VisibilityTimeout: visibilityTimeoutSecs,
 				})
 				if err != nil && hbCtx.Err() == nil {
+					telemetry.VisibilityHeartbeatExts.Add(hbCtx, 1, telemetry.StatusError)
 					slog.Warn("failed to extend SQS message visibility", "error", err)
+				} else if err == nil {
+					telemetry.VisibilityHeartbeatExts.Add(hbCtx, 1, telemetry.StatusSuccess)
 				}
 			}
 		}
