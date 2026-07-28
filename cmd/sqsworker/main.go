@@ -21,6 +21,7 @@ import (
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METjson2db/pkg/storage"
 	"github.com/dtcenter/METjson2db/pkg/telemetry"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -104,6 +105,7 @@ func main() {
 		slog.Error("loading AWS config", "error", err)
 		os.Exit(1)
 	}
+	otelaws.AppendMiddlewares(&cfg.APIOptions)
 
 	sqsClient := sqs.NewFromConfig(cfg)
 	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {

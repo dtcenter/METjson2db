@@ -26,12 +26,14 @@ Each SQS message produces a trace with the following span hierarchy:
 
 ```
 process_sqs_message (root)
-├── parse_s3_event
 ├── process_s3_record (per S3 record)
-│   ├── s3_download
+│   ├── S3.GetObject (auto-instrumented by otelaws)
 │   └── parse_stat_file (per file in tarball)
-└── delete_sqs_message
+├── SQS.DeleteMessage (auto-instrumented by otelaws)
+└── SQS.ChangeMessageVisibility (auto-instrumented by otelaws, per heartbeat)
 ```
+
+AWS SDK calls (S3, SQS) are automatically traced via [`otelaws`](https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws) middleware, which captures operation name, HTTP status, retries, and request ID. Application-level spans (`process_sqs_message`, `process_s3_record`, `parse_stat_file`) provide business context.
 
 Span attributes include `s3.bucket`, `s3.key`, and `file.name` where applicable.
 
