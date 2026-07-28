@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -27,7 +28,7 @@ func TestParseStatFileContent_Scanner(t *testing.T) {
 	defer file.Close()
 
 	// Execute the newly refactored streaming parser
-	doc, err := parseStatFileContent(filePath, file)
+	doc, err := parseStatFileContent(context.Background(), filePath, file)
 	if err != nil {
 		t.Fatalf("Expected no error, got: %v", err)
 	}
@@ -48,11 +49,11 @@ func BenchmarkParseStatFileContent(b *testing.B) {
 	defer file.Close()
 
 	b.ResetTimer()
-	b.ReportAllocs() // This is the magic flag!
+	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
 		// Reset the file pointer to the beginning for each iteration
 		_, _ = file.Seek(0, 0)
-		_, _ = parseStatFileContent(filePath, file)
+		_, _ = parseStatFileContent(context.Background(), filePath, file)
 	}
 }
