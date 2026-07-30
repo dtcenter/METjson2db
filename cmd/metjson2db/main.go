@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"github.com/dtcenter/METjson2db/pkg/core"
 	"github.com/dtcenter/METjson2db/pkg/metadataUpdate"
 	"github.com/dtcenter/METjson2db/pkg/state"
+	"github.com/dtcenter/METjson2db/pkg/storage"
 )
 
 func main() {
@@ -188,9 +190,9 @@ func main() {
 
 	// slog.Debug("inputFiles:\n%v", utils.PrettyPrint(inputFiles))
 	slog.Debug("inputFiles:", slog.Any("inputFiles", inputFiles))
-	// slog.Error("Exit hard coded in main.go:190")
 
-	err = core.ProcessInputFiles(inputFiles, nil)
+	provider := storage.NewLocalProvider(inputFiles)
+	err = core.ProcessFromProvider(context.Background(), provider, nil)
 	if err != nil {
 		slog.Error("Error processing input files:" + err.Error())
 	}

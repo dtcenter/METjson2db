@@ -1,11 +1,10 @@
 package core
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"log/slog"
-	"os"
-	"strings"
 
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METstat2json/pkg/parser"
@@ -25,33 +24,34 @@ func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
 	return nil, fmt.Errorf("%s: %s", parser.DOC_NOT_FOUND, id)
 }
 
-func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
-	slog.Debug("statFileToCbDocMetParser(" + filepath + ")")
+// parseStatFileContent parses stat file content from any io.Reader.
+func parseStatFileContent(name string, r io.Reader) (map[string]interface{}, error) {
 	var doc map[string]interface{}
 	var err error
 
-	file, err := os.Open(filepath) // open the file
-	if err != nil {
-		slog.Error("error opening file:", slog.Any("error", err))
-	}
-	defer file.Close()
-	rawData, err := io.ReadAll(file)
-	if err != nil {
-		slog.Error("error reading file:", filepath, slog.Any("error", err))
-	}
-	lines := strings.Split(string(rawData), "\n")
-	headerLine := lines[0]
+	scanner := bufio.NewScanner(r)
+	// Increase the maximum buffer size from the default 64kb to 1MB to handle extremely wide stat file lines
+	// Pass nil to start small with the default 4kb buffer, but allow it to grow to 1MB
+	const maxCapacity = 1024 * 1024
+	scanner.Buffer(nil, maxCapacity)
 
-	// distribute ids to fetch channels, round-robin, for async processing
+	if !scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return nil, fmt.Errorf("error reading header for %s: %w", name, err)
+		}
+		return nil, fmt.Errorf("empty file: %s", name)
+	}
+	headerLine := scanner.Text()
+
 	idxFetch := 0
-	for line := range lines {
-		if line == 0 || lines[line] == "" {
+	for scanner.Scan() {
+		dataLine := scanner.Text()
+		if dataLine == "" {
 			continue
 		}
-		dataLine := lines[line]
+
 		state.METParserNewDocId = ""
-		// TODO: from command line, document it
-		doc, err = parser.ParseLine(state.LoadSpec.DatasetName, headerLine, dataLine, &state.CbDocs, filepath, getMissingExternalDocForId)
+		doc, err = parser.ParseLine(state.LoadSpec.DatasetName, headerLine, dataLine, &state.CbDocs, name, getMissingExternalDocForId)
 		slog.Debug(fmt.Sprintf("OverWriteData:%v,METParserNewDocId:%v", state.LoadSpec.OverWriteData, state.METParserNewDocId))
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
@@ -64,6 +64,10 @@ func statFileToCbDocMetParser(filepath string) (map[string]interface{}, error) {
 				idxFetch = 0
 			}
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error scanning file %s: %w", name, err)
 	}
 
 	return doc, err
