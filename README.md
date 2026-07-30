@@ -162,7 +162,7 @@ Options are:
 Please note that the merge mode, when set using [overWriteData: false], is only available in `DIRECT_LOAD_TO_DB` mode.
 
 `CREATE_JSON_DOC_ARCHIVE` - METjson2db will create a gzip archive of Couchbase json documents from input stat files, which can then be uploaded to Couchbase later using a cbimport command line tool. Please note that the merge mode, when set using `[overWriteData: false]`, is NOT available in `CREATE_JSON_DOC_ARCHIVE` mode,
-since the cbimport tool will overwrite existing documents in the database that has same ID as incoming documents. In this mode, the setting: `"jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out_"` sets the folder and file prefix for the generated archive file. At the end of a succesfull run, the output file name will look like below (prefix + timestamp): `/scratch/METjson2db_out_2025-04-09T14:40:11-06:00`
+since the cbimport tool will overwrite existing documents in the database that has same ID as incoming documents. In this mode, the setting: `"jsonArchiveFilePathAndPrefix" :"/scratch/METjson2db_out_"` sets the folder and file prefix for the generated archive file. At the end of a succesfull run, the output file name will look like below (prefix + timestamp + extension): `/scratch/METjson2db_out_2025-04-09T14:40:11-06:00.json.gz`
 
 `METADATA_UPDATE` - METdatacb will update the metadata in the database from currently existing data documents in the database.
 
@@ -259,7 +259,7 @@ go run ./cmd/... -c ~/credentials -l ./load_spec.json -f /Users/gopa.padmanabhan
 
 go run ./cmd/... -c ~/credentials -l ./load_spec.json -f ./test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_240000L_20240203_120000V.stat
 
-# Output will be in ./outputs with file name with extension as json, like: grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.json
+# Output will be a gzipped JSON file (.json.gz) named with the prefix from jsonArchiveFilePathAndPrefix plus a timestamp, like: grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V_2025-04-09T14:40:11-06:00.json.gz
 
 # run with specific credentials,settings and/or for all stat files in a folder
 go run ./cmd/... -c ~/credentials -l ./load_spec.json -i ./test_data/

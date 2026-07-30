@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -59,9 +60,10 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 		}
 	}
 
-	err := StartProcessingFromProvider(ctx, provider)
-	if err != nil {
-		slog.Error("Expected no error, got:", slog.Any("error", err))
+	// Return any errors instead of continuing so the caller can correctly handle the error
+	// e.g. - by deciding to not mark the queue message as resolved
+	if err := startProcessingFromProvider(ctx, provider); err != nil {
+		return fmt.Errorf("processing files: %w", err)
 	}
 
 	fileTotalCount := int64(0)
@@ -98,7 +100,8 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 			slog.Debug("asyncWaitGroupFlushToDb finished!")
 		}
 	case "CREATE_JSON_DOC_ARCHIVE":
-		err := parser.WriteJsonToCompressedFile(state.CbDocs, state.LoadSpec.JsonArchiveFilePathAndPrefix+time.Now().Format(time.RFC3339))
+		outputFilename := state.LoadSpec.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + ".json.gz"
+		err := parser.WriteJsonToCompressedFile(state.CbDocs, outputFilename)
 		if err != nil {
 			slog.Error("Expected no error, got:", slog.Any("error", err))
 		}
