@@ -40,14 +40,12 @@ func NewS3TarballProvider(client S3ObjectGetter, bucket, key string) *S3TarballP
 func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.Reader) error) error {
 	slog.InfoContext(ctx, "S3TarballProvider.Walk", "bucket", p.Bucket, "key", p.Key)
 
-	ctx, span := telemetry.Tracer.Start(ctx, telemetry.SpanS3Download)
 	s3Start := time.Now()
 	result, err := p.Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(p.Bucket),
 		Key:    aws.String(p.Key),
 	})
 	telemetry.S3DownloadDuration.Record(ctx, time.Since(s3Start).Seconds())
-	span.End()
 	if err != nil {
 		return fmt.Errorf("s3 GetObject s3://%s/%s: %w", p.Bucket, p.Key, err)
 	}

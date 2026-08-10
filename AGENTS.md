@@ -110,4 +110,4 @@ End-of-stream is signaled via sentinel "endMarker" values. Shared maps are prote
 4. **SQL template string replacement** — not parameterized; safe today (internal values) but fragile.
 5. **Minimal test coverage in core** — one unit test, one integration test for the core pipeline. `pkg/storage/` has 90%+ coverage.
 6. Files are output without proper file endings. When creating archives, the files should be tar.gz files.
-7. **Context not fully propagated to async workers** — `ProcessFromProvider`, `StorageProvider`, and `parseStatFileContent` all accept `context.Context`. Async DB workers (`FlushToDbAsync`, `MergeDbDocFetchAsync`) still operate without per-message context due to the channel-based fan-out pattern.
+7. **Context not propagated to DB calls** — Async workers now receive `context.Context`, but the underlying `gocb` Upsert and Get calls still use `nil` options (no context). Passing context to Couchbase SDK calls would enable timeout propagation and trace-linked DB spans.

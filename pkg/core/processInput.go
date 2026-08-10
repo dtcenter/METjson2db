@@ -42,7 +42,7 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 				state.AsyncWaitGroupFlushToDb.Add(1)
 				go func(workerID int) {
 					defer state.AsyncWaitGroupFlushToDb.Done()
-					async.FlushToDbAsync(workerID)
+					async.FlushToDbAsync(ctx, workerID)
 				}(workerIdx)
 			}
 
@@ -53,7 +53,7 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
 					go func(workerID int) {
 						defer state.AsyncWaitGroupMergeDocFetch.Done()
-						async.MergeDbDocFetchAsync(workerID)
+						async.MergeDbDocFetchAsync(ctx, workerID)
 					}(workerIdx)
 				}
 			}

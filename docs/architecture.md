@@ -227,7 +227,7 @@ MET stat data is stored as JSON documents with:
    - `Cb_host`, `Cb_user` → `CbHost`, `CbUser` (Go exported fields use CamelCase, not snake_case)
    - Unexported types like `StrArray` are duplicated across packages
 
-6. **Context propagation**: `ProcessFromProvider`, the `StorageProvider` interface, and `parseStatFileContent` all accept `context.Context`, enabling graceful cancellation and trace propagation. The async workers (`FlushToDbAsync`, `MergeDbDocFetchAsync`) do not yet receive per-message context because they consume from channels — trace linkage to these workers is deferred until the global state is refactored.
+6. **Context propagation**: `ProcessFromProvider`, the `StorageProvider` interface, `parseStatFileContent`, `FlushToDbAsync`, and `MergeDbDocFetchAsync` all accept `context.Context`, enabling cancellation propagation and trace continuity through the async pipeline. The underlying `gocb` Upsert and Get calls still use `nil` options — passing context to Couchbase SDK calls would enable timeout propagation and trace-linked DB spans.
 
 7. **Test coverage**: One unit test (`TestParseLoadSpec`) and one integration test (`TestMerge`) for the core pipeline. The `pkg/storage/` package has 90%+ unit test coverage and an integration test against MiniStack. See [docs/dev-guide.md](dev-guide.md) for how to run tests.
 

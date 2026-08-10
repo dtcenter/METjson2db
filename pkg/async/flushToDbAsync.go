@@ -18,8 +18,7 @@ func init() {
 	slog.Debug("flushToDbAsync:init()")
 }
 
-func FlushToDbAsync(threadIdx int) {
-	ctx := context.Background()
+func FlushToDbAsync(ctx context.Context, threadIdx int) {
 	conn := utils.GetDbConnection(state.Credentials)
 	count := 0
 	mergeCount := 0

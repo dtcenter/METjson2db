@@ -12,7 +12,6 @@ const (
 	SpanProcessMessage = "process_sqs_message"
 	SpanParseS3Event   = "parse_s3_event"
 	SpanProcessRecord  = "process_s3_record"
-	SpanS3Download     = "s3_download"
 	SpanParseStatFile  = "parse_stat_file"
 	SpanDeleteMessage  = "delete_sqs_message"
 )
