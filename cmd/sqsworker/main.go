@@ -219,23 +219,23 @@ func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Clien
 		bucket := record.S3.Bucket.Name
 		key := record.S3.Object.Key
 
-		ctx, recordSpan := telemetry.Tracer.Start(ctx, telemetry.SpanProcessRecord,
+		recordCtx, recordSpan := telemetry.Tracer.Start(ctx, telemetry.SpanProcessRecord,
 			trace.WithAttributes(
 				attribute.String("s3.bucket", bucket),
 				attribute.String("s3.key", key),
 			))
 
-		slog.InfoContext(ctx, "processing tarball", "bucket", bucket, "key", key)
+		slog.InfoContext(recordCtx, "processing tarball", "bucket", bucket, "key", key)
 
 		provider := storage.NewS3TarballProvider(s3Client, bucket, key)
-		if err := core.ProcessFromProvider(ctx, provider, nil); err != nil {
+		if err := core.ProcessFromProvider(recordCtx, provider, nil); err != nil {
 			recordSpan.SetStatus(codes.Error, err.Error())
 			recordSpan.End()
 			span.SetStatus(codes.Error, err.Error())
 			return fmt.Errorf("processing s3://%s/%s: %w", bucket, key, err)
 		}
 
-		slog.InfoContext(ctx, "tarball processed successfully", "bucket", bucket, "key", key)
+		slog.InfoContext(recordCtx, "tarball processed successfully", "bucket", bucket, "key", key)
 		recordSpan.End()
 	}
 
