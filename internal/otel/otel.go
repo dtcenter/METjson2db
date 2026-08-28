@@ -16,7 +16,6 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 
 	"github.com/dtcenter/METjson2db/pkg/telemetry"
 )
@@ -24,6 +23,12 @@ import (
 // defaultServiceName is used only when OTEL_SERVICE_NAME isn't set — resource.Default() already
 // reads that env var, so setting this unconditionally would silently override it on every merge.
 const defaultServiceName = "metjson2db-sqsworker"
+
+// serviceNameKey is the stable "service.name" resource attribute key from the OTel resource
+// semantic conventions. Using the literal key instead of a pinned semconv package (e.g.
+// semconv.ServiceName from go.opentelemetry.io/otel/semconv/vX.Y.Z) avoids having to track which
+// schema version resource.Default() uses internally — see the NewSchemaless comment below.
+const serviceNameKey = attribute.Key("service.name")
 
 func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err error) {
 	var shutdownFuncs []func(context.Context) error
@@ -44,11 +49,17 @@ func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err er
 	// our default when the operator hasn't set one, so the env var actually takes effect.
 	var resourceAttrs []attribute.KeyValue
 	if os.Getenv("OTEL_SERVICE_NAME") == "" {
-		resourceAttrs = append(resourceAttrs, semconv.ServiceName(defaultServiceName))
+		resourceAttrs = append(resourceAttrs, serviceNameKey.String(defaultServiceName))
 	}
+	// NewSchemaless (no schema URL) instead of NewWithAttributes(semconv.SchemaURL, ...): Merge
+	// errors if both sides carry a non-empty, differing schema URL, and resource.Default()'s
+	// schema URL tracks whatever semconv version the SDK itself was built against — pinning our
+	// own semconv import here would silently break on the next unrelated SDK upgrade (as it did
+	// before this fix). A schemaless resource can never conflict; Merge just adopts the other
+	// side's schema URL.
 	res, err := resource.Merge(
 		resource.Default(),
-		resource.NewWithAttributes(semconv.SchemaURL, resourceAttrs...),
+		resource.NewSchemaless(resourceAttrs...),
 	)
 	if err != nil {
 		return shutdown, err
