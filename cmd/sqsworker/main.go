@@ -249,8 +249,8 @@ func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Clien
 		recordSpan.End()
 	}
 
-	_, deleteSpan := telemetry.Tracer.Start(ctx, telemetry.SpanDeleteMessage)
-	_, err = sqsClient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+	deleteCtx, deleteSpan := telemetry.Tracer.Start(ctx, telemetry.SpanDeleteMessage)
+	_, err = sqsClient.DeleteMessage(deleteCtx, &sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(queueURL),
 		ReceiptHandle: aws.String(receiptHandle),
 	})
