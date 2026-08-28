@@ -29,13 +29,13 @@ func isConnectivityError(err error) bool {
 		errors.Is(err, gocb.ErrServiceNotAvailable)
 }
 
-func FlushToDbAsync(ctx context.Context, threadIdx int) {
+func FlushToDbAsync(ctx context.Context, threadIdx int, ch chan map[string]interface{}) {
 	conn := state.DbConn
 	count := 0
 	mergeCount := 0
 	errors := 0
 	for {
-		doc, ok := <-state.AsyncFlushToDbChannels[threadIdx]
+		doc, ok := <-ch
 		if !ok {
 			slog.Debug(fmt.Sprintf("\tflushToDbAsync(%d), no documents in channel!", threadIdx))
 			break
@@ -122,5 +122,5 @@ func FlushToDbAsync(ctx context.Context, threadIdx int) {
 	}
 	slog.Info(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, doc merge count:%d, errors:%d", threadIdx, count, mergeCount, errors))
 	returnDoc := make(map[string]interface{})
-	state.AsyncFlushToDbChannels[threadIdx] <- returnDoc
+	ch <- returnDoc
 }

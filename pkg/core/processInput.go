@@ -38,24 +38,28 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 		if !state.LoadSpec.RunNonThreaded {
 			for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsDbUpload); workerIdx++ {
-
-				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
+				// Pass ch directly rather than having the worker index into
+				// state.AsyncFlushToDbChannels itself — this loop keeps appending to (and thus
+				// mutating) that shared slice while earlier-spawned workers are already running,
+				// so a worker re-reading the slice by index races the main goroutine's append.
+				ch := make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs)
+				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, ch)
 				state.AsyncWaitGroupFlushToDb.Add(1)
-				go func(workerID int) {
+				go func(workerID int, ch chan map[string]interface{}) {
 					defer state.AsyncWaitGroupFlushToDb.Done()
-					async.FlushToDbAsync(ctx, workerID)
-				}(workerIdx)
+					async.FlushToDbAsync(ctx, workerID, ch)
+				}(workerIdx, ch)
 			}
 
 			if !state.LoadSpec.OverWriteData {
 				for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsMergeDocFetch); workerIdx++ {
-
-					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
+					ch := make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs)
+					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, ch)
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
-					go func(workerID int) {
+					go func(workerID int, ch chan string) {
 						defer state.AsyncWaitGroupMergeDocFetch.Done()
-						async.MergeDbDocFetchAsync(ctx, workerID)
-					}(workerIdx)
+						async.MergeDbDocFetchAsync(ctx, workerID, ch)
+					}(workerIdx, ch)
 				}
 			}
 		}
