@@ -38,7 +38,6 @@ var (
 	TarballExtractionErrors metric.Int64Counter
 	StatFileParseErrors     metric.Int64Counter
 	LinesSkipped            metric.Int64Counter
-	DocumentIDTruncated     metric.Int64Counter
 	DocumentsMerged         metric.Int64Counter
 	MissingExternalDocRefs  metric.Int64Counter
 )
@@ -100,9 +99,6 @@ func InitMetrics(m metric.Meter) {
 
 	LinesSkipped, _ = m.Int64Counter("metjson2db.lines.skipped",
 		metric.WithDescription("Total lines skipped during parsing"))
-
-	DocumentIDTruncated, _ = m.Int64Counter("metjson2db.documents.id_truncated",
-		metric.WithDescription("Total documents with IDs that exceeded MaxDocIdLength"))
 
 	DocumentsMerged, _ = m.Int64Counter("metjson2db.documents.merged",
 		metric.WithDescription("Total documents merged with existing DB documents"))
