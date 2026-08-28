@@ -68,10 +68,59 @@ AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
 
 #### Couchbase merge tests (`pkg/black_box_tests/`)
 
-These tests exercise the full parse-and-upsert pipeline against a live Couchbase cluster. They require a `~/credentials` file with valid connection details (see `credentials.template`).
+These tests exercise the full parse-and-upsert pipeline against a live Couchbase cluster: they upload real stat files through `ProcessInputFiles` with multiple concurrent DB-upload and merge-fetch goroutines, so this is also the best local way to validate any change to `pkg/async/` or the shared-connection code in `pkg/utils/db-utils.go`.
+
+**⚠️ This test runs a raw `DELETE FROM <bucket>.<scope>.<collection>` against whatever credentials it's given.** Never point it at a shared or production cluster — use a disposable local Couchbase instance, and use a **separate** credentials file from your real `~/credentials` (see below) so this test can never accidentally touch it.
+
+**1. Start a local Couchbase and do initial setup.** If you don't already have one running, the quickest path is the official Docker image plus the Web UI setup wizard:
 
 ```bash
-go test -tags integration ./pkg/black_box_tests/ -v
+docker run -d --name couchbase -p 8091-8097:8091-8097 -p 9123:9123 -p 11207:11207 -p 11210:11210 -p 11280:11280 -p 18091-18097:18091-18097 couchbase
+```
+
+Open `http://localhost:8091`, run through the setup wizard (single-node cluster is fine), and create an admin user — the examples below assume `admin` / `admin12`. See [README.md § Installing and configuring Couchbase](../README.md#installing-and-configuring-couchbase-for-metjson2db) for the general walkthrough (bucket/scope/collection concepts, index adviser, etc.).
+
+**2. Create a bucket, plus the scope/collection/index this test needs.** Create a bucket (e.g. `metplusdata`) via the Web UI or REST API if you don't have one, then create the `MET_tests` collection under its `_default` scope and a primary index, via the REST/query API:
+
+```bash
+curl -s -u admin:admin12 -X POST \
+  http://localhost:8091/pools/default/buckets/metplusdata/scopes/_default/collections \
+  -d name=MET_tests
+
+curl -s -u admin:admin12 -X POST http://localhost:8093/query/service \
+  -d 'statement=CREATE PRIMARY INDEX ON `metplusdata`.`_default`.`MET_tests`'
+```
+
+**3. Create a test-only credentials file** — do **not** reuse or overwrite your real `~/credentials`:
+
+```bash
+mkdir -p /tmp/cb-test-home
+cat > /tmp/cb-test-home/credentials <<EOF
+cb_host: couchbase://localhost
+cb_bucket: metplusdata
+cb_scope: _default
+cb_collection: MET_tests
+cb_user: admin
+cb_password: admin12
+EOF
+```
+
+**4. Run the test with `$HOME` pointed at that directory** (`testMerge_Init` reads `~/credentials` via `os.UserHomeDir()`, so overriding `$HOME` for just this command is what keeps it isolated from your real credentials):
+
+```bash
+HOME=/tmp/cb-test-home go test -tags integration ./pkg/black_box_tests/ -v
+```
+
+Add `-race` to also check for concurrency issues in the async worker pool — this is the only test in the repo that exercises real concurrent Couchbase traffic, so it's the one place `-race` here is actually meaningful:
+
+```bash
+HOME=/tmp/cb-test-home go test -race -tags integration ./pkg/black_box_tests/ -v
+```
+
+**Stop Couchbase when done:**
+
+```bash
+docker rm -f couchbase
 ```
 
 #### Running all integration tests at once
