@@ -9,9 +9,12 @@ import (
 	"log/slog"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/dtcenter/METjson2db/pkg/telemetry"
 )
 
 // S3ObjectGetter abstracts the S3 GetObject call for testability.
@@ -35,7 +38,16 @@ func NewS3TarballProvider(client S3ObjectGetter, bucket, key string) *S3TarballP
 }
 
 func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.Reader) error) error {
-	slog.Info("S3TarballProvider.Walk", "bucket", p.Bucket, "key", p.Key)
+	slog.InfoContext(ctx, "S3TarballProvider.Walk", "bucket", p.Bucket, "key", p.Key)
+
+	// GetObject returns once the response stream is available, not once it's fully read — the
+	// tarball's bytes are actually pulled off the wire below, interleaved with gzip/tar decoding,
+	// as fn consumes each entry. Recording on return (via defer) covers the whole streamed
+	// download instead of just time-to-first-byte.
+	s3Start := time.Now()
+	defer func() {
+		telemetry.S3DownloadDuration.Record(ctx, time.Since(s3Start).Seconds())
+	}()
 
 	result, err := p.Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(p.Bucket),
@@ -48,6 +60,7 @@ func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.
 
 	gz, err := gzip.NewReader(result.Body)
 	if err != nil {
+		telemetry.TarballExtractionErrors.Add(ctx, 1)
 		return fmt.Errorf("gzip reader for s3://%s/%s: %w", p.Bucket, p.Key, err)
 	}
 	defer gz.Close()
@@ -67,6 +80,7 @@ func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.
 			break
 		}
 		if err != nil {
+			telemetry.TarballExtractionErrors.Add(ctx, 1)
 			return fmt.Errorf("reading tar entry from s3://%s/%s: %w", p.Bucket, p.Key, err)
 		}
 
@@ -80,12 +94,12 @@ func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.
 		}
 
 		fileCount++
-		if err := fn(hdr.Name, tr); err != nil { // Note - this most likely isn't safe in a concurrent environment given the global state
+		if err := fn(hdr.Name, tr); err != nil {
 			return err
 		}
 	}
 
-	slog.Info("S3TarballProvider.Walk complete", "bucket", p.Bucket, "key", p.Key, "statFiles", fileCount)
+	slog.InfoContext(ctx, "S3TarballProvider.Walk complete", "bucket", p.Bucket, "key", p.Key, "statFiles", fileCount)
 	return nil
 }
 

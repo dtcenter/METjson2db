@@ -9,18 +9,33 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
+	intotel "github.com/dtcenter/METjson2db/internal/otel"
 	"github.com/dtcenter/METjson2db/pkg/core"
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METjson2db/pkg/storage"
+	"github.com/dtcenter/METjson2db/pkg/telemetry"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func main() {
+	if err := run(); err != nil {
+		os.Exit(1)
+	}
+}
+
+// run holds the startup/shutdown sequence as a single function so a deferred otelShutdown always
+// executes before returning, on every exit path — os.Exit in main() would skip it.
+func run() error {
 	home, _ := os.UserHomeDir()
 
 	var credentialsFilePath string
@@ -40,14 +55,14 @@ func main() {
 	queueURL := os.Getenv("SQS_QUEUE_URL")
 	if queueURL == "" {
 		slog.Error("SQS_QUEUE_URL environment variable is required")
-		os.Exit(1)
+		return fmt.Errorf("SQS_QUEUE_URL environment variable is required")
 	}
 
 	var err error
 	state.LoadSpec, err = core.ParseLoadSpec(loadSpecFilePath)
 	if err != nil {
 		slog.Error("unable to parse load_spec", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("parsing load_spec: %w", err)
 	}
 	if jsonOutputPrefix != "" {
 		state.LoadSpec.RunMode = "CREATE_JSON_DOC_ARCHIVE"
@@ -65,10 +80,24 @@ func main() {
 	case "ERROR":
 		level = slog.LevelError
 	}
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
-		Level:     level,
-	}))
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	otelShutdown, err := intotel.InitOTel(ctx)
+	if err != nil {
+		slog.Error("initializing OpenTelemetry", "error", err)
+		return fmt.Errorf("initializing OpenTelemetry: %w", err)
+	}
+	defer func() {
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+		if err := otelShutdown(shutdownCtx); err != nil {
+			slog.Error("otel shutdown", "error", err)
+		}
+	}()
+
+	logger := slog.New(intotel.NewFanoutHandler(level))
 	slog.SetDefault(logger)
 
 	state.Credentials = core.GetCredentials(credentialsFilePath)
@@ -80,9 +109,6 @@ func main() {
 		"db", fmt.Sprintf("%s.%s.%s", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection),
 	)
 
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
 	var cfgOpts []func(*config.LoadOptions) error
 	cfgOpts = append(cfgOpts, config.WithRegion(envOrDefault("AWS_REGION", "us-east-1")))
 	if awsEndpoint != "" {
@@ -92,8 +118,9 @@ func main() {
 	cfg, err := config.LoadDefaultConfig(ctx, cfgOpts...)
 	if err != nil {
 		slog.Error("loading AWS config", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("loading AWS config: %w", err)
 	}
+	otelaws.AppendMiddlewares(&cfg.APIOptions)
 
 	sqsClient := sqs.NewFromConfig(cfg)
 	s3Client := s3.NewFromConfig(cfg, func(o *s3.Options) {
@@ -101,10 +128,10 @@ func main() {
 	})
 
 	slog.Info("sqsworker ready, polling for messages")
-	// On SIGTERM, ctx is cancelled and ReceiveMessage aborts immediately.
-	// In-flight handleMessage calls use a separate context so they finish gracefully.
 	pollLoop(ctx, sqsClient, s3Client, queueURL)
+
 	slog.Info("sqsworker shutdown complete")
+	return nil
 }
 
 // sqsHandler combines the SQS operations needed by handleMessage.
@@ -139,32 +166,50 @@ func pollLoop(ctx context.Context, sqsClient *sqs.Client, s3Client *s3.Client, q
 			continue
 		}
 
+		if len(out.Messages) == 0 {
+			telemetry.SQSEmptyReceives.Add(ctx, 1)
+			continue
+		}
+
 		for _, msg := range out.Messages {
 			if msg.Body == nil || msg.ReceiptHandle == nil {
 				slog.Error("received SQS message missing body or receipt handle", "messageId", aws.ToString(msg.MessageId))
 				continue
 			}
 			// Use a context detached from the signal so in-flight work completes gracefully.
+			telemetry.MessagesReceived.Add(ctx, 1)
 			msgCtx := context.WithoutCancel(ctx)
 			if err := handleMessage(msgCtx, sqsClient, s3Client, queueURL, aws.ToString(msg.Body), aws.ToString(msg.ReceiptHandle)); err != nil {
+				telemetry.MessagesProcessed.Add(ctx, 1, telemetry.StatusError)
 				slog.Error("processing message failed, leaving in queue for retry",
 					"messageId", aws.ToString(msg.MessageId),
 					"error", err,
 				)
+			} else {
+				telemetry.MessagesProcessed.Add(ctx, 1, telemetry.StatusSuccess)
 			}
 		}
 	}
 }
 
 func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Client, queueURL, body, receiptHandle string) error {
+	ctx, span := telemetry.Tracer.Start(ctx, telemetry.SpanProcessMessage)
+	defer span.End()
+	start := time.Now()
+	defer func() {
+		telemetry.MessageProcessingDuration.Record(ctx, time.Since(start).Seconds())
+	}()
+
 	event, err := storage.ParseS3Event(body)
 	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		telemetry.S3EventsFiltered.Add(ctx, 1, telemetry.FilterReasonMalformed)
 		return fmt.Errorf("parsing S3 event: %w", err)
 	}
 
 	visibilityTimeout, err := fetchQueueVisibilityTimeout(ctx, sqsClient, queueURL)
 	if err != nil {
-		slog.Warn("failed to fetch queue visibility timeout, using default 30s", "error", err)
+		slog.WarnContext(ctx, "failed to fetch queue visibility timeout, using default 30s", "error", err)
 		visibilityTimeout = 30
 	}
 
@@ -176,31 +221,48 @@ func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Clien
 	// when overWriteData is true in load_spec.json.
 	for _, record := range event.Records {
 		if !strings.HasPrefix(record.EventName, "ObjectCreated:") {
-			slog.Info("skipping non-creation S3 event", "eventName", record.EventName)
+			telemetry.S3EventsFiltered.Add(ctx, 1, telemetry.FilterReasonNotCreated)
+			slog.InfoContext(ctx, "skipping non-creation S3 event", "eventName", record.EventName)
 			continue
 		}
 
 		bucket := record.S3.Bucket.Name
 		key := record.S3.Object.Key
 
-		slog.Info("processing tarball", "bucket", bucket, "key", key)
+		recordCtx, recordSpan := telemetry.Tracer.Start(ctx, telemetry.SpanProcessRecord,
+			trace.WithAttributes(
+				attribute.String("s3.bucket", bucket),
+				attribute.String("s3.key", key),
+			))
+
+		slog.InfoContext(recordCtx, "processing tarball", "bucket", bucket, "key", key)
 
 		provider := storage.NewS3TarballProvider(s3Client, bucket, key)
-		if err := core.ProcessFromProvider(ctx, provider, nil); err != nil {
+		if err := core.ProcessFromProvider(recordCtx, provider, nil); err != nil {
+			recordSpan.SetStatus(codes.Error, err.Error())
+			recordSpan.End()
+			span.SetStatus(codes.Error, err.Error())
 			return fmt.Errorf("processing s3://%s/%s: %w", bucket, key, err)
 		}
 
-		slog.Info("tarball processed successfully", "bucket", bucket, "key", key)
+		slog.InfoContext(recordCtx, "tarball processed successfully", "bucket", bucket, "key", key)
+		recordSpan.End()
 	}
 
-	_, err = sqsClient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+	deleteCtx, deleteSpan := telemetry.Tracer.Start(ctx, telemetry.SpanDeleteMessage)
+	_, err = sqsClient.DeleteMessage(deleteCtx, &sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(queueURL),
 		ReceiptHandle: aws.String(receiptHandle),
 	})
 	if err != nil {
+		deleteSpan.SetStatus(codes.Error, err.Error())
+		deleteSpan.End()
+		span.SetStatus(codes.Error, err.Error())
 		return fmt.Errorf("deleting SQS message: %w", err)
 	}
+	deleteSpan.End()
 
+	telemetry.MessagesDeleted.Add(ctx, 1)
 	return nil
 }
 

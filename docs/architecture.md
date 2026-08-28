@@ -48,7 +48,11 @@ METjson2db/
 │   ├── main.go             # CLI flags, file discovery, orchestration
 │   └── main_test.go        # Unit test for load_spec parsing
 ├── cmd/sqsworker/          # SQS worker entry point
-│   └── main.go             # Polls SQS, processes S3 tarballs
+│   └── main.go             # Polls SQS, processes S3 tarballs, initializes OTel
+├── internal/
+│   └── otel/               # OpenTelemetry SDK initialization (application-specific)
+│       ├── otel.go         # InitOTel — builds TracerProvider, MeterProvider, LoggerProvider
+│       └── slogbridge.go   # Fan-out slog handler (stdout JSON + OTel log bridge)
 ├── pkg/
 │   ├── core/               # Core processing pipeline
 │   │   ├── processInput.go            # Orchestrator — sets up workers, drives pipeline
@@ -63,6 +67,9 @@ METjson2db/
 │   ├── async/              # Concurrent DB workers
 │   │   ├── flushToDbAsync.go          # Channel-fed goroutine: upsert + merge
 │   │   └── mergeDbDocFetchAsync.go    # Channel-fed goroutine: fetch existing docs
+│   ├── telemetry/          # OpenTelemetry metric instruments and tracer
+│   │   ├── metrics.go                 # All counter/histogram declarations + InitMetrics
+│   │   └── spans.go                   # Tracer var + span name constants
 │   ├── state/              # Global shared mutable state
 │   │   └── sharedState.go             # Package-level vars, mutexes, channels
 │   ├── types/              # Data structures
@@ -142,6 +149,8 @@ flowchart TB
 
 **[`github.com/aws/aws-sdk-go-v2`](https://github.com/aws/aws-sdk-go-v2)** — AWS SDK for Go (v2). Used by `S3TarballProvider` to stream tarballs from S3, and by the SQS worker to poll for messages. Authentication uses the default credential chain (environment variables, IAM roles, shared credentials file).
 
+**[`go.opentelemetry.io/otel`](https://opentelemetry.io/docs/languages/go/)** — OpenTelemetry API and SDK. Provides metrics (counters, histograms), distributed traces, and structured log export via OTLP gRPC. See [docs/observability.md](observability.md) for details on the instrumentation.
+
 ## Configuration
 
 ### `load_spec.json`
@@ -218,7 +227,7 @@ MET stat data is stored as JSON documents with:
    - `Cb_host`, `Cb_user` → `CbHost`, `CbUser` (Go exported fields use CamelCase, not snake_case)
    - Unexported types like `StrArray` are duplicated across packages
 
-6. **Context propagation**: `ProcessFromProvider` and the `StorageProvider` interface accept `context.Context`, enabling graceful cancellation for the SQS worker path. The rest of the pipeline (async workers, DB calls) does not yet propagate context.
+6. **Context propagation**: `ProcessFromProvider`, the `StorageProvider` interface, `parseStatFileContent`, `FlushToDbAsync`, and `MergeDbDocFetchAsync` all accept `context.Context`, enabling cancellation propagation and trace continuity through the async pipeline. The underlying `gocb` Upsert and Get calls still use `nil` options — passing context to Couchbase SDK calls would enable timeout propagation and trace-linked DB spans.
 
 7. **Test coverage**: One unit test (`TestParseLoadSpec`) and one integration test (`TestMerge`) for the core pipeline. The `pkg/storage/` package has 90%+ unit test coverage and an integration test against MiniStack. See [docs/dev-guide.md](dev-guide.md) for how to run tests.
 

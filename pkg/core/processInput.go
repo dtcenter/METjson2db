@@ -42,7 +42,7 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 				state.AsyncWaitGroupFlushToDb.Add(1)
 				go func(workerID int) {
 					defer state.AsyncWaitGroupFlushToDb.Done()
-					async.FlushToDbAsync(workerID)
+					async.FlushToDbAsync(ctx, workerID)
 				}(workerIdx)
 			}
 
@@ -53,7 +53,7 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
 					go func(workerID int) {
 						defer state.AsyncWaitGroupMergeDocFetch.Done()
-						async.MergeDbDocFetchAsync(workerID)
+						async.MergeDbDocFetchAsync(ctx, workerID)
 					}(workerIdx)
 				}
 			}
@@ -63,6 +63,11 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 	// Return any errors instead of continuing so the caller can correctly handle the error
 	// e.g. - by deciding to not mark the queue message as resolved
 	if err := startProcessingFromProvider(ctx, provider); err != nil {
+		// The workers spawned above are still blocked on their channel receive — without this,
+		// they (and their live Couchbase connections) leak, and their un-Done() WaitGroup count
+		// would deadlock every subsequent run's Wait() call below.
+		stopMergeDocFetchWorkers()
+		stopFlushToDbWorkers()
 		return fmt.Errorf("processing files: %w", err)
 	}
 
@@ -73,32 +78,13 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 
 	switch state.LoadSpec.RunMode {
 	case "DIRECT_LOAD_TO_DB":
-		if !state.LoadSpec.OverWriteData {
-			for fi := 0; fi < int(state.LoadSpec.ThreadsMergeDocFetch); fi++ {
-				state.AsyncMergeDocFetchChannels[fi] <- "endMarker"
-			}
-			state.AsyncWaitGroupMergeDocFetch.Wait()
-			slog.Info("AsyncWaitGroupMergeDocFetch finished!")
-		}
+		stopMergeDocFetchWorkers()
 
 		if preDbLoadCallback != nil {
 			preDbLoadCallback()
 		}
 		StatToCbFlush(true)
-		if !state.LoadSpec.RunNonThreaded {
-			slog.Debug("Waiting for threads to finish ...")
-
-			// send end-marker doc to all channels
-			endMarkerDoc := make(map[string]interface{})
-			endMarkerDoc["endMarker"] = "endMarker"
-
-			for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsDbUpload); workerIdx++ {
-				state.AsyncFlushToDbChannels[workerIdx] <- endMarkerDoc
-			}
-
-			state.AsyncWaitGroupFlushToDb.Wait()
-			slog.Debug("asyncWaitGroupFlushToDb finished!")
-		}
+		stopFlushToDbWorkers()
 	case "CREATE_JSON_DOC_ARCHIVE":
 		outputFilename := state.LoadSpec.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + ".json.gz"
 		err := parser.WriteJsonToCompressedFile(state.CbDocs, outputFilename)
@@ -113,6 +99,31 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 		"run-time(ms)", time.Since(start).Milliseconds())
 	slog.Info("Run stats", "Line Type Stats", state.LineTypeStats)
 	return nil
+}
+
+// stopMergeDocFetchWorkers sends the end marker to every merge-doc-fetch worker channel and waits
+// for all of them to exit. Safe to call even when merge workers were never started — ranging over
+// an empty channel slice and waiting on a zero-count WaitGroup are both no-ops — so callers don't
+// need to duplicate the run-mode/OverWriteData conditions under which those workers get spawned.
+func stopMergeDocFetchWorkers() {
+	for _, ch := range state.AsyncMergeDocFetchChannels {
+		ch <- "endMarker"
+	}
+	state.AsyncWaitGroupMergeDocFetch.Wait()
+	slog.Info("AsyncWaitGroupMergeDocFetch finished!")
+}
+
+// stopFlushToDbWorkers sends the end marker to every DB-flush worker channel and waits for all of
+// them to exit. Safe to call even when flush workers were never started, for the same reason as
+// stopMergeDocFetchWorkers.
+func stopFlushToDbWorkers() {
+	slog.Debug("Waiting for threads to finish ...")
+	endMarkerDoc := map[string]interface{}{"endMarker": "endMarker"}
+	for _, ch := range state.AsyncFlushToDbChannels {
+		ch <- endMarkerDoc
+	}
+	state.AsyncWaitGroupFlushToDb.Wait()
+	slog.Debug("asyncWaitGroupFlushToDb finished!")
 }
 
 func GetCredentials(credentialsFilePath string) types.Credentials {

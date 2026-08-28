@@ -1,6 +1,7 @@
 package async
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
@@ -13,7 +14,7 @@ func init() {
 	slog.Debug("flushToDbAsync:init()")
 }
 
-func MergeDbDocFetchAsync(threadIdx int /*, conn CbConnection*/) {
+func MergeDbDocFetchAsync(ctx context.Context, threadIdx int) {
 	conn := utils.GetDbConnection(state.Credentials)
 	count := 0
 	errors := 0

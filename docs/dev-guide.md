@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Go 1.24+
+- Go 1.25+
 - Docker (for MiniStack and container builds)
 
 ## Build
