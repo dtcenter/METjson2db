@@ -2,6 +2,7 @@ package otel
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -45,7 +46,11 @@ func (h *fanoutHandler) Enabled(ctx context.Context, level slog.Level) bool {
 func (h *fanoutHandler) Handle(ctx context.Context, r slog.Record) error {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, r.Level) {
-			_ = handler.Handle(ctx, r.Clone())
+			if err := handler.Handle(ctx, r.Clone()); err != nil {
+				// A sink failing (e.g. the OTLP log exporter can't reach the collector) shouldn't
+				// break logging as a whole, but it shouldn't vanish silently either.
+				fmt.Fprintf(os.Stderr, "slog fanout: handler failed: %v\n", err)
+			}
 		}
 	}
 	return nil
