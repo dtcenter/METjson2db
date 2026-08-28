@@ -104,7 +104,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if runMode == "METADATA_UPDATE" {
+	if state.LoadSpec.RunMode == "METADATA_UPDATE" {
 		metadataUpdate.MetadataUpdate()
 		return
 	}

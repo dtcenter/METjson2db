@@ -11,7 +11,7 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	slog.Debug("flushToDbAsync:init()")
+	slog.Debug("mergeDbDocFetchAsync:init()")
 }
 
 func MergeDbDocFetchAsync(ctx context.Context, threadIdx int, ch chan string) {

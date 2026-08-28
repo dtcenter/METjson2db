@@ -41,15 +41,20 @@ func GetDbConnection(cred types.Credentials) (types.CbConnection, error) {
 
 	conn.Cluster = cluster
 	conn.Bucket = conn.Cluster.Bucket(cred.Cb_bucket)
-	conn.Collection = conn.Bucket.Collection(cred.Cb_collection)
+	// Derive Collection from Scope (not Bucket.Collection, which always targets the default
+	// scope) so writes via conn.Collection and queries via conn.Scope agree on which scope
+	// they're operating in — otherwise upserts would silently land in "_default" while queries
+	// correctly ran against cred.Cb_scope whenever that isn't "_default".
+	conn.Scope = conn.Bucket.Scope(cred.Cb_scope)
+	conn.Collection = conn.Scope.Collection(cred.Cb_collection)
 	conn.VxDBTARGET = cred.Cb_bucket + "." + cred.Cb_scope + "." + cred.Cb_collection
 
 	waitStart := time.Now()
 	if err := conn.Bucket.WaitUntilReady(5*time.Second, nil); err != nil {
+		_ = cluster.Close(nil)
 		return conn, fmt.Errorf("waiting for Couchbase bucket %q to become ready at %s (after %v): %w", cred.Cb_bucket, connectionString, time.Since(waitStart), err)
 	}
 
-	conn.Scope = conn.Bucket.Scope(cred.Cb_scope)
 	return conn, nil
 }
 
