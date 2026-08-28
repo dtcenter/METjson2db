@@ -109,6 +109,13 @@ func run() error {
 		"db", fmt.Sprintf("%s.%s.%s", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection),
 	)
 
+	// Connect once, up front — a bad connection here means we return before ever polling SQS,
+	// instead of accepting messages that would just fail once each async worker tried to use it.
+	if err := core.ConnectDbIfNeeded(); err != nil {
+		slog.Error("connecting to database", "error", err)
+		return fmt.Errorf("connecting to database: %w", err)
+	}
+
 	var cfgOpts []func(*config.LoadOptions) error
 	cfgOpts = append(cfgOpts, config.WithRegion(envOrDefault("AWS_REGION", "us-east-1")))
 	if awsEndpoint != "" {

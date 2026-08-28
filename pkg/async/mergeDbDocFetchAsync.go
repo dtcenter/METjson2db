@@ -15,7 +15,7 @@ func init() {
 }
 
 func MergeDbDocFetchAsync(ctx context.Context, threadIdx int) {
-	conn := utils.GetDbConnection(state.Credentials)
+	conn := state.DbConn
 	count := 0
 	errors := 0
 	for {

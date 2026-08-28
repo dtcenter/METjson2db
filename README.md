@@ -184,7 +184,7 @@ b) If a data section key exists in the database document, but missing from incom
 #### runNonThreaded
 
 NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB
-The default run mode is multi-threaded, where multiple concurrent database connections are used for inserting documents to the databse
+The default run mode is multi-threaded, where multiple concurrent goroutines insert documents using a single shared database connection.
 If runNonThreaded is set to true, the runtime will be single threaded. This is mainly only useful in debugging the code.
 
 #### threadsDbUpload

@@ -12,6 +12,7 @@ import (
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METjson2db/pkg/storage"
 	"github.com/dtcenter/METjson2db/pkg/types"
+	"github.com/dtcenter/METjson2db/pkg/utils"
 	"github.com/dtcenter/METstat2json/pkg/parser"
 	"gopkg.in/yaml.v3"
 )
@@ -124,6 +125,31 @@ func stopFlushToDbWorkers() {
 	}
 	state.AsyncWaitGroupFlushToDb.Wait()
 	slog.Debug("asyncWaitGroupFlushToDb finished!")
+}
+
+// runModesNeedingDb are the only LoadSpec.RunMode values that touch Couchbase. Deliberately an
+// allow-list rather than excluding known DB-free modes (e.g. CREATE_JSON_DOC_ARCHIVE): a future
+// run mode that doesn't need a connection then defaults to not requiring one, instead of a new mode
+// silently requiring credentials it was never given.
+var runModesNeedingDb = map[string]bool{
+	"DIRECT_LOAD_TO_DB": true,
+	"METADATA_UPDATE":   true,
+}
+
+// ConnectDbIfNeeded establishes state.DbConn once, if state.LoadSpec.RunMode actually needs a
+// Couchbase connection. Callers (cmd/sqsworker, cmd/metjson2db) should call this once at startup,
+// after credentials are loaded, before doing any other work — see utils.GetDbConnection for why a
+// single process-lifetime connection replaces the previous per-worker-per-message reconnects.
+func ConnectDbIfNeeded() error {
+	if !runModesNeedingDb[state.LoadSpec.RunMode] {
+		return nil
+	}
+	conn, err := utils.GetDbConnection(state.Credentials)
+	if err != nil {
+		return fmt.Errorf("establishing Couchbase connection: %w", err)
+	}
+	state.DbConn = conn
+	return nil
 }
 
 func GetCredentials(credentialsFilePath string) types.Credentials {

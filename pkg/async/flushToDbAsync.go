@@ -13,7 +13,6 @@ import (
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METjson2db/pkg/telemetry"
 	"github.com/dtcenter/METjson2db/pkg/types"
-	"github.com/dtcenter/METjson2db/pkg/utils"
 )
 
 // init runs before main() is evaluated
@@ -31,7 +30,7 @@ func isConnectivityError(err error) bool {
 }
 
 func FlushToDbAsync(ctx context.Context, threadIdx int) {
-	conn := utils.GetDbConnection(state.Credentials)
+	conn := state.DbConn
 	count := 0
 	mergeCount := 0
 	errors := 0

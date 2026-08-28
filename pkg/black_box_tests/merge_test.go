@@ -80,8 +80,11 @@ func testMerge_CleanDb() error {
 
 	sqlStr := fmt.Sprintf("DELETE FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	conn := utils.GetDbConnection(state.Credentials)
-	_, err := conn.Scope.Query(sqlStr, nil)
+	conn, err := utils.GetDbConnection(state.Credentials)
+	if err != nil {
+		return err
+	}
+	_, err = conn.Scope.Query(sqlStr, nil)
 
 	sqlStr = fmt.Sprintf("SELECT COUNT(*) as count FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
@@ -99,7 +102,10 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 
 	state.MergeTestDocs = make(map[string]interface{})
 
-	conn := utils.GetDbConnection(state.Credentials)
+	conn, err := utils.GetDbConnection(state.Credentials)
+	if err != nil {
+		return err
+	}
 	sqlStr := fmt.Sprintf("SELECT c.id as id FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
@@ -162,7 +168,11 @@ func testMerge_Upload(inputFiles []string) error {
 }
 
 func getDataLengths() []float64 {
-	conn := utils.GetDbConnection(state.Credentials)
+	conn, err := utils.GetDbConnection(state.Credentials)
+	if err != nil {
+		slog.Error("connecting to database", "error", err)
+		panic(err)
+	}
 	sqlStr := fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 0",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)

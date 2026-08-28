@@ -35,8 +35,7 @@ func StatToCbFlush(flushFinal bool) {
 				flushToFiles(id)
 			}
 			if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
-				conn := utils.GetDbConnection(state.Credentials)
-				flushToDb(conn, id)
+				flushToDb(state.DbConn, id)
 			}
 			//}
 		}

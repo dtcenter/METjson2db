@@ -96,6 +96,14 @@ func main() {
 	}
 	slog.Debug(fmt.Sprintf("DB:(%s.%s.%s)", state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection))
 
+	// Connect once, up front, only if this run mode actually needs Couchbase (CREATE_JSON_DOC_ARCHIVE
+	// doesn't). A bad connection here means we stop before doing any file/parse work that would just
+	// be discarded.
+	if err := core.ConnectDbIfNeeded(); err != nil {
+		slog.Error("connecting to database", "error", err)
+		os.Exit(1)
+	}
+
 	if runMode == "METADATA_UPDATE" {
 		metadataUpdate.MetadataUpdate()
 		return

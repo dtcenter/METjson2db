@@ -17,6 +17,10 @@ var (
 	Credentials         = types.Credentials{}
 	METParserNewDocId   string
 	MergeTestDocs       map[string]interface{}
+
+	// DbConn is the single Couchbase connection established once at startup and reused for the
+	// life of the process — see utils.GetDbConnection. Not reset by StateReset, same as Credentials.
+	DbConn types.CbConnection
 )
 
 var (

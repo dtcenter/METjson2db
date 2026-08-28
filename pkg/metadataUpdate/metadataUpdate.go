@@ -20,10 +20,8 @@ func MetadataUpdate() {
 	start := time.Now()
 	log.Print("metadataUpdate:main()")
 
-	conn := utils.GetDbConnection(state.Credentials)
-
 	for ds := 0; ds < len(state.LoadSpec.Metadata); ds++ {
-		updateMedataForAppDocType(conn, state.LoadSpec.Metadata[ds].Name, state.LoadSpec.Metadata[ds].App,
+		updateMedataForAppDocType(state.DbConn, state.LoadSpec.Metadata[ds].Name, state.LoadSpec.Metadata[ds].App,
 			state.LoadSpec.Metadata[ds].SubType, state.LoadSpec.Metadata[ds].LineType, state.LoadSpec.Metadata[ds].Version)
 	}
 	log.Printf("\tmeta update finished in %v", time.Since(start))
