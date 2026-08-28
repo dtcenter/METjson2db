@@ -4,7 +4,7 @@
 
 METjson2db is a Go tool that parses MET (Model Evaluation Tools) `.stat` files into JSON documents and loads them into Couchbase. It supports two entrypoints: a **CLI** for local stat files and an **SQS worker** that streams tarballs from S3. Both share a common pipeline via the `StorageProvider` interface. It is part of the DTC verification ecosystem (`github.com/dtcenter/METjson2db`).
 
-See [docs/architecture.md](docs/architecture.md) for data flow diagrams and package descriptions. See [docs/dev-guide.md](docs/dev-guide.md) for test and build instructions.
+See [docs/architecture.md](docs/architecture.md) for data flow diagrams and package descriptions. See [docs/dev-guide.md](docs/dev-guide.md) for test and build instructions. See [docs/troubleshooting.md](docs/troubleshooting.md) for known failure modes (Couchbase connectivity under Kubernetes, merge-fetch data loss) and how to diagnose them.
 
 ## Build & Run
 
@@ -19,8 +19,10 @@ go test ./...
 # Run S3 integration tests (requires MiniStack: docker run -d -p 4566:4566 ministackorg/ministack)
 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test go test -tags integration ./pkg/storage/...
 
-# Run Couchbase integration tests (requires ~/credentials)
-go test -tags integration ./pkg/black_box_tests/...
+# Run Couchbase integration tests — DO NOT run against your real ~/credentials, this test runs a
+# raw `DELETE FROM` against whatever it's pointed at. See docs/dev-guide.md for the disposable
+# local Couchbase + test-only credentials file + $HOME-override setup this actually requires.
+HOME=/tmp/cb-test-home go test -tags integration ./pkg/black_box_tests/...
 
 # Docker
 docker build -t sqsworker .
@@ -48,7 +50,7 @@ See [docs/dev-guide.md](docs/dev-guide.md) for full details on running tests.
 ## Key Configuration Files
 
 - **`load_spec.json`** — Runtime config: run mode, threading, folder templates, dataset name. This is checked into the repo but contains environment-specific paths that may need editing.
-- **`~/credentials`** — Couchbase connection credentials (YAML). **Never commit this file.** Use `credentials.template` as a reference.
+- **`~/credentials`** — Couchbase connection credentials (YAML). **Never commit this file.** Use `credentials.template` as a reference. `cb_host` is auto-normalized to an absolute FQDN (trailing dot) by `core.GetCredentials` — see `docs/troubleshooting.md` for the Kubernetes DNS issue this avoids.
 
 ## Coding Conventions
 
@@ -112,5 +114,4 @@ All of these worker goroutines share a single Couchbase connection (`state.DbCon
 4. **Minimal test coverage in core** — one unit test, one integration test for the core pipeline. `pkg/storage/` has 90%+ coverage.
 5. Files are output without proper file endings. When creating archives, the files should be tar.gz files.
 6. **Context not propagated to DB calls** — Async workers now receive `context.Context`, but the underlying `gocb` Upsert and Get calls still use `nil` options (no context). Passing context to Couchbase SDK calls would enable timeout propagation and trace-linked DB spans.
-7. **Merge-fetch failure can silently overwrite/lose previously-persisted data** — `Collection.Upsert` is a full-document replace, not a partial patch. If `MergeDbDocFetchAsync` fails to fetch the existing document (e.g. a connectivity blip), `FlushToDbAsync` proceeds to upsert the incoming document unmerged, which can destroy fields accumulated from earlier deliveries. Not currently detected or logged as such (in progress: will be logged explicitly, not prevented — see `docs/plan/couchbase-upsert-reliability.md` for the tradeoff and why a real fix needs a bigger redesign, e.g. sub-document `MutateIn`).
-8. **`pkg/black_box_tests/merge_test.go` doesn't compile under `-tags integration`** — references `state.Conf`, which doesn't exist (field is `state.LoadSpec`). Pre-existing, unrelated to recent changes; `go vet ./...` (no tag) is unaffected.
+7. **Merge-fetch failure can silently overwrite/lose previously-persisted data** — `Collection.Upsert` is a full-document replace, not a partial patch. If `MergeDbDocFetchAsync` fails to fetch the existing document (e.g. a connectivity blip), `FlushToDbAsync` proceeds to upsert the incoming document unmerged, which can destroy fields accumulated from earlier deliveries. Not currently detected or logged as such (planned: will be logged explicitly, not prevented — see `docs/plan/couchbase-upsert-reliability.md` and `docs/troubleshooting.md` for the tradeoff and why a real fix needs a bigger redesign, e.g. sub-document `MutateIn`).

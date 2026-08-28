@@ -145,6 +145,11 @@ This file sets the following:
 2. Connection username and password
    A sample credentials file is available in: METjson2db/credentials.template
 
+NOTE: `cb_host` is automatically normalized to an absolute FQDN (trailing dot appended, unless
+already dotted or an IP literal) before connecting. This avoids a Kubernetes DNS issue where
+search-domain expansion can cause connection timeouts — see `docs/troubleshooting.md` for details.
+You do not need to add the trailing dot yourself.
+
 ### load_spec file, which defaults to "./load_spec.json"
 
 Unless overridden in the command line, the default file is 'load_spec.json' in the METjson2db run folder.
