@@ -45,10 +45,13 @@ func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err er
 		err = errors.Join(inErr, shutdown(ctx))
 	}
 
-	// resource.Default() already honors OTEL_SERVICE_NAME via its env detector; only fall back to
-	// our default when the operator hasn't set one, so the env var actually takes effect.
+	// resource.Default() already honors service.name from both OTEL_SERVICE_NAME and
+	// OTEL_RESOURCE_ATTRIBUTES via its env detector; only fall back to our default when the
+	// operator hasn't set either, so checking the resulting resource (rather than just the
+	// OTEL_SERVICE_NAME env var) is what actually respects both.
+	defaultRes := resource.Default()
 	var resourceAttrs []attribute.KeyValue
-	if os.Getenv("OTEL_SERVICE_NAME") == "" {
+	if _, ok := defaultRes.Set().Value(serviceNameKey); !ok {
 		resourceAttrs = append(resourceAttrs, serviceNameKey.String(defaultServiceName))
 	}
 	// NewSchemaless (no schema URL) instead of NewWithAttributes(semconv.SchemaURL, ...): Merge
@@ -58,7 +61,7 @@ func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err er
 	// before this fix). A schemaless resource can never conflict; Merge just adopts the other
 	// side's schema URL.
 	res, err := resource.Merge(
-		resource.Default(),
+		defaultRes,
 		resource.NewSchemaless(resourceAttrs...),
 	)
 	if err != nil {
