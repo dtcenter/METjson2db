@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -69,50 +70,66 @@ func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err er
 	}
 
 	// Traces
-	traceExporter, err := otlptracegrpc.New(ctx)
-	if err != nil {
-		handleErr(err)
-		return shutdown, err
+	if signalEnabled("OTEL_TRACES_EXPORTER") {
+		traceExporter, err := otlptracegrpc.New(ctx)
+		if err != nil {
+			handleErr(err)
+			return shutdown, err
+		}
+		tp := sdktrace.NewTracerProvider(
+			sdktrace.WithBatcher(traceExporter),
+			sdktrace.WithResource(res),
+		)
+		shutdownFuncs = append(shutdownFuncs, tp.Shutdown)
+		otel.SetTracerProvider(tp)
 	}
-	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(traceExporter),
-		sdktrace.WithResource(res),
-	)
-	shutdownFuncs = append(shutdownFuncs, tp.Shutdown)
-	otel.SetTracerProvider(tp)
-	telemetry.Tracer = tp.Tracer("metjson2db")
+	// otel.Tracer reads the global provider set above, or the API package's built-in no-op
+	// provider if traces are disabled — so callers never need to check whether tracing is on.
+	telemetry.Tracer = otel.Tracer("metjson2db")
 
 	// Metrics
-	metricExporter, err := otlpmetricgrpc.New(ctx)
-	if err != nil {
-		handleErr(err)
-		return shutdown, err
-	}
-	mp := sdkmetric.NewMeterProvider(
-		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, sdkmetric.WithInterval(30*time.Second))),
-		sdkmetric.WithResource(res),
-	)
-	shutdownFuncs = append(shutdownFuncs, mp.Shutdown)
-	otel.SetMeterProvider(mp)
-	telemetry.InitMetrics(mp.Meter("metjson2db"))
+	if signalEnabled("OTEL_METRICS_EXPORTER") {
+		metricExporter, err := otlpmetricgrpc.New(ctx)
+		if err != nil {
+			handleErr(err)
+			return shutdown, err
+		}
+		mp := sdkmetric.NewMeterProvider(
+			sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, sdkmetric.WithInterval(30*time.Second))),
+			sdkmetric.WithResource(res),
+		)
+		shutdownFuncs = append(shutdownFuncs, mp.Shutdown)
+		otel.SetMeterProvider(mp)
 
-	if err := runtime.Start(runtime.WithMinimumReadMemStatsInterval(15 * time.Second)); err != nil {
-		handleErr(err)
-		return shutdown, err
+		if err := runtime.Start(runtime.WithMinimumReadMemStatsInterval(15 * time.Second)); err != nil {
+			handleErr(err)
+			return shutdown, err
+		}
 	}
+	telemetry.InitMetrics(otel.Meter("metjson2db"))
 
 	// Logs
-	logExporter, err := otlploggrpc.New(ctx)
-	if err != nil {
-		handleErr(err)
-		return shutdown, err
+	if signalEnabled("OTEL_LOGS_EXPORTER") {
+		logExporter, err := otlploggrpc.New(ctx)
+		if err != nil {
+			handleErr(err)
+			return shutdown, err
+		}
+		lp := sdklog.NewLoggerProvider(
+			sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
+			sdklog.WithResource(res),
+		)
+		shutdownFuncs = append(shutdownFuncs, lp.Shutdown)
+		SetLoggerProvider(lp)
 	}
-	lp := sdklog.NewLoggerProvider(
-		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
-		sdklog.WithResource(res),
-	)
-	shutdownFuncs = append(shutdownFuncs, lp.Shutdown)
-	SetLoggerProvider(lp)
 
 	return shutdown, nil
+}
+
+// signalEnabled reports whether the given OTEL_*_EXPORTER env var permits creating that signal's
+// exporter — the OTel spec's convention is that "none" disables it and any other value (including
+// unset, which defaults to "otlp") leaves it enabled. This is the only exporter selection value
+// this package implements.
+func signalEnabled(envVar string) bool {
+	return !strings.EqualFold(os.Getenv(envVar), "none")
 }
