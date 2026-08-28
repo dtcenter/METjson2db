@@ -28,6 +28,14 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		os.Exit(1)
+	}
+}
+
+// run holds the startup/shutdown sequence as a single function so a deferred otelShutdown always
+// executes before returning, on every exit path — os.Exit in main() would skip it.
+func run() error {
 	home, _ := os.UserHomeDir()
 
 	var credentialsFilePath string
@@ -47,14 +55,14 @@ func main() {
 	queueURL := os.Getenv("SQS_QUEUE_URL")
 	if queueURL == "" {
 		slog.Error("SQS_QUEUE_URL environment variable is required")
-		os.Exit(1)
+		return fmt.Errorf("SQS_QUEUE_URL environment variable is required")
 	}
 
 	var err error
 	state.LoadSpec, err = core.ParseLoadSpec(loadSpecFilePath)
 	if err != nil {
 		slog.Error("unable to parse load_spec", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("parsing load_spec: %w", err)
 	}
 	if jsonOutputPrefix != "" {
 		state.LoadSpec.RunMode = "CREATE_JSON_DOC_ARCHIVE"
@@ -79,8 +87,15 @@ func main() {
 	otelShutdown, err := intotel.InitOTel(ctx)
 	if err != nil {
 		slog.Error("initializing OpenTelemetry", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("initializing OpenTelemetry: %w", err)
 	}
+	defer func() {
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+		if err := otelShutdown(shutdownCtx); err != nil {
+			slog.Error("otel shutdown", "error", err)
+		}
+	}()
 
 	logger := slog.New(intotel.NewFanoutHandler(level))
 	slog.SetDefault(logger)
@@ -103,7 +118,7 @@ func main() {
 	cfg, err := config.LoadDefaultConfig(ctx, cfgOpts...)
 	if err != nil {
 		slog.Error("loading AWS config", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("loading AWS config: %w", err)
 	}
 	otelaws.AppendMiddlewares(&cfg.APIOptions)
 
@@ -115,13 +130,8 @@ func main() {
 	slog.Info("sqsworker ready, polling for messages")
 	pollLoop(ctx, sqsClient, s3Client, queueURL)
 
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer shutdownCancel()
-	if err := otelShutdown(shutdownCtx); err != nil {
-		slog.Error("otel shutdown", "error", err)
-	}
-
 	slog.Info("sqsworker shutdown complete")
+	return nil
 }
 
 // sqsHandler combines the SQS operations needed by handleMessage.
