@@ -3,10 +3,12 @@ package otel
 import (
 	"context"
 	"errors"
+	"os"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -18,6 +20,10 @@ import (
 
 	"github.com/dtcenter/METjson2db/pkg/telemetry"
 )
+
+// defaultServiceName is used only when OTEL_SERVICE_NAME isn't set — resource.Default() already
+// reads that env var, so setting this unconditionally would silently override it on every merge.
+const defaultServiceName = "metjson2db-sqsworker"
 
 func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err error) {
 	var shutdownFuncs []func(context.Context) error
@@ -34,12 +40,15 @@ func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err er
 		err = errors.Join(inErr, shutdown(ctx))
 	}
 
+	// resource.Default() already honors OTEL_SERVICE_NAME via its env detector; only fall back to
+	// our default when the operator hasn't set one, so the env var actually takes effect.
+	var resourceAttrs []attribute.KeyValue
+	if os.Getenv("OTEL_SERVICE_NAME") == "" {
+		resourceAttrs = append(resourceAttrs, semconv.ServiceName(defaultServiceName))
+	}
 	res, err := resource.Merge(
 		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceName("metjson2db-sqsworker"),
-		),
+		resource.NewWithAttributes(semconv.SchemaURL, resourceAttrs...),
 	)
 	if err != nil {
 		return shutdown, err
