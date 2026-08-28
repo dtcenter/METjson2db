@@ -122,6 +122,4 @@ func FlushToDbAsync(ctx context.Context, threadIdx int, ch chan map[string]inter
 		}
 	}
 	slog.Info(fmt.Sprintf("flushToDbAsync(%d) doc count:%d, doc merge count:%d, errors:%d", threadIdx, count, mergeCount, errors))
-	returnDoc := make(map[string]interface{})
-	ch <- returnDoc
 }

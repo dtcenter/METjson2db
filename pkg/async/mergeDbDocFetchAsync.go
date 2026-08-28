@@ -53,6 +53,4 @@ func MergeDbDocFetchAsync(ctx context.Context, threadIdx int, ch chan string) {
 	totalMergeDocs := len(state.CbMergeDbDocs)
 	state.CbMergeDbDocsMutex.RUnlock()
 	slog.Info(fmt.Sprintf("MergeDbDocFetchAsync(%d) doc count:[thread:%d,total:%d], errors:%d", threadIdx, count, totalMergeDocs, errors))
-	returnDoc := fmt.Sprintf("%d", count)
-	ch <- returnDoc
 }

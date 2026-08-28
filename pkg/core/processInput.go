@@ -32,6 +32,14 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, preDbLoadCallback func()) error {
 	slog.Info("ProcessFromProvider")
 
+	// ProcessFromProvider (and the exported ProcessInputFiles that wraps it) assumes state.DbConn
+	// was already established via ConnectDbIfNeeded — without this check, a caller that skips that
+	// step gets a nil-pointer panic deep inside an async worker's Upsert call instead of a clear
+	// error at the one place that actually knows what went wrong.
+	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" && state.DbConn.Cluster == nil {
+		return fmt.Errorf("state.DbConn is not initialized — call core.ConnectDbIfNeeded() before ProcessFromProvider")
+	}
+
 	start := time.Now()
 	state.StateReset()
 

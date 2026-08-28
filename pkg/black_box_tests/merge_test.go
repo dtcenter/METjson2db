@@ -92,15 +92,11 @@ func testMerge_CleanDb() error {
 
 	sqlStr := fmt.Sprintf("DELETE FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	conn, err := utils.GetDbConnection(state.Credentials)
-	if err != nil {
-		return err
-	}
-	_, err = conn.Scope.Query(sqlStr, nil)
+	_, err := state.DbConn.Scope.Query(sqlStr, nil)
 
 	sqlStr = fmt.Sprintf("SELECT COUNT(*) as count FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	slog.Info(fmt.Sprintf("count after db clean:%d:", rv[0].(map[string]interface{})["count"]))
 	return err
 }
@@ -114,21 +110,17 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 
 	state.MergeTestDocs = make(map[string]interface{})
 
-	conn, err := utils.GetDbConnection(state.Credentials)
-	if err != nil {
-		return err
-	}
 	sqlStr := fmt.Sprintf("SELECT c.id as id FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	// slog.Info("id for data count=3:\n" + utils.JsonPrettyPrint(rv))
 	for i := 0; i < len(rv); i++ {
 		id := rv[i].(map[string]interface{})["id"].(string)
 		sqlStr = fmt.Sprintf("SELECT * FROM %s.%s.%s AS c USE KEYS \"%s\"",
 			state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection, id)
 		// slog.Info(sqlStr)
-		rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+		rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 		if rv == nil || len(rv) == 0 {
 			continue
 		}
@@ -144,7 +136,7 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 				delete(data, k)
 			}
 		}
-		_, err := conn.Collection.Upsert(id, docPost, nil)
+		_, err := state.DbConn.Collection.Upsert(id, docPost, nil)
 		if err != nil {
 			slog.Error(fmt.Sprintf("%v", err))
 			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
@@ -180,30 +172,25 @@ func testMerge_Upload(inputFiles []string) error {
 }
 
 func getDataLengths() []float64 {
-	conn, err := utils.GetDbConnection(state.Credentials)
-	if err != nil {
-		slog.Error("connecting to database", "error", err)
-		panic(err)
-	}
 	sqlStr := fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 0",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_0 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 1",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv = utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_1 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 2",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv = utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_2 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv = utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_3 := rv[0].(map[string]interface{})["count"]
 	slog.Info(fmt.Sprintf("data counts:%v,%v,%v,%v", count_0, count_1, count_2, count_3))
 	return []float64{count_0.(float64), count_1.(float64), count_2.(float64), count_3.(float64)}
