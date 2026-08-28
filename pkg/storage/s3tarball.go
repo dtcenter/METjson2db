@@ -40,12 +40,19 @@ func NewS3TarballProvider(client S3ObjectGetter, bucket, key string) *S3TarballP
 func (p *S3TarballProvider) Walk(ctx context.Context, fn func(name string, r io.Reader) error) error {
 	slog.InfoContext(ctx, "S3TarballProvider.Walk", "bucket", p.Bucket, "key", p.Key)
 
+	// GetObject returns once the response stream is available, not once it's fully read — the
+	// tarball's bytes are actually pulled off the wire below, interleaved with gzip/tar decoding,
+	// as fn consumes each entry. Recording on return (via defer) covers the whole streamed
+	// download instead of just time-to-first-byte.
 	s3Start := time.Now()
+	defer func() {
+		telemetry.S3DownloadDuration.Record(ctx, time.Since(s3Start).Seconds())
+	}()
+
 	result, err := p.Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(p.Bucket),
 		Key:    aws.String(p.Key),
 	})
-	telemetry.S3DownloadDuration.Record(ctx, time.Since(s3Start).Seconds())
 	if err != nil {
 		return fmt.Errorf("s3 GetObject s3://%s/%s: %w", p.Bucket, p.Key, err)
 	}

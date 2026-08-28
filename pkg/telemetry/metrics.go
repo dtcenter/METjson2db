@@ -71,7 +71,7 @@ func InitMetrics(m metric.Meter) {
 		metric.WithExplicitBucketBoundaries(0.1, 0.5, 1, 2, 5, 10, 30, 60, 120, 300))
 
 	S3DownloadDuration, _ = m.Float64Histogram("metjson2db.s3.download.duration",
-		metric.WithDescription("Duration of S3 GetObject calls"),
+		metric.WithDescription("Duration to fully stream and extract an S3 tarball"),
 		metric.WithUnit("s"),
 		metric.WithExplicitBucketBoundaries(0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10))
 
