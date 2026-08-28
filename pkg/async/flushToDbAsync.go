@@ -3,9 +3,12 @@ package async
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
+
+	"github.com/couchbase/gocb/v2"
 
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METjson2db/pkg/telemetry"
@@ -16,6 +19,15 @@ import (
 // init runs before main() is evaluated
 func init() {
 	slog.Debug("flushToDbAsync:init()")
+}
+
+// isConnectivityError reports whether err reflects a Couchbase connectivity problem (timeout,
+// canceled request, service unavailable) rather than a data-level failure (bad argument, document
+// too large, etc.), so DbConnectionErrors only counts what its name promises.
+func isConnectivityError(err error) bool {
+	return errors.Is(err, gocb.ErrTimeout) ||
+		errors.Is(err, gocb.ErrRequestCanceled) ||
+		errors.Is(err, gocb.ErrServiceNotAvailable)
 }
 
 func FlushToDbAsync(ctx context.Context, threadIdx int) {
@@ -95,7 +107,9 @@ func FlushToDbAsync(ctx context.Context, threadIdx int) {
 		telemetry.DbUpsertDuration.Record(ctx, time.Since(upsertStart).Seconds())
 		if err != nil {
 			telemetry.DocumentsUpserted.Add(ctx, 1, telemetry.StatusError)
-			telemetry.DbConnectionErrors.Add(ctx, 1)
+			if isConnectivityError(err) {
+				telemetry.DbConnectionErrors.Add(ctx, 1)
+			}
 			slog.Error(fmt.Sprintf("%v", err))
 			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
 		} else {
