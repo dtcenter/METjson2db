@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dtcenter/METjson2db/pkg/async"
@@ -181,7 +184,37 @@ func GetCredentials(credentialsFilePath string) types.Credentials {
 	if err != nil {
 		slog.Error("Unmarshal:" + err.Error())
 	}
+	creds.Cb_host = normalizeCbHost(creds.Cb_host)
 	return creds
+}
+
+// normalizeCbHost appends a trailing dot to raw's hostname, turning it into an absolute FQDN, so
+// Go's netgo DNS resolver (used in the distroless sqsworker image) skips Kubernetes's ndots:5
+// search-domain expansion entirely instead of appending search suffixes before falling through to
+// the real query — this bakes into code the manual fix applied during the incident documented in
+// docs/plan/couchbase-upsert-reliability.md (Goal 2). Anything about raw that isn't a plain,
+// already-well-formed hostname (parse error, empty host, an IP literal, a comma-separated
+// cb_host0-style multi-host list, an already-dotted host) is returned unchanged, rather than risk
+// corrupting a connection string in a shape this function wasn't designed for.
+func normalizeCbHost(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return raw
+	}
+	host := u.Hostname()
+	if host == "" || strings.Contains(host, ",") {
+		return raw
+	}
+	if strings.HasSuffix(host, ".") || net.ParseIP(host) != nil {
+		return raw
+	}
+	fqdn := host + "."
+	if port := u.Port(); port != "" {
+		u.Host = net.JoinHostPort(fqdn, port)
+	} else {
+		u.Host = fqdn
+	}
+	return u.String()
 }
 
 func ParseLoadSpec(file string) (types.LoadSpec, error) {

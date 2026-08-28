@@ -86,3 +86,33 @@ func TestStopWorkers_SafeWhenNoneStarted(t *testing.T) {
 		t.Fatal("stopMergeDocFetchWorkers/stopFlushToDbWorkers hung with no workers started")
 	}
 }
+
+// TestNormalizeCbHost covers the cb_host FQDN normalization from
+// docs/plan/couchbase-upsert-reliability.md's Goal 2: append a trailing dot to skip Kubernetes's
+// ndots:5 search-domain expansion, but leave anything not shaped like a plain hostname untouched.
+func TestNormalizeCbHost(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{"no dot gets appended", "couchbase://adb-cb1.gsd.esrl.noaa.gov", "couchbase://adb-cb1.gsd.esrl.noaa.gov."},
+		{"already dotted is unchanged", "couchbase://adb-cb1.gsd.esrl.noaa.gov.", "couchbase://adb-cb1.gsd.esrl.noaa.gov."},
+		{"tls scheme", "couchbases://adb-cb1.gsd.esrl.noaa.gov", "couchbases://adb-cb1.gsd.esrl.noaa.gov."},
+		{"ipv4 literal is unchanged", "couchbase://10.0.0.5", "couchbase://10.0.0.5"},
+		{"ipv6 literal is unchanged", "couchbase://[::1]", "couchbase://[::1]"},
+		{"port is preserved", "couchbase://adb-cb1.gsd.esrl.noaa.gov:8091", "couchbase://adb-cb1.gsd.esrl.noaa.gov.:8091"},
+		{"empty is unchanged", "", ""},
+		{"no scheme (no parseable host) is unchanged", "adb-cb2,adb-cb3,adb-cb4", "adb-cb2,adb-cb3,adb-cb4"},
+		{"comma-separated multi-host is unchanged", "couchbase://adb-cb2,adb-cb3,adb-cb4", "couchbase://adb-cb2,adb-cb3,adb-cb4"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := normalizeCbHost(tc.in)
+			if got != tc.want {
+				t.Errorf("normalizeCbHost(%q) = %q, want %q", tc.in, got, tc.want)
+			}
+		})
+	}
+}
