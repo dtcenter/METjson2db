@@ -244,11 +244,13 @@ func handleMessage(ctx context.Context, sqsClient sqsHandler, s3Client *s3.Clien
 		QueueUrl:      aws.String(queueURL),
 		ReceiptHandle: aws.String(receiptHandle),
 	})
-	deleteSpan.End()
 	if err != nil {
+		deleteSpan.SetStatus(codes.Error, err.Error())
+		deleteSpan.End()
 		span.SetStatus(codes.Error, err.Error())
 		return fmt.Errorf("deleting SQS message: %w", err)
 	}
+	deleteSpan.End()
 
 	telemetry.MessagesDeleted.Add(ctx, 1)
 	return nil
