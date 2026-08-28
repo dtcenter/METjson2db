@@ -27,7 +27,9 @@ func TestMerge(t *testing.T) {
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_360000L_20240203_120000V.stat")
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat")
 
-	testMerge_Init()
+	if err := testMerge_Init(); err != nil {
+		t.Fatalf("testMerge_Init error: %v", err)
+	}
 
 	/*
 		err := testMerge_CleanDb()
@@ -35,7 +37,7 @@ func TestMerge(t *testing.T) {
 			t.Errorf("testMerge_CleanDb error" + err.Error())
 		}
 
-		state.Conf.OverWriteData = true
+		state.LoadSpec.OverWriteData = true
 		err = testMerge_Upload(inputFiles)
 		if err != nil {
 			t.Errorf("testMerge_UploadNoMerge error" + err.Error())
@@ -44,20 +46,20 @@ func TestMerge(t *testing.T) {
 
 	err := testMerge_CleanDb()
 	if err != nil {
-		t.Errorf("testMerge_CleanDb error" + err.Error())
+		t.Errorf("testMerge_CleanDb error: %v", err)
 	}
 
-	state.Conf.OverWriteData = true
+	state.LoadSpec.OverWriteData = true
 	err = testMerge_UploadForMergeTest(inputFiles)
 	if err != nil {
-		t.Errorf("testMerge_UploadForMergeTest error" + err.Error())
+		t.Errorf("testMerge_UploadForMergeTest error: %v", err)
 	}
 	dataLengthsPre := getDataLengths()
 
-	state.Conf.OverWriteData = false
+	state.LoadSpec.OverWriteData = false
 	err = testMerge_Upload(inputFiles)
 	if err != nil {
-		t.Errorf("testMerge_Upload error" + err.Error())
+		t.Errorf("testMerge_Upload error: %v", err)
 	}
 	dataLengthsPost := getDataLengths()
 	slog.Info(fmt.Sprintf("Merge test, dataLengthsPre:%v, dataLengthsPost:%v", dataLengthsPre, dataLengthsPost))
@@ -66,13 +68,23 @@ func TestMerge(t *testing.T) {
 	}
 }
 
-func testMerge_Init() {
+func testMerge_Init() error {
 	slog.Info("TestMerge_Init()")
 
 	home, _ := os.UserHomeDir()
 	state.Credentials = core.GetCredentials(home + "/credentials")
-
 	state.Credentials.Cb_collection = "MET_tests"
+
+	// core.ProcessInputFiles no longer establishes its own connection — a single
+	// state.DbConn is expected to already be set before any worker reads it.
+	state.LoadSpec.RunMode = "DIRECT_LOAD_TO_DB"
+	state.LoadSpec.DatasetName = "METDEFAULT"
+	state.LoadSpec.ThreadsDbUpload = 4
+	state.LoadSpec.ThreadsMergeDocFetch = 2
+	state.LoadSpec.ChannelBufferSizeNumberOfDocs = 100
+	state.LoadSpec.MaxDocIdLength = 200
+
+	return core.ConnectDbIfNeeded()
 }
 
 func testMerge_CleanDb() error {
@@ -80,12 +92,11 @@ func testMerge_CleanDb() error {
 
 	sqlStr := fmt.Sprintf("DELETE FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	conn := utils.GetDbConnection(state.Credentials)
-	_, err := conn.Scope.Query(sqlStr, nil)
+	_, err := state.DbConn.Scope.Query(sqlStr, nil)
 
 	sqlStr = fmt.Sprintf("SELECT COUNT(*) as count FROM %s.%s.%s",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
-	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	slog.Info(fmt.Sprintf("count after db clean:%d:", rv[0].(map[string]interface{})["count"]))
 	return err
 }
@@ -99,18 +110,17 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 
 	state.MergeTestDocs = make(map[string]interface{})
 
-	conn := utils.GetDbConnection(state.Credentials)
 	sqlStr := fmt.Sprintf("SELECT c.id as id FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	// slog.Info("id for data count=3:\n" + utils.JsonPrettyPrint(rv))
 	for i := 0; i < len(rv); i++ {
 		id := rv[i].(map[string]interface{})["id"].(string)
 		sqlStr = fmt.Sprintf("SELECT * FROM %s.%s.%s AS c USE KEYS \"%s\"",
 			state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection, id)
 		// slog.Info(sqlStr)
-		rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+		rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 		if rv == nil || len(rv) == 0 {
 			continue
 		}
@@ -126,7 +136,7 @@ func testMerge_UploadForMergeTest(inputFiles []string) error {
 				delete(data, k)
 			}
 		}
-		_, err := conn.Collection.Upsert(id, docPost, nil)
+		_, err := state.DbConn.Collection.Upsert(id, docPost, nil)
 		if err != nil {
 			slog.Error(fmt.Sprintf("%v", err))
 			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
@@ -162,26 +172,25 @@ func testMerge_Upload(inputFiles []string) error {
 }
 
 func getDataLengths() []float64 {
-	conn := utils.GetDbConnection(state.Credentials)
 	sqlStr := fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 0",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv := utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv := utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_0 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 1",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv = utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_1 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 2",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv = utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_2 := rv[0].(map[string]interface{})["count"]
 	sqlStr = fmt.Sprintf("SELECT count(*) as count FROM %s.%s.%s AS c WHERE ARRAY_LENGTH(object_pairs(c.data)) = 3",
 		state.Credentials.Cb_bucket, state.Credentials.Cb_scope, state.Credentials.Cb_collection)
 	slog.Debug(sqlStr)
-	rv = utils.QueryWithSQLStringMAP(conn.Scope, sqlStr)
+	rv = utils.QueryWithSQLStringMAP(state.DbConn.Scope, sqlStr)
 	count_3 := rv[0].(map[string]interface{})["count"]
 	slog.Info(fmt.Sprintf("data counts:%v,%v,%v,%v", count_0, count_1, count_2, count_3))
 	return []float64{count_0.(float64), count_1.(float64), count_2.(float64), count_3.(float64)}

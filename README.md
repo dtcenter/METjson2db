@@ -145,6 +145,11 @@ This file sets the following:
 2. Connection username and password
    A sample credentials file is available in: METjson2db/credentials.template
 
+NOTE: `cb_host` is automatically normalized to an absolute FQDN (trailing dot appended, unless
+already dotted or an IP literal) before connecting. This avoids a Kubernetes DNS issue where
+search-domain expansion can cause connection timeouts — see `docs/troubleshooting.md` for details.
+You do not need to add the trailing dot yourself.
+
 ### load_spec file, which defaults to "./load_spec.json"
 
 Unless overridden in the command line, the default file is 'load_spec.json' in the METjson2db run folder.
@@ -184,7 +189,7 @@ b) If a data section key exists in the database document, but missing from incom
 #### runNonThreaded
 
 NOTE: Only applies in runMode = DIRECT_LOAD_TO_DB
-The default run mode is multi-threaded, where multiple concurrent database connections are used for inserting documents to the databse
+The default run mode is multi-threaded, where multiple concurrent goroutines insert documents using a single shared database connection.
 If runNonThreaded is set to true, the runtime will be single threaded. This is mainly only useful in debugging the code.
 
 #### threadsDbUpload

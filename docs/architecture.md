@@ -102,7 +102,7 @@ METjson2db/
 | [pkg/storage/local.go](../pkg/storage/local.go)                                 | `LocalProvider` — implements `StorageProvider` by opening files from the local filesystem.                                                                                                  |
 | [pkg/storage/s3tarball.go](../pkg/storage/s3tarball.go)                         | `S3TarballProvider` — implements `StorageProvider` by streaming a tar.gz from S3 and yielding `.stat` entries without disk I/O.                                                            |
 | [pkg/storage/s3event.go](../pkg/storage/s3event.go)                             | Parses S3 event notification JSON (the format SQS receives when S3 triggers a notification).                                                                                                |
-| [pkg/core/processInput.go](../pkg/core/processInput.go)                         | **Pipeline orchestrator.** `ProcessFromProvider` sets up async DB-upload and merge-fetch goroutines, walks files via a `StorageProvider`, flushes, and reports run stats. `ProcessInputFiles` is a backward-compatible wrapper. Also contains `GetCredentials` and `ParseLoadSpec`. |
+| [pkg/core/processInput.go](../pkg/core/processInput.go)                         | **Pipeline orchestrator.** `ProcessFromProvider` sets up async DB-upload and merge-fetch goroutines, walks files via a `StorageProvider`, flushes, and reports run stats. `ProcessInputFiles` is a backward-compatible wrapper. Also contains `GetCredentials` (which normalizes `cb_host` to an FQDN — see [docs/troubleshooting.md](troubleshooting.md)), `ParseLoadSpec`, and `ConnectDbIfNeeded` (establishes `state.DbConn` once at startup for run modes that need Couchbase). |
 | [pkg/core/statFileToCbDocMetParser.go](../pkg/core/statFileToCbDocMetParser.go) | `parseStatFileContent` reads stat file content from an `io.Reader`, splits into header + data lines, and calls `METstat2json/parser.ParseLine` for each line. `statFileToCbDocMetParser` is a thin wrapper that opens a local file and delegates.                    |
 | [pkg/core/statToCbRun.go](../pkg/core/statToCbRun.go)                           | `startProcessingFromProvider` (unexported) walks files via a `StorageProvider` and calls `parseStatFileContent` for each. Tracks file status. Called by `ProcessFromProvider` during the core parsing phase.        |
 | [pkg/core/statToCbFlush.go](../pkg/core/statToCbFlush.go)                       | Distributes in-memory docs to async upload channels (round-robin) or writes them to disk.                                                                                                                 |
@@ -217,22 +217,20 @@ MET stat data is stored as JSON documents with:
 
 2. **`init()` functions**: Nearly every package has an `init()` function, most of which only log a debug message. `init()` should be reserved for truly unavoidable package-level setup. Remove the no-op debug inits; move real initialization to explicit constructors.
 
-3. **Error handling**: Several functions log errors but continue execution (e.g., `GetDbConnection` returns a zero-value `CbConnection` on error). Functions should return errors to callers and let the caller decide how to handle them. Avoid `log.Fatal` in library code.
-
-4. **DB connection per call**: `GetDbConnection()` creates a new Couchbase cluster connection each time it's called (including inside each async goroutine). Couchbase SDK connections are meant to be long-lived and shared. Create one connection at startup and pass it through.
-
-5. **Naming conventions**: Some names don't follow Go conventions:
+3. **Naming conventions**: Some names don't follow Go conventions:
    - `processInput.go` ✓ (renamed)
    - `statToCbUtils.go` → Merge into the package it serves or name by domain
    - `Cb_host`, `Cb_user` → `CbHost`, `CbUser` (Go exported fields use CamelCase, not snake_case)
    - Unexported types like `StrArray` are duplicated across packages
 
-6. **Context propagation**: `ProcessFromProvider`, the `StorageProvider` interface, `parseStatFileContent`, `FlushToDbAsync`, and `MergeDbDocFetchAsync` all accept `context.Context`, enabling cancellation propagation and trace continuity through the async pipeline. The underlying `gocb` Upsert and Get calls still use `nil` options — passing context to Couchbase SDK calls would enable timeout propagation and trace-linked DB spans.
+4. **Context propagation**: `ProcessFromProvider`, the `StorageProvider` interface, `parseStatFileContent`, `FlushToDbAsync`, and `MergeDbDocFetchAsync` all accept `context.Context`, enabling cancellation propagation and trace continuity through the async pipeline. The underlying `gocb` Upsert and Get calls still use `nil` options — passing context to Couchbase SDK calls would enable timeout propagation and trace-linked DB spans.
 
-7. **Test coverage**: One unit test (`TestParseLoadSpec`) and one integration test (`TestMerge`) for the core pipeline. The `pkg/storage/` package has 90%+ unit test coverage and an integration test against MiniStack. See [docs/dev-guide.md](dev-guide.md) for how to run tests.
+5. **Test coverage**: One unit test (`TestParseLoadSpec`) and one integration test (`TestMerge`) for the core pipeline. The `pkg/storage/` package has 90%+ unit test coverage and an integration test against MiniStack. See [docs/dev-guide.md](dev-guide.md) for how to run tests.
 
-8. **Mixed logging**: `metadataUpdate` uses `log.Print`/`log.Fatal` while the rest uses `slog`. Standardize on `slog`.
+6. **Mixed logging**: `metadataUpdate` uses `log.Print`/`log.Fatal` while the rest uses `slog`. Standardize on `slog`.
 
-9. **SQL template injection**: `templateQueries.go` does string replacement for SQL parameters. While these are internal values (not user input), using parameterized queries is safer and more maintainable.
+7. **SQL template injection**: `templateQueries.go` does string replacement for SQL parameters. While these are internal values (not user input), using parameterized queries is safer and more maintainable.
 
-10. **File path handling**: Manual string concatenation for paths (`inputFolder+file.Name()`) should use `filepath.Join()` for correctness across platforms.
+8. **File path handling**: Manual string concatenation for paths (`inputFolder+file.Name()`) should use `filepath.Join()` for correctness across platforms.
+
+> Resolved since this was last written: error handling in `GetDbConnection` (it now returns `(types.CbConnection, error)` instead of a zero-value on failure, with context-rich wrapped errors) and DB-connection-per-call (a single connection is now established once at startup via `core.ConnectDbIfNeeded()` and shared via `state.DbConn` — see the Concurrency section in [AGENTS.md](../AGENTS.md)).

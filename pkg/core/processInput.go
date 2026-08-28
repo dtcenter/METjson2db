@@ -5,13 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dtcenter/METjson2db/pkg/async"
 	"github.com/dtcenter/METjson2db/pkg/state"
 	"github.com/dtcenter/METjson2db/pkg/storage"
 	"github.com/dtcenter/METjson2db/pkg/types"
+	"github.com/dtcenter/METjson2db/pkg/utils"
 	"github.com/dtcenter/METstat2json/pkg/parser"
 	"gopkg.in/yaml.v3"
 )
@@ -31,30 +35,42 @@ func ProcessInputFiles(inputFiles []string, preDbLoadCallback func()) error {
 func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, preDbLoadCallback func()) error {
 	slog.Info("ProcessFromProvider")
 
+	// ProcessFromProvider (and the exported ProcessInputFiles that wraps it) assumes state.DbConn
+	// was already established via ConnectDbIfNeeded — without this check, a caller that skips that
+	// step gets a nil-pointer panic deep inside an async worker's Upsert call instead of a clear
+	// error at the one place that actually knows what went wrong.
+	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" && state.DbConn.Cluster == nil {
+		return fmt.Errorf("state.DbConn is not initialized — call core.ConnectDbIfNeeded() before ProcessFromProvider")
+	}
+
 	start := time.Now()
 	state.StateReset()
 
 	if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
 		if !state.LoadSpec.RunNonThreaded {
 			for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsDbUpload); workerIdx++ {
-
-				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
+				// Pass ch directly rather than having the worker index into
+				// state.AsyncFlushToDbChannels itself — this loop keeps appending to (and thus
+				// mutating) that shared slice while earlier-spawned workers are already running,
+				// so a worker re-reading the slice by index races the main goroutine's append.
+				ch := make(chan map[string]interface{}, state.LoadSpec.ChannelBufferSizeNumberOfDocs)
+				state.AsyncFlushToDbChannels = append(state.AsyncFlushToDbChannels, ch)
 				state.AsyncWaitGroupFlushToDb.Add(1)
-				go func(workerID int) {
+				go func(workerID int, ch chan map[string]interface{}) {
 					defer state.AsyncWaitGroupFlushToDb.Done()
-					async.FlushToDbAsync(ctx, workerID)
-				}(workerIdx)
+					async.FlushToDbAsync(ctx, workerID, ch)
+				}(workerIdx, ch)
 			}
 
 			if !state.LoadSpec.OverWriteData {
 				for workerIdx := 0; workerIdx < int(state.LoadSpec.ThreadsMergeDocFetch); workerIdx++ {
-
-					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs))
+					ch := make(chan string, state.LoadSpec.ChannelBufferSizeNumberOfDocs)
+					state.AsyncMergeDocFetchChannels = append(state.AsyncMergeDocFetchChannels, ch)
 					state.AsyncWaitGroupMergeDocFetch.Add(1)
-					go func(workerID int) {
+					go func(workerID int, ch chan string) {
 						defer state.AsyncWaitGroupMergeDocFetch.Done()
-						async.MergeDbDocFetchAsync(ctx, workerID)
-					}(workerIdx)
+						async.MergeDbDocFetchAsync(ctx, workerID, ch)
+					}(workerIdx, ch)
 				}
 			}
 		}
@@ -85,6 +101,13 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 		}
 		StatToCbFlush(true)
 		stopFlushToDbWorkers()
+
+		// Return an error instead of silently continuing so the caller (e.g. the SQS worker)
+		// doesn't delete the message despite failed writes — see state.DbUpsertErrors.
+		dbTotalErrors = state.DbUpsertErrors.Load()
+		if dbTotalErrors > 0 {
+			return fmt.Errorf("%d document upserts failed", dbTotalErrors)
+		}
 	case "CREATE_JSON_DOC_ARCHIVE":
 		outputFilename := state.LoadSpec.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + ".json.gz"
 		err := parser.WriteJsonToCompressedFile(state.CbDocs, outputFilename)
@@ -126,6 +149,31 @@ func stopFlushToDbWorkers() {
 	slog.Debug("asyncWaitGroupFlushToDb finished!")
 }
 
+// runModesNeedingDb are the only LoadSpec.RunMode values that touch Couchbase. Deliberately an
+// allow-list rather than excluding known DB-free modes (e.g. CREATE_JSON_DOC_ARCHIVE): a future
+// run mode that doesn't need a connection then defaults to not requiring one, instead of a new mode
+// silently requiring credentials it was never given.
+var runModesNeedingDb = map[string]bool{
+	"DIRECT_LOAD_TO_DB": true,
+	"METADATA_UPDATE":   true,
+}
+
+// ConnectDbIfNeeded establishes state.DbConn once, if state.LoadSpec.RunMode actually needs a
+// Couchbase connection. Callers (cmd/sqsworker, cmd/metjson2db) should call this once at startup,
+// after credentials are loaded, before doing any other work — see utils.GetDbConnection for why a
+// single process-lifetime connection replaces the previous per-worker-per-message reconnects.
+func ConnectDbIfNeeded() error {
+	if !runModesNeedingDb[state.LoadSpec.RunMode] {
+		return nil
+	}
+	conn, err := utils.GetDbConnection(state.Credentials)
+	if err != nil {
+		return fmt.Errorf("establishing Couchbase connection: %w", err)
+	}
+	state.DbConn = conn
+	return nil
+}
+
 func GetCredentials(credentialsFilePath string) types.Credentials {
 	creds := types.Credentials{}
 	yamlFile, err := os.ReadFile(credentialsFilePath)
@@ -136,7 +184,37 @@ func GetCredentials(credentialsFilePath string) types.Credentials {
 	if err != nil {
 		slog.Error("Unmarshal:" + err.Error())
 	}
+	creds.Cb_host = normalizeCbHost(creds.Cb_host)
 	return creds
+}
+
+// normalizeCbHost appends a trailing dot to raw's hostname, turning it into an absolute FQDN, so
+// Go's netgo DNS resolver (used in the distroless sqsworker image) skips Kubernetes's ndots:5
+// search-domain expansion entirely instead of appending search suffixes before falling through to
+// the real query — this bakes into code the manual fix applied during the incident documented in
+// docs/plan/couchbase-upsert-reliability.md (Goal 2). Anything about raw that isn't a plain,
+// already-well-formed hostname (parse error, empty host, an IP literal, a comma-separated
+// cb_host0-style multi-host list, an already-dotted host) is returned unchanged, rather than risk
+// corrupting a connection string in a shape this function wasn't designed for.
+func normalizeCbHost(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return raw
+	}
+	host := u.Hostname()
+	if host == "" || strings.Contains(host, ",") {
+		return raw
+	}
+	if strings.HasSuffix(host, ".") || net.ParseIP(host) != nil {
+		return raw
+	}
+	fqdn := host + "."
+	if port := u.Port(); port != "" {
+		u.Host = net.JoinHostPort(fqdn, port)
+	} else {
+		u.Host = fqdn
+	}
+	return u.String()
 }
 
 func ParseLoadSpec(file string) (types.LoadSpec, error) {

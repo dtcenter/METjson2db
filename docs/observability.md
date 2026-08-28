@@ -57,7 +57,7 @@ All metrics use the `metjson2db.` namespace prefix.
 | `metjson2db.db.upsert.duration`                  | Histogram (s) | —          | Individual Couchbase upsert latency                          |
 | `metjson2db.sqs.empty_receives`                  | Counter       | —          | Long-poll responses with no messages                         |
 | `metjson2db.sqs.visibility_heartbeat.extensions` | Counter       | `status`   | Heartbeat extension attempts                                 |
-| `metjson2db.db.connection_errors`                | Counter       | —          | Couchbase connectivity errors (timeout/canceled/unavailable) |
+| `metjson2db.db.connection_errors`                | Counter       | —          | Couchbase connectivity errors (timeout/canceled/unavailable) — see [docs/troubleshooting.md](troubleshooting.md) if this climbs |
 
 #### Bad data signals
 

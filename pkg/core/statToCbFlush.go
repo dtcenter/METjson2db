@@ -35,8 +35,7 @@ func StatToCbFlush(flushFinal bool) {
 				flushToFiles(id)
 			}
 			if state.LoadSpec.RunMode == "DIRECT_LOAD_TO_DB" {
-				conn := utils.GetDbConnection(state.Credentials)
-				flushToDb(conn, id)
+				flushToDb(state.DbConn, id)
 			}
 			//}
 		}
@@ -87,6 +86,7 @@ func flushToDb(conn types.CbConnection, id string) {
 		// Upsert creates a new document in the Collection if it does not exist, if it does exist then it updates it.
 		_, err := conn.Collection.Upsert(id, anyJson, nil)
 		if err != nil {
+			state.DbUpsertErrors.Add(1)
 			slog.Error(err.Error())
 		}
 	} else {

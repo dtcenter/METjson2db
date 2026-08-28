@@ -16,44 +16,46 @@ func init() {
 	slog.Debug("db-utils:init()")
 }
 
-func GetDbConnection(cred types.Credentials) (conn types.CbConnection) {
+// GetDbConnection establishes a single Couchbase connection. Callers should call this once per
+// process and reuse the result (via state.DbConn) rather than reconnecting per operation — a
+// *gocb.Cluster and its Collection/Bucket/Scope children are documented as safe for concurrent use
+// from many goroutines and are meant to be created once and reused for the application's lifetime.
+func GetDbConnection(cred types.Credentials) (types.CbConnection, error) {
 	slog.Debug(fmt.Sprintf("getDbConnection(%s.%s.%s)", cred.Cb_bucket, cred.Cb_scope, cred.Cb_collection))
 
-	conn = types.CbConnection{}
+	conn := types.CbConnection{}
 	connectionString := cred.Cb_host
-	bucketName := cred.Cb_bucket
-	collection := cred.Cb_collection
-	username := cred.Cb_user
-	password := cred.Cb_password
 
 	options := gocb.ClusterOptions{
 		Authenticator: gocb.PasswordAuthenticator{
-			Username: username,
-			Password: password,
+			Username: cred.Cb_user,
+			Password: cred.Cb_password,
 		},
 	}
 
+	connectStart := time.Now()
 	cluster, err := gocb.Connect(connectionString, options)
 	if err != nil {
-		slog.Error(fmt.Sprintf("%v", err))
-		return conn
+		return conn, fmt.Errorf("connecting to Couchbase at %s (after %v): %w", connectionString, time.Since(connectStart), err)
 	}
 
 	conn.Cluster = cluster
-	conn.Bucket = conn.Cluster.Bucket(bucketName)
-	conn.Collection = conn.Bucket.Collection(collection)
-
+	conn.Bucket = conn.Cluster.Bucket(cred.Cb_bucket)
+	// Derive Collection from Scope (not Bucket.Collection, which always targets the default
+	// scope) so writes via conn.Collection and queries via conn.Scope agree on which scope
+	// they're operating in — otherwise upserts would silently land in "_default" while queries
+	// correctly ran against cred.Cb_scope whenever that isn't "_default".
+	conn.Scope = conn.Bucket.Scope(cred.Cb_scope)
+	conn.Collection = conn.Scope.Collection(cred.Cb_collection)
 	conn.VxDBTARGET = cred.Cb_bucket + "." + cred.Cb_scope + "." + cred.Cb_collection
-	// slog.Debug("vxDBTARGET:" + conn.vxDBTARGET)
 
-	err = conn.Bucket.WaitUntilReady(5*time.Second, nil)
-	if err != nil {
-		slog.Error(fmt.Sprintf("%v", err))
-		return conn
+	waitStart := time.Now()
+	if err := conn.Bucket.WaitUntilReady(5*time.Second, nil); err != nil {
+		_ = cluster.Close(nil)
+		return conn, fmt.Errorf("waiting for Couchbase bucket %q to become ready at %s (after %v): %w", cred.Cb_bucket, connectionString, time.Since(waitStart), err)
 	}
 
-	conn.Scope = conn.Bucket.Scope(cred.Cb_scope)
-	return conn
+	return conn, nil
 }
 
 func QueryWithSQLFile(scope *gocb.Scope, file string) (jsonOut []string) {

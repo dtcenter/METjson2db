@@ -11,15 +11,15 @@ import (
 
 // init runs before main() is evaluated
 func init() {
-	slog.Debug("flushToDbAsync:init()")
+	slog.Debug("mergeDbDocFetchAsync:init()")
 }
 
-func MergeDbDocFetchAsync(ctx context.Context, threadIdx int) {
-	conn := utils.GetDbConnection(state.Credentials)
+func MergeDbDocFetchAsync(ctx context.Context, threadIdx int, ch chan string) {
+	conn := state.DbConn
 	count := 0
 	errors := 0
 	for {
-		id, ok := <-state.AsyncMergeDocFetchChannels[threadIdx]
+		id, ok := <-ch
 		slog.Debug("MergeDbDocFetchAsync:" + id)
 		if !ok {
 			slog.Debug(fmt.Sprintf("\tMergeDbDocFetchAsync(%d), no documents in channel!", threadIdx))
@@ -49,7 +49,8 @@ func MergeDbDocFetchAsync(ctx context.Context, threadIdx int) {
 		}
 	}
 
-	slog.Info(fmt.Sprintf("MergeDbDocFetchAsync(%d) doc count:[thread:%d,total:%d], errors:%d", threadIdx, count, len(state.CbMergeDbDocs), errors))
-	returnDoc := fmt.Sprintf("%d", count)
-	state.AsyncMergeDocFetchChannels[threadIdx] <- returnDoc
+	state.CbMergeDbDocsMutex.RLock()
+	totalMergeDocs := len(state.CbMergeDbDocs)
+	state.CbMergeDbDocsMutex.RUnlock()
+	slog.Info(fmt.Sprintf("MergeDbDocFetchAsync(%d) doc count:[thread:%d,total:%d], errors:%d", threadIdx, count, totalMergeDocs, errors))
 }
