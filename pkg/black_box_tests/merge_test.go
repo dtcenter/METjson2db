@@ -27,7 +27,9 @@ func TestMerge(t *testing.T) {
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_360000L_20240203_120000V.stat")
 	inputFiles = append(inputFiles, "../../test_data/grid_stat_GFS_TMP_vs_ANLYS_TMP_Z2_420000L_20240203_120000V.stat")
 
-	testMerge_Init()
+	if err := testMerge_Init(); err != nil {
+		t.Fatalf("testMerge_Init error: %v", err)
+	}
 
 	/*
 		err := testMerge_CleanDb()
@@ -35,7 +37,7 @@ func TestMerge(t *testing.T) {
 			t.Errorf("testMerge_CleanDb error" + err.Error())
 		}
 
-		state.Conf.OverWriteData = true
+		state.LoadSpec.OverWriteData = true
 		err = testMerge_Upload(inputFiles)
 		if err != nil {
 			t.Errorf("testMerge_UploadNoMerge error" + err.Error())
@@ -44,20 +46,20 @@ func TestMerge(t *testing.T) {
 
 	err := testMerge_CleanDb()
 	if err != nil {
-		t.Errorf("testMerge_CleanDb error" + err.Error())
+		t.Errorf("testMerge_CleanDb error: %v", err)
 	}
 
-	state.Conf.OverWriteData = true
+	state.LoadSpec.OverWriteData = true
 	err = testMerge_UploadForMergeTest(inputFiles)
 	if err != nil {
-		t.Errorf("testMerge_UploadForMergeTest error" + err.Error())
+		t.Errorf("testMerge_UploadForMergeTest error: %v", err)
 	}
 	dataLengthsPre := getDataLengths()
 
-	state.Conf.OverWriteData = false
+	state.LoadSpec.OverWriteData = false
 	err = testMerge_Upload(inputFiles)
 	if err != nil {
-		t.Errorf("testMerge_Upload error" + err.Error())
+		t.Errorf("testMerge_Upload error: %v", err)
 	}
 	dataLengthsPost := getDataLengths()
 	slog.Info(fmt.Sprintf("Merge test, dataLengthsPre:%v, dataLengthsPost:%v", dataLengthsPre, dataLengthsPost))
@@ -66,13 +68,23 @@ func TestMerge(t *testing.T) {
 	}
 }
 
-func testMerge_Init() {
+func testMerge_Init() error {
 	slog.Info("TestMerge_Init()")
 
 	home, _ := os.UserHomeDir()
 	state.Credentials = core.GetCredentials(home + "/credentials")
-
 	state.Credentials.Cb_collection = "MET_tests"
+
+	// core.ProcessInputFiles no longer establishes its own connection — a single
+	// state.DbConn is expected to already be set before any worker reads it.
+	state.LoadSpec.RunMode = "DIRECT_LOAD_TO_DB"
+	state.LoadSpec.DatasetName = "METDEFAULT"
+	state.LoadSpec.ThreadsDbUpload = 4
+	state.LoadSpec.ThreadsMergeDocFetch = 2
+	state.LoadSpec.ChannelBufferSizeNumberOfDocs = 100
+	state.LoadSpec.MaxDocIdLength = 200
+
+	return core.ConnectDbIfNeeded()
 }
 
 func testMerge_CleanDb() error {
