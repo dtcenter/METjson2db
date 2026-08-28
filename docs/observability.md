@@ -29,7 +29,8 @@ process_sqs_message (root)
 ├── process_s3_record (per S3 record)
 │   ├── S3.GetObject (auto-instrumented by otelaws)
 │   └── parse_stat_file (per file in tarball)
-├── SQS.DeleteMessage (auto-instrumented by otelaws)
+├── delete_sqs_message
+│   └── SQS.DeleteMessage (auto-instrumented by otelaws)
 └── SQS.ChangeMessageVisibility (auto-instrumented by otelaws, per heartbeat)
 ```
 
