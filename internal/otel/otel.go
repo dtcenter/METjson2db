@@ -46,13 +46,15 @@ func InitOTel(ctx context.Context) (shutdown func(context.Context) error, err er
 		err = errors.Join(inErr, shutdown(ctx))
 	}
 
-	// resource.Default() already honors service.name from both OTEL_SERVICE_NAME and
-	// OTEL_RESOURCE_ATTRIBUTES via its env detector; only fall back to our default when the
-	// operator hasn't set either, so checking the resulting resource (rather than just the
-	// OTEL_SERVICE_NAME env var) is what actually respects both.
+	// resource.Default() always carries a service.name — if the operator hasn't configured one,
+	// its own built-in fallback detector sets "unknown_service:<executable>" before the env
+	// detector even runs, so checking defaultRes here is never unset and our default would never
+	// apply. resource.Environment() runs only the env detector (OTEL_SERVICE_NAME or
+	// OTEL_RESOURCE_ATTRIBUTES), with no fallback baked in, so it's what actually tells us whether
+	// the operator configured one.
 	defaultRes := resource.Default()
 	var resourceAttrs []attribute.KeyValue
-	if _, ok := defaultRes.Set().Value(serviceNameKey); !ok {
+	if _, ok := resource.Environment().Set().Value(serviceNameKey); !ok {
 		resourceAttrs = append(resourceAttrs, serviceNameKey.String(defaultServiceName))
 	}
 	// NewSchemaless (no schema URL) instead of NewWithAttributes(semconv.SchemaURL, ...): Merge
