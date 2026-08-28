@@ -90,6 +90,13 @@ func ProcessFromProvider(ctx context.Context, provider storage.StorageProvider, 
 		}
 		StatToCbFlush(true)
 		stopFlushToDbWorkers()
+
+		// Return an error instead of silently continuing so the caller (e.g. the SQS worker)
+		// doesn't delete the message despite failed writes — see state.DbUpsertErrors.
+		dbTotalErrors = state.DbUpsertErrors.Load()
+		if dbTotalErrors > 0 {
+			return fmt.Errorf("%d document upserts failed", dbTotalErrors)
+		}
 	case "CREATE_JSON_DOC_ARCHIVE":
 		outputFilename := state.LoadSpec.JsonArchiveFilePathAndPrefix + time.Now().Format(time.RFC3339) + ".json.gz"
 		err := parser.WriteJsonToCompressedFile(state.CbDocs, outputFilename)

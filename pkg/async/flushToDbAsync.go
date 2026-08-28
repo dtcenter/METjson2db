@@ -109,6 +109,7 @@ func FlushToDbAsync(ctx context.Context, threadIdx int, ch chan map[string]inter
 			if isConnectivityError(err) {
 				telemetry.DbConnectionErrors.Add(ctx, 1)
 			}
+			state.DbUpsertErrors.Add(1)
 			slog.Error(fmt.Sprintf("%v", err))
 			slog.Error(fmt.Sprintf("******* Upsert error:ID:%s", id))
 		} else {

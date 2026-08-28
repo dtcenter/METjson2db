@@ -2,6 +2,7 @@ package state
 
 import (
 	"sync"
+	"sync/atomic"
 
 	"github.com/dtcenter/METjson2db/pkg/types"
 )
@@ -22,6 +23,12 @@ var (
 	// life of the process — see utils.GetDbConnection. Not reset by StateReset, same as Credentials.
 	DbConn types.CbConnection
 )
+
+// DbUpsertErrors counts failed Upsert calls across this run (both the threaded and non-threaded
+// paths). Unlike DbConn, this *is* reset by StateReset — it's per-run, not per-process — and
+// ProcessFromProvider checks it after flushing to decide whether to return an error, so a failed
+// write stops the SQS message from being deleted instead of being silently dropped.
+var DbUpsertErrors atomic.Int64
 
 var (
 	AsyncFlushToDbChannels      []chan map[string]interface{}
@@ -51,6 +58,7 @@ func StateReset() {
 	LineTypeStats = make(map[string]types.LineTypeStat)
 	AsyncFlushToDbChannels = make([]chan map[string]interface{}, 0)
 	AsyncMergeDocFetchChannels = make([]chan string, 0)
+	DbUpsertErrors.Store(0)
 }
 
 var StatToCbRun = types.StatToCbRun{}
