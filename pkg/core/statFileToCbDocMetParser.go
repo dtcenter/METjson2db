@@ -17,18 +17,19 @@ func init() {
 	slog.Debug("statToJSON:init()")
 }
 
-// dummy function to satisfy the function signature of getExternalDocForId
-func getMissingExternalDocForId(id string) (map[string]interface{}, error) {
-	slog.Debug(fmt.Sprintf("getMissingExternalDocForId(%v)", state.METParserNewDocId))
-	state.METParserNewDocId = id
-	telemetry.MissingExternalDocRefs.Add(context.Background(), 1)
-	return nil, fmt.Errorf("%s: %s", parser.DOC_NOT_FOUND, id)
-}
-
 // parseStatFileContent parses stat file content from any io.Reader.
 func parseStatFileContent(ctx context.Context, name string, r io.Reader) (map[string]interface{}, error) {
 	var doc map[string]interface{}
 	var err error
+
+	// dummy function to satisfy the function signature of getExternalDocForId; closes over ctx so
+	// the metric can be correlated with the active span instead of using context.Background().
+	getMissingExternalDocForId := func(id string) (map[string]interface{}, error) {
+		slog.DebugContext(ctx, fmt.Sprintf("getMissingExternalDocForId(%v)", state.METParserNewDocId))
+		state.METParserNewDocId = id
+		telemetry.MissingExternalDocRefs.Add(ctx, 1)
+		return nil, fmt.Errorf("%s: %s", parser.DOC_NOT_FOUND, id)
+	}
 
 	scanner := bufio.NewScanner(r)
 	const maxCapacity = 1024 * 1024
