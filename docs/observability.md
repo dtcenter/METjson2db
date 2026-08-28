@@ -43,20 +43,20 @@ All metrics use the `metjson2db.` namespace prefix.
 
 #### Health signals
 
-| Metric                                           | Type          | Attributes | Description                          |
-| ------------------------------------------------ | ------------- | ---------- | ------------------------------------ |
-| `metjson2db.messages.received`                   | Counter       | —          | SQS messages received                |
-| `metjson2db.messages.processed`                  | Counter       | `status`   | Messages processed (success/error)   |
-| `metjson2db.messages.deleted`                    | Counter       | —          | Messages deleted from queue          |
-| `metjson2db.files.processed`                     | Counter       | `status`   | Stat files parsed (success/error)    |
-| `metjson2db.documents.upserted`                  | Counter       | `status`   | Couchbase upserts (success/error)    |
-| `metjson2db.lines.parsed`                        | Counter       | —          | Data lines parsed                    |
-| `metjson2db.message.processing.duration`         | Histogram (s) | —          | End-to-end message processing time   |
-| `metjson2db.s3.download.duration`                | Histogram (s) | —          | S3 GetObject latency                 |
-| `metjson2db.db.upsert.duration`                  | Histogram (s) | —          | Individual Couchbase upsert latency  |
-| `metjson2db.sqs.empty_receives`                  | Counter       | —          | Long-poll responses with no messages |
-| `metjson2db.sqs.visibility_heartbeat.extensions` | Counter       | `status`   | Heartbeat extension attempts         |
-| `metjson2db.db.connection_errors`                | Counter       | —          | Couchbase connection errors          |
+| Metric                                           | Type          | Attributes | Description                                                  |
+| ------------------------------------------------ | ------------- | ---------- | ------------------------------------------------------------ |
+| `metjson2db.messages.received`                   | Counter       | —          | SQS messages received                                        |
+| `metjson2db.messages.processed`                  | Counter       | `status`   | Messages processed (success/error)                           |
+| `metjson2db.messages.deleted`                    | Counter       | —          | Messages deleted from queue                                  |
+| `metjson2db.files.processed`                     | Counter       | `status`   | Stat files parsed (success/error)                            |
+| `metjson2db.documents.upserted`                  | Counter       | `status`   | Couchbase upserts (success/error)                            |
+| `metjson2db.lines.parsed`                        | Counter       | —          | Data lines parsed                                            |
+| `metjson2db.message.processing.duration`         | Histogram (s) | —          | End-to-end message processing time                           |
+| `metjson2db.s3.download.duration`                | Histogram (s) | —          | Time to fully stream and extract an S3 tarball               |
+| `metjson2db.db.upsert.duration`                  | Histogram (s) | —          | Individual Couchbase upsert latency                          |
+| `metjson2db.sqs.empty_receives`                  | Counter       | —          | Long-poll responses with no messages                         |
+| `metjson2db.sqs.visibility_heartbeat.extensions` | Counter       | `status`   | Heartbeat extension attempts                                 |
+| `metjson2db.db.connection_errors`                | Counter       | —          | Couchbase connectivity errors (timeout/canceled/unavailable) |
 
 #### Bad data signals
 
@@ -66,7 +66,6 @@ All metrics use the `metjson2db.` namespace prefix.
 | `metjson2db.tarball.extraction_errors`       | Counter | —          | Corrupt gzip/tar errors           |
 | `metjson2db.stat_file.parse_errors`          | Counter | —          | Line-level parse failures         |
 | `metjson2db.lines.skipped`                   | Counter | —          | Empty lines skipped               |
-| `metjson2db.documents.id_truncated`          | Counter | —          | IDs exceeding MaxDocIdLength      |
 | `metjson2db.documents.merged`                | Counter | —          | Documents merged with existing    |
 | `metjson2db.documents.missing_external_refs` | Counter | —          | Missing external doc lookups      |
 
@@ -111,9 +110,11 @@ The OpenTelemetry Operator manages collector injection. A typical setup:
 
 1. Deploy the `OpenTelemetryCollector` CR (sidecar or DaemonSet mode)
 2. Annotate the Deployment/ScaledJob pod template:
+
    ```yaml
    sidecar.opentelemetry.io/inject: "true"
    ```
+
 3. The operator injects `OTEL_EXPORTER_OTLP_ENDPOINT` automatically
 
 No code changes are required — the SDK picks up the endpoint from the environment.
