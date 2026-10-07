@@ -109,8 +109,8 @@ func main() {
 		return
 	}
 
-	if len(state.LoadSpec.DatasetName) > 10 {
-		slog.Error("Dataset name must be less than 10 characters!")
+	if len(state.LoadSpec.DatasetName) > 24 {
+		slog.Error("Dataset name must be less than 25 characters!")
 		return
 	}
 
